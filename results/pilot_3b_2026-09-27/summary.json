@@ -1,0 +1,24 @@
+{
+  "movielens": {
+    "pilot_sessions": 300,
+    "max_prompt_tokens": 20743,
+    "verdicts": {
+      "reliability_weighted_vs_single_prompt_baseline": "underpowered: 3000 sessions give 5% power; need 1550437895",
+      "reliability_weighted_vs_naive_mean_ensemble": "underpowered: 3000 sessions give 66% power; need 4227",
+      "naive_mean_ensemble_vs_single_prompt_baseline": "underpowered: 3000 sessions give 8% power; need 98899",
+      "long_tail_weighted_vs_reliability_weighted": "underpowered: 3000 sessions give 61% power; need 4674"
+    }
+  },
+  "amazon_games": {
+    "pilot_sessions": 300,
+    "max_prompt_tokens": 1728,
+    "verdicts": {
+      "reliability_weighted_vs_single_prompt_baseline": "underpowered: 3000 sessions give 43% power; need 7319",
+      "reliability_weighted_vs_naive_mean_ensemble": "underpowered: 3000 sessions give 73% power; need 3527",
+      "naive_mean_ensemble_vs_single_prompt_baseline": "underpowered: 3000 sessions give 28% power; need 12546",
+      "long_tail_weighted_vs_reliability_weighted": "worth it: 3000 sessions give 99% power (need 1310)"
+    }
+  },
+  "context_ok": true,
+  "elapsed_minutes": 39.6
+}
