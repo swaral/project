@@ -61,8 +61,20 @@ def run(cmd, **kwargs):
 def extract_project():
     PROJECT.mkdir(parents=True, exist_ok=True)
     with tarfile.open(fileobj=io.BytesIO(base64.b64decode(PAYLOAD)), mode="r:gz") as tar:
-        tar.extractall(PROJECT)
-    run([sys.executable, "-m", "pip", "install", "-q", "--no-deps", "-e", str(PROJECT)])
+        tar.extractall(PROJECT, filter="data")
+    # Plain import path instead of `pip install -e`: no build dependencies to fetch.
+    os.environ["PYTHONPATH"] = str(PROJECT / "src")
+
+
+def check_internet():
+    for url in ("https://ollama.com", "https://files.grouplens.org", "https://huggingface.co"):
+        try:
+            urllib.request.urlopen(url, timeout=20)
+        except OSError as exc:
+            raise RuntimeError(
+                f"No internet access to {url} ({exc}). Enable Internet for this "
+                "notebook; Kaggle requires a phone-verified account."
+            ) from exc
 
 
 def install_ollama():
@@ -187,6 +199,7 @@ def main():
     started = time.time()
     OUT.mkdir(parents=True, exist_ok=True)
     extract_project()
+    check_internet()
     ollama_version = install_ollama()
     gpus = gpu_names()
     log(f"GPUs: {gpus}")
