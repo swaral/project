@@ -11,3 +11,6 @@ data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+
+# Generated Kaggle kernel (embeds the source; rebuild with kaggle/build_kernel.py)
+kaggle/build/
