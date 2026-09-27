@@ -125,6 +125,41 @@ def _repair_truncated_tail(path: Path) -> int:
     return len(data) - keep
 
 
+def presented_candidate_order(
+    candidate_item_ids: list[int],
+    *,
+    session_id: str,
+    variant_id: str,
+    context_variant_id: str,
+    shuffle_seed: int | None,
+) -> list[int]:
+    """Candidate order shown to one ensemble member.
+
+    With ``shuffle_seed`` set, every (session, member) pair gets its own
+    reproducible permutation, so a model that favours a list slot favours a
+    different item under each prompt and the bias averages out in the
+    ensemble. With ``None`` the stored pool order is kept unchanged.
+    """
+
+    presented = list(candidate_item_ids)
+    if shuffle_seed is not None:
+        random.Random(
+            f"{shuffle_seed}:{session_id}:{variant_id}:{context_variant_id}"
+        ).shuffle(presented)
+    return presented
+
+
+def scores_in_pool_order(
+    presented_item_ids: list[int],
+    presented_scores: tuple[float, ...],
+    candidate_item_ids: list[int],
+) -> tuple[float, ...]:
+    """Map a member's scores from its presented order back to pool order."""
+
+    score_by_item = dict(zip(presented_item_ids, presented_scores))
+    return tuple(score_by_item[item_id] for item_id in candidate_item_ids)
+
+
 def _client(args: argparse.Namespace, *, candidate_count: int):
     return create_client(
         args.provider,
@@ -297,6 +332,18 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="random seed for --sample-size",
     )
+    parser.add_argument(
+        "--shuffle-candidates",
+        action="store_true",
+        help="show each ensemble member its own seeded permutation of the "
+        "candidate pool, so list-position bias averages out across members",
+    )
+    parser.add_argument(
+        "--shuffle-seed",
+        type=int,
+        default=0,
+        help="seed for --shuffle-candidates",
+    )
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--max-tokens", type=int, default=256)
@@ -362,6 +409,10 @@ def main() -> None:
     client = _client(args, candidate_count=candidate_count)
 
     output = args.output or _default_output_path(str(client.model), args.domain)
+    if args.output is None and args.shuffle_candidates:
+        # Keep shuffled and fixed-order trials in separate files so --resume
+        # can never mix the two conditions.
+        output = output.with_name(output.name.replace("_trials", "_shuffled_trials"))
     output.parent.mkdir(parents=True, exist_ok=True)
     repaired_tail_bytes = _repair_truncated_tail(output) if args.resume else 0
     if args.resume:
@@ -412,10 +463,18 @@ def main() -> None:
 
             member_trials: list[dict[str, object]] = []
             ensemble_members: list[EnsembleMember] = []
+            shuffle_seed = args.shuffle_seed if args.shuffle_candidates else None
             for variant_id, context_variant_id in members_config:
+                presented_item_ids = presented_candidate_order(
+                    candidate_item_ids,
+                    session_id=session_id,
+                    variant_id=variant_id,
+                    context_variant_id=context_variant_id,
+                    shuffle_seed=shuffle_seed,
+                )
                 prompt = render_baseline_prompt(
                     prefix_item_ids,
-                    candidate_item_ids,
+                    presented_item_ids,
                     item_titles,
                     variant_id=variant_id,
                     context_variant_id=context_variant_id,
@@ -426,7 +485,7 @@ def main() -> None:
                     response = client.generate(prompt.system_message, prompt.user_message)
                     parsed = parse_ranking(
                         response.raw_text,
-                        candidate_item_ids,
+                        presented_item_ids,
                         target_item_id=target_item_id,
                     )
                     member_trials.append(
@@ -441,6 +500,9 @@ def main() -> None:
                             # and the inputs to the cost-vs-gain analysis.
                             "usage": response.usage,
                             "latency_ms": response.latency_ms,
+                            # position_scores/ranked_positions below refer to
+                            # this presented order, not the stored pool order.
+                            "presented_candidate_item_ids": presented_item_ids,
                             **parsed.to_dict(),
                         }
                     )
@@ -451,7 +513,16 @@ def main() -> None:
                             variant_id=variant_id,
                             context_variant_id=context_variant_id,
                             parse_success=parsed.parse_success,
-                            position_scores=parsed.position_scores,
+                            # The ensemble aligns members by pool position.
+                            position_scores=(
+                                scores_in_pool_order(
+                                    presented_item_ids,
+                                    parsed.position_scores,
+                                    candidate_item_ids,
+                                )
+                                if parsed.parse_success
+                                else ()
+                            ),
                         )
                     )
                 except (LLMRequestError, ValueError, KeyError) as exc:
@@ -465,6 +536,7 @@ def main() -> None:
                             "request_success": False,
                             "request_error": str(exc),
                             "raw_response": None,
+                            "presented_candidate_item_ids": presented_item_ids,
                             "usage": None,
                             "latency_ms": None,
                             "parse_success": False,
@@ -518,6 +590,10 @@ def main() -> None:
                     {"variant_id": v, "context_variant_id": c} for v, c in members_config
                 ],
                 "member_trials": member_trials,
+                "candidate_shuffle": {
+                    "enabled": args.shuffle_candidates,
+                    "seed": shuffle_seed,
+                },
                 "client_config": client.config,
                 "valid_member_count": result.valid_member_count,
                 "member_weights": list(result.member_weights),
@@ -557,6 +633,7 @@ def main() -> None:
                 "provider": args.provider,
                 "domain": args.domain,
                 "members": list(members_config),
+                "shuffle_candidates": args.shuffle_candidates,
             },
             indent=2,
         )

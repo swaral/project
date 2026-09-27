@@ -24,7 +24,10 @@ OLLAMA_VERSION = "0.32.15"  # pinned in EXPERIMENT_SPEC.md Addendum v5
 CONTEXT_LENGTH = 32768
 PILOT_SESSIONS = int(os.environ.get("PILOT_SESSIONS", "300"))
 PLANNED_SESSIONS = 3000
-MAX_RUNTIME_MINUTES = 540  # stay inside Kaggle's 12-hour limit
+# "fixed" keeps the stored pool order; "shuffled" gives every prompt its own
+# seeded candidate order (run_ensemble.py --shuffle-candidates).
+CONDITIONS = os.environ.get("PILOT_CONDITIONS", "fixed").split(",")
+MAX_RUNTIME_MINUTES = 660  # total budget, inside Kaggle's 12-hour limit
 
 PROJECT = Path("/tmp/project")
 OUT = Path("/kaggle/working/pilot")
@@ -140,27 +143,29 @@ def prepare_data():
              spec["popularity_domain"]], cwd=PROJECT)
 
 
-def run_domains():
+def run_domains(condition, minutes):
     processes = {}
     for domain, spec in DOMAINS.items():
-        output = OUT / f"{domain}_pilot_trials.jsonl"
+        output = OUT / f"{domain}_{condition}_pilot_trials.jsonl"
         cmd = [sys.executable, "scripts/run_ensemble.py",
                "--provider", "chat-completions", "--model", MODEL,
                "--base-url", f"http://127.0.0.1:{spec['port']}/v1",
                "--domain", domain, *spec["extra"],
                "--sample-size", str(PILOT_SESSIONS), "--sample-seed", "0",
                "--continue-on-error", "--resume",
-               "--max-runtime-minutes", str(MAX_RUNTIME_MINUTES),
+               "--max-runtime-minutes", str(minutes),
                "--output", str(output)]
+        if condition == "shuffled":
+            cmd += ["--shuffle-candidates", "--shuffle-seed", "0"]
         log(f"starting {domain}: " + " ".join(cmd))
         processes[domain] = subprocess.Popen(
-            cmd, cwd=PROJECT, stdout=open(OUT / f"{domain}_run.log", "w"),
+            cmd, cwd=PROJECT, stdout=open(OUT / f"{domain}_{condition}_run.log", "w"),
             stderr=subprocess.STDOUT)
     for domain, process in processes.items():
         code = process.wait()
         log(f"{domain} finished with exit code {code}")
         if code != 0:
-            raise RuntimeError(f"{domain} run failed; see {domain}_run.log")
+            raise RuntimeError(f"{domain} run failed; see {domain}_{condition}_run.log")
 
 
 def max_prompt_tokens(path):
@@ -175,18 +180,21 @@ def max_prompt_tokens(path):
     return largest
 
 
-def analyse():
+def analyse(condition):
     summary = {}
     for domain, spec in DOMAINS.items():
-        trials = OUT / f"{domain}_pilot_trials.jsonl"
-        metrics = OUT / f"{domain}_pilot_metrics.json"
-        power = OUT / f"{domain}_pilot_power.json"
+        trials = OUT / f"{domain}_{condition}_pilot_trials.jsonl"
+        metrics = OUT / f"{domain}_{condition}_pilot_metrics.json"
+        power = OUT / f"{domain}_{condition}_pilot_power.json"
         run([sys.executable, "scripts/evaluate_ensemble.py", "--input", str(trials),
              "--output", str(metrics), "--popularity-file", spec["popularity"]], cwd=PROJECT)
         run([sys.executable, "scripts/power_analysis.py", "--input", str(trials),
              "--output", str(power), "--planned-sessions", str(PLANNED_SESSIONS)], cwd=PROJECT)
         report = json.loads(power.read_text())
+        conditions = json.loads(metrics.read_text())["conditions"]
         summary[domain] = {
+            "hr_at_10": {name: round(c["metrics"]["HR@10"], 3)
+                         for name, c in conditions.items()},
             "pilot_sessions": report["pilot_sessions"],
             "max_prompt_tokens": max_prompt_tokens(trials),
             "verdicts": {name: result["verdict"]
@@ -223,16 +231,23 @@ def main():
         "num_parallel": 1,
         "gpus": gpus,
         "pilot_sessions_per_domain": PILOT_SESSIONS,
+        "conditions": CONDITIONS,
         "sample_seed": 0,
         "code_sha256": hashlib.sha256(PAYLOAD.encode()).hexdigest(),
     }
     (OUT / "run_manifest.json").write_text(json.dumps(manifest, indent=2))
 
     prepare_data()
-    run_domains()
-    summary = analyse()
-    summary["context_ok"] = all(d["max_prompt_tokens"] < CONTEXT_LENGTH
-                                for d in summary.values() if isinstance(d, dict))
+    summary = {}
+    for index, condition in enumerate(CONDITIONS):
+        # Split what is left of the budget evenly over the remaining conditions.
+        left = MAX_RUNTIME_MINUTES - (time.time() - started) / 60
+        run_domains(condition, max(int(left / (len(CONDITIONS) - index)), 1))
+        summary[condition] = analyse(condition)
+        (OUT / "summary.json").write_text(json.dumps(summary, indent=2))
+    summary["context_ok"] = all(
+        domain["max_prompt_tokens"] < CONTEXT_LENGTH
+        for condition in CONDITIONS for domain in summary[condition].values())
     summary["elapsed_minutes"] = round((time.time() - started) / 60, 1)
     manifest["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     (OUT / "run_manifest.json").write_text(json.dumps(manifest, indent=2))
