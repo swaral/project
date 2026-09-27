@@ -1,0 +1,52 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Experiment: baseline (5 examples)",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": [
+                "scripts\\run_baseline.py",
+                "--provider", "chat-completions",
+                "--model", "qwen2.5:3b-instruct",
+                "--base-url", "http://localhost:11434/v1",
+                "--temperature", "0",
+                "--top-p", "1",
+                "--max-tokens", "256",
+                "--timeout", "600",
+                "--limit", "5",
+                "--continue-on-error",
+                "--variant-id", "baseline_scores_v1",
+                "--output", "data\\processed\\local_pilot5\\ml1m_baseline_trials.jsonl"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Experiment: evaluate pilot baseline",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": [
+                "scripts\\evaluate_baseline.py",
+                "--input", "data\\processed\\local_pilot5\\ml1m_baseline_trials.jsonl",
+                "--output", "data\\processed\\local_pilot5\\ml1m_baseline_metrics.json"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

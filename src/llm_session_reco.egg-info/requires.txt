@@ -1,0 +1,6 @@
+pandas<4,>=2.2
+numpy<3,>=1.26
+scipy<2,>=1.11
+
+[dev]
+pytest<9,>=8

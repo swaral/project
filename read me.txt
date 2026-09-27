@@ -1,0 +1,5 @@
+Primary model: qwen2.5:3b-instruct
+3B Ollama ID: 357c53fb659c
+Second model: qwen2.5:7b-instruct
+7B fingerprint: pending first experiment run
+Ollama version: 0.34.4

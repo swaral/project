@@ -1,0 +1,13 @@
+# Local Python environment
+.venv/
+# Python bytecode and test cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Raw datasets are kept local; retain a placeholder for the directory.
+data/raw/*
+# Generated datasets, experiment trials, and metrics are kept local.
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep

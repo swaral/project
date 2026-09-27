@@ -1,0 +1,1104 @@
+% ===========================================================================
+% M.Tech Project Report -- Swaral Gaur
+% Supervisor: Mrs. Naina Yadav
+%
+% BEFORE COMPILING, FILL IN:
+%   1. \myrollno  -- your roll number (search for "XXXXXXXX" below)
+%   2. \supervisordesignation -- verify Mrs. Naina Yadav's exact designation
+%      (currently set to "Assistant Professor")
+%
+% Compiles with pdfLaTeX on Overleaf. No external images required.
+% ===========================================================================
+
+\documentclass[12pt,a4paper,oneside]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,left=1.5in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage{mathptmx}   % Times for both text and mathematics
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage[hidelinks]{hyperref}
+
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ---- Chapter heading format:  "CHAPTER - 1"  then title, both centred ----
+\titleformat{\chapter}[display]
+  {\normalfont\large\bfseries\centering}
+  {CHAPTER - \thechapter}
+  {8pt}
+  {\large\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{-20pt}{24pt}
+
+% Unnumbered chapters (e.g. REFERENCES) use the same centred style, no label
+\titleformat{name=\chapter,numberless}[display]
+  {\normalfont\large\bfseries\centering}
+  {}
+  {0pt}
+  {\large\MakeUppercase}
+
+\titleformat{\section}
+  {\normalfont\normalsize\bfseries}{\thesection}{1em}{}
+
+% ---- Personal details ----
+\newcommand{\myname}{SWARAL GAUR}
+\newcommand{\mynamemixed}{Swaral Gaur}
+\newcommand{\myrollno}{XXXXXXXX}          % <-- FILL IN YOUR ROLL NUMBER
+\newcommand{\supervisorname}{Mrs. Naina Yadav}
+\newcommand{\supervisordesignation}{Assistant Professor}  % <-- VERIFY
+\newcommand{\reporttitle}{Reliability-Weighted Prompt Ensembling for Cross-Domain
+Session Recommendation Using Large Language Models}
+\newcommand{\reporttitleshort}{Reliability-Weighted Prompt Ensembling for
+Cross-Domain Session Recommendation Using Large Language Models}
+
+\begin{document}
+
+% ======================================================= TITLE PAGE
+\thispagestyle{empty}
+\begin{center}
+\vspace*{0.3in}
+{\large\bfseries RELIABILITY-WEIGHTED PROMPT ENSEMBLING\\[4pt]
+FOR CROSS-DOMAIN SESSION RECOMMENDATION\\[4pt]
+USING LARGE LANGUAGE MODELS\par}
+
+\vspace{0.5in}
+{\normalsize A Project Report\par}
+\vspace{6pt}
+{\small submitted in partial fulfilment of the requirements for the award of the degree of\par}
+
+\vspace{0.25in}
+{\large\bfseries MASTER OF TECHNOLOGY\par}
+\vspace{6pt}
+{\normalsize in\par}
+\vspace{6pt}
+{\large\bfseries COMPUTER SCIENCE AND ENGINEERING\par}
+
+\vspace{0.45in}
+{\normalsize Under the supervision of\par}
+\vspace{6pt}
+{\large\bfseries \supervisorname\par}
+{\normalsize \supervisordesignation\par}
+
+\vspace{0.35in}
+{\normalsize Submitted by\par}
+\vspace{6pt}
+{\large\bfseries \myname\par}
+{\normalsize Roll No. \myrollno\par}
+
+\vfill
+{\normalsize\bfseries DR B R AMBEDKAR NATIONAL INSTITUTE OF TECHNOLOGY\par}
+{\normalsize DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING\par}
+{\normalsize JALANDHAR, PUNJAB -- 144008, INDIA\par}
+\vspace{8pt}
+{\normalsize\bfseries 2026\par}
+\end{center}
+
+\clearpage
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+% ======================================================= CERTIFICATE
+\thispagestyle{plain}
+\addcontentsline{toc}{chapter}{Certificate}
+\begin{center}
+{\large\bfseries CERTIFICATE}
+\end{center}
+\vspace{0.2in}
+
+This is to certify that the project report entitled ``\reporttitle'' submitted by
+\mynamemixed{} (Roll No. \myrollno) to the Department of Computer Science and
+Engineering, Dr B R Ambedkar National Institute of Technology, Jalandhar, in
+partial fulfilment of the requirements for the award of the degree of Master of
+Technology in Computer Science and Engineering, is a record of bona fide work
+carried out by him under my supervision and guidance.
+
+To the best of my knowledge, the matter presented in this report has not been
+submitted elsewhere for the award of any other degree or diploma.
+
+\vspace{0.8in}
+
+\noindent
+\begin{tabularx}{\textwidth}{@{}Xr@{}}
+Date: & \supervisorname\\[4pt]
+Place: Jalandhar & \supervisordesignation\\[4pt]
+ & Department of Computer Science and Engineering\\
+\end{tabularx}
+
+\clearpage
+
+% ======================================================= DECLARATION
+\thispagestyle{plain}
+\addcontentsline{toc}{chapter}{Declaration}
+\begin{center}
+{\large\bfseries DECLARATION}
+\end{center}
+\vspace{0.2in}
+
+I hereby declare that the work presented in this project report entitled
+``\reporttitle'' is my own work carried out under the supervision of
+\supervisorname, \supervisordesignation, Department of Computer Science and
+Engineering, Dr B R Ambedkar National Institute of Technology, Jalandhar.
+
+I further declare that the material obtained from other sources has been duly
+acknowledged and cited in the report. This work has not been submitted, in part
+or in full, to any other institute or university for the award of any degree or
+diploma.
+
+\vspace{1.0in}
+
+\noindent
+\begin{flushright}
+\mynamemixed\\
+Roll No. \myrollno\\
+M.Tech (CSE)
+\end{flushright}
+
+\clearpage
+
+% ======================================================= ACKNOWLEDGEMENT
+\thispagestyle{plain}
+\addcontentsline{toc}{chapter}{Acknowledgement}
+\begin{center}
+{\large\bfseries ACKNOWLEDGEMENT}
+\end{center}
+\vspace{0.2in}
+
+I express my sincere gratitude to my supervisor, \supervisorname,
+\supervisordesignation, Department of Computer Science and Engineering, for her
+valuable guidance, constant encouragement and patient supervision throughout
+this work. Her insistence on controlled experimental design, and on
+distinguishing measurement from mitigation, shaped the direction of this study.
+
+I am thankful to the Head of the Department and to all faculty members of the
+Department of Computer Science and Engineering, Dr B R Ambedkar National
+Institute of Technology, Jalandhar, for providing the facilities and academic
+environment necessary to carry out this work.
+
+I also acknowledge the GroupLens research group for the MovieLens collection and
+the McAuley Laboratory at the University of California San Diego for the Amazon
+Reviews 2023 collection, both of which are released publicly and without which
+this study would not have been possible. I further acknowledge the developers of
+the Qwen model family and of the Ollama runtime, whose openly available tools
+made local, reproducible experimentation feasible on modest hardware.
+
+Finally, I thank my family and friends for their continuous support and
+motivation.
+
+\vspace{0.6in}
+
+\noindent
+\begin{flushright}
+\mynamemixed\\
+Roll No. \myrollno
+\end{flushright}
+
+\clearpage
+
+% ======================================================= ABSTRACT
+\thispagestyle{plain}
+\addcontentsline{toc}{chapter}{Abstract}
+\begin{center}
+{\large\bfseries ABSTRACT}
+\end{center}
+\vspace{0.2in}
+
+Session-based recommendation predicts a user's next interaction from a short
+sequence of recent activity, without relying on a persistent user profile.
+Large Language Models have recently been applied to this task by expressing the
+session and the candidate items in natural language and asking the model to
+reason about the user's intent. Frameworks of this kind report substantial gains
+over conventional sequential and graph-based recommenders.
+
+These gains are usually reported for a single prompt. A closer reading shows
+that the ranking produced by such a system can change when the wording of the
+instruction, or the amount of item context supplied, is altered, even though the
+session, the candidate set, the model and the decoding configuration remain
+identical. Accuracy measured under one prompt therefore does not establish that
+the recommender is reliable, and a reproducibility analysis of one such
+framework attributes the effect to semantic drift across prompts and domains.
+
+Two mitigations have been proposed in the recent literature. The first optimises
+and fuses prompts across domains using a frontier-scale proprietary model. The
+second blends the output of a fine-tuned Large Language Model with that of a
+separately trained conventional recommender, weighting the two by how sparse a
+user's interaction history is. Both are effective, and both assume computational
+resources that are unavailable in most academic and practical settings: the
+first requires access to a frontier model, and the second requires full-parameter
+fine-tuning distributed across a multi-GPU cluster together with a second trained
+model.
+
+This work asks whether comparable reliability can be obtained from a single
+small, locally hosted model. The proposed method, Reliability-Weighted Rank
+Aggregation, scores each candidate pool under several controlled prompt variants
+of the same model and combines the resulting rankings using weights derived from
+how strongly each variant agrees with the remainder of the ensemble, measured by
+Kendall's rank correlation. The same agreement statistic is reported as a
+per-session drift score, which expresses semantic drift as an inspectable
+quantity rather than inferring it from an aggregate decline in accuracy. A
+long-tail-aware extension, adapted from the adaptive aggregation mechanism of a
+recent IEEE study, additionally blends the ensemble with the single baseline
+prompt according to the length of the session prefix. The method requires no
+model training, no second model and no frontier-scale model, and is evaluated on
+two domains, MovieLens-1M and Amazon Video Games, under an identical protocol
+with paired significance testing.
+
+\vspace{6pt}
+\noindent\textbf{Keywords:} session-based recommendation, large language models,
+prompt sensitivity, self-consistency, ensemble methods, rank aggregation,
+Kendall's tau, semantic drift, reproducibility, cross-domain evaluation.
+
+\clearpage
+
+% ======================================================= CONTENTS
+\renewcommand{\contentsname}{TABLE OF CONTENTS}
+\tableofcontents
+\clearpage
+
+\renewcommand{\listtablename}{LIST OF TABLES}
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\clearpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ======================================================= CHAPTER 1
+\chapter{Introduction}
+
+\section{Overview}
+
+Recommender systems reduce the burden of choice in environments where the number
+of available items far exceeds what a user can inspect. Conventional
+collaborative filtering builds a persistent profile for each user from a long
+history of interactions. In many practical settings such a profile is either
+unavailable or undesirable: the user may not be logged in, the platform may
+choose not to retain long-term histories for reasons of privacy, or the user's
+interest during the current visit may differ from their historical preference.
+
+Session-based recommendation addresses this setting. It predicts the next item
+from a short, ordered sequence of recent interactions alone. The task is
+therefore to infer intent from sparse and transient evidence, which makes it
+both practically important for anonymous browsing and technically distinct from
+profile-based recommendation.
+
+\section{Large Language Models for Session Recommendation}
+
+Early session-based recommenders modelled the interaction sequence with
+recurrent networks, and later with graph neural networks and self-attention.
+These approaches represent items as learned latent vectors. They capture
+collaborative structure effectively, but they operate as opaque mappings from
+behaviour to vector space and do not expose an interpretable account of why a
+particular item was recommended.
+
+Large Language Models offer a different formulation. The session history and the
+candidate items are written out in natural language, and the model is asked to
+reason about which candidate the user is most likely to select next. Because the
+model brings substantial world knowledge about the items themselves, it can
+relate items semantically even when the interaction data are sparse, and it can
+be asked to express its reasoning in text. Frameworks following this formulation
+report accuracy competitive with, and often superior to, conventional
+sequential models.
+
+\section{Limitations of Current Practice}
+
+The shift from latent vectors to natural-language prompting introduces a failure
+mode that has no counterpart in conventional recommenders. The output of the
+system now depends not only on the interaction data supplied, but on the precise
+wording used to express the task and on the quantity of item metadata included
+in the prompt.
+
+Three consequences follow. First, an accuracy figure obtained under one prompt
+does not establish that the same figure would be obtained under a
+semantically equivalent rephrasing, so reported performance is difficult to
+interpret and to reproduce. Second, a prompt optimised on one domain may not
+transfer to another, since item vocabulary and semantics differ between domains.
+Third, the free-form textual output must be parsed into a ranking, and item
+names containing numerals can be confused with ranking positions during parsing,
+producing outputs that cannot be evaluated at all.
+
+These effects are collectively described in the recent literature as semantic
+drift. They are ordinarily observed only indirectly, as a decline in aggregate
+accuracy when the domain or the prompt changes.
+
+\section{Motivation}
+
+Two mitigations have been proposed recently, and both are effective within their
+own resource assumptions.
+
+The first optimises prompts per domain and then fuses them into a more general
+prompt using a frontier-scale proprietary model as a meta-reasoner. This
+requires access to that frontier model, which is proprietary, accessed through a
+paid interface, and subject to revision or withdrawal by its provider, so the
+experiment cannot be pinned to a fixed artefact.
+
+The second augments a conventional recommender with a fine-tuned Large Language
+Model, and blends their predictions using a weight derived from the user's
+interaction count. This requires full-parameter fine-tuning of a seven-billion
+parameter model across sixteen data-centre accelerators, together with the
+separate training of a conventional recommender for every dataset considered.
+
+Neither route is available to a researcher whose computational budget is a
+single consumer machine. The motivation for this work is the observation that
+the instability itself carries usable information. If a recommender produces
+different rankings under semantically equivalent prompts, then the degree of
+disagreement between those rankings is a measurable signal, obtainable without
+labels, without training and without a second model. The present study
+investigates whether that signal is sufficient to recover a useful part of the
+reliability that the existing mitigations achieve with far greater resources.
+
+\section{Organisation of the Report}
+
+The remainder of this report is organised as follows. Chapter 2 reviews the
+relevant literature on session-based recommendation, on Large Language Models
+applied to recommendation, and on ensembling and reliability. Chapter 3
+identifies the research gaps arising from that review, and Chapter 4 states the
+resulting problem. Chapter 5 lists the objectives of the work. Chapter 6
+describes the two datasets used and the construction of evaluation instances.
+Chapter 7 presents the proposed methodology, including the aggregation
+mechanism, the validation strategy and the current implementation status.
+Chapter 8 sets out the work plan and schedule, Chapter 9 the expected outcomes,
+and Chapter 10 concludes the report.
+
+% ======================================================= CHAPTER 2
+\chapter{Literature Survey}
+
+The literature relevant to this work falls into three groups: the development of
+session-based recommendation models, the application of Large Language Models to
+the recommendation task, and work on reliability, reproducibility and ensembling
+that informs the proposed method.
+
+\section{Evolution of Session-Based Recommendation}
+
+Hidasi and colleagues (2016) introduced the use of gated recurrent units for
+session-based recommendation, treating the session as a sequence and predicting
+the next item from the recurrent hidden state. Subsequent work incorporated
+attention to distinguish a user's general interest within a session from their
+immediate intent, as in the neural attentive recommendation machine of Li and
+colleagues (2017) and the short-term attention and memory priority model of Liu
+and colleagues (2018).
+
+Recurrent formulations impose a strict sequential ordering that is not always
+appropriate for browsing behaviour. Wu and colleagues (2019) therefore modelled
+the session as a graph, allowing non-consecutive transitions between items to be
+captured directly. In parallel, self-attention architectures were adopted from
+language modelling, first in the self-attentive sequential recommender of Kang
+and McAuley (2018) and subsequently in the bidirectional formulation of Sun and
+colleagues (2019).
+
+These models are effective at capturing collaborative and sequential structure.
+They share a common characteristic relevant to this work: the item is
+represented only as a learned vector, so the semantic content of the item, and
+the reasoning that connects one item to another, are not represented explicitly.
+
+\section{Large Language Models for Recommendation}
+
+Bao and colleagues (2023) reformulated recommendation as an instruction-following
+task and aligned a general-purpose language model to it through instruction
+tuning, demonstrating that a comparatively small amount of task-specific tuning
+data is sufficient to obtain competitive performance. Broader surveys of the
+area, such as that of Zhao and colleagues (2024), document a rapid expansion of
+this line of work.
+
+Most directly relevant to the present study, Sun and colleagues (2024) proposed
+a prompt-optimisation framework for intent-aware session recommendation. The
+framework decomposes the task into intent inference and candidate reranking,
+identifies cases in which the ground-truth item was ranked poorly, prompts the
+model to reflect on those failures, and iteratively refines the prompt using an
+upper-confidence-bound selection strategy. Substantial improvements over
+conventional and single-intent baselines are reported across three datasets.
+
+Luo and colleagues (2026) took a complementary approach, combining a fine-tuned
+language model with a conventional recommender. Their framework augments the
+conventional model with synthetic training data generated by the language model,
+augments the language model's prompt with collaborative information drawn from
+the conventional model, and blends the two predictions by linear interpolation.
+The interpolation weight is a function of the user's interaction count, so that
+users with sparse histories are weighted towards the language model. Gains of
+roughly fourteen per cent for direct and sequential recommendation are reported.
+The authors state explicitly that the fine-tuning procedure, performed on sixteen
+data-centre accelerators, is impractical for large-scale deployment.
+
+\section{Reliability, Reproducibility and Ensembling}
+
+Tiwari, Rekha and Mundotiya (2026) conducted a reproducibility analysis of the
+prompt-optimisation framework described above. They report that performance
+degrades on semantically distinct domains, attributing this to contextual drift
+in long sessions and to prompt overfitting arising from a single-domain
+optimisation procedure. They further identify a parsing failure mode in which
+numerals embedded in item names are interpreted as ranking positions. Their
+proposed remedy combines a deterministic index-based output format with a
+reflexive cross-domain prompt fusion step driven by a frontier-scale model.
+
+Separately, a substantial body of work in the language-model literature
+establishes that sampling a model repeatedly and aggregating the results
+improves reliability. Wang and colleagues (2023) introduced self-consistency, in
+which multiple reasoning paths are sampled and the most frequently reached answer
+is selected. Prompt-ensembling methods extend this idea by combining several
+distinct prompts rather than several samples of one prompt. These techniques are
+established for question answering and reasoning tasks. They have not, to the
+best of the author's knowledge, been evaluated against the specific failure mode
+of semantic drift in session recommendation, nor on models small enough to run
+on consumer hardware.
+
+The agreement statistic used in this work is due to Kendall (1938), who defined a
+rank correlation coefficient based on the proportion of concordant and discordant
+pairs between two orderings.
+
+\section{Summary of Reviewed Literature}
+
+Table 2.1 summarises the principal studies reviewed, their focus, their central
+idea and the limitations relevant to this work.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Summary of the reviewed literature}
+\begin{tabularx}{\textwidth}{@{}p{2.2cm}p{2.6cm}XX@{}}
+\toprule
+\textbf{Reference} & \textbf{Focus} & \textbf{Key Idea} & \textbf{Limitations}\\
+\midrule
+{[1]} Hidasi et al. (2016) & Sequential session modelling &
+Recurrent network over the interaction sequence &
+Items are latent vectors; no semantic reasoning\\[4pt]
+
+{[4]} Wu et al. (2019) & Graph-based sessions &
+Session modelled as a graph of item transitions &
+Opaque; requires training per dataset\\[4pt]
+
+{[7]} Sun et al. (2024) & LLM prompt optimisation &
+Error-driven iterative prompt refinement for intent-aware sessions &
+Single static prompt per domain; reliability not measured\\[4pt]
+
+{[8]} Tiwari et al. (2026) & Reproducibility of the above &
+Diagnoses semantic drift and parsing failure across domains &
+Remedy depends on a frontier-scale proprietary model\\[4pt]
+
+{[9]} Luo et al. (2026) & LLM and conventional model fusion &
+Mutual augmentation with interpolation weighted by user sparsity &
+Requires fine-tuning on 16 GPUs and a second trained model\\[4pt]
+
+{[10]} Wang et al. (2023) & Self-consistency &
+Sample several reasoning paths and take the majority answer &
+Demonstrated for reasoning tasks, not recommendation drift\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ======================================================= CHAPTER 3
+\chapter{Research Gaps}
+
+The review presented in Chapter 2 exposes three gaps that this work addresses.
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Reliability under prompt variation is diagnosed but not
+quantified per instance.} Existing studies observe semantic drift indirectly, as
+a decline in aggregate accuracy when the prompt or the domain changes. No
+per-session quantity is reported that would allow an individual recommendation
+to be identified as having been produced under unstable conditions. Consequently
+a practitioner cannot distinguish a session on which the model was internally
+consistent from one on which it was not.
+
+\item \textbf{Existing mitigations assume resources that are unavailable in
+most settings.} The two published remedies require, respectively, a
+frontier-scale proprietary model to perform cross-domain prompt fusion, and
+full-parameter fine-tuning across a multi-GPU cluster together with a second,
+separately trained conventional recommender. Neither has been evaluated on a
+small, locally hosted, openly licensed model, which is the configuration
+available to most academic researchers and to deployments in which data cannot
+leave the premises.
+
+\item \textbf{Ensembling has not been connected to this failure mode, and
+existing aggregation weights ignore model output.} Self-consistency and
+prompt-ensembling methods are established in the language-model literature but
+have not been evaluated against semantic drift in session recommendation. Where
+an adaptive aggregation weight is used in recommendation, as in the fusion
+framework of Luo and colleagues, it is computed from the user's interaction
+count alone and is therefore fixed before either model produces an output. No
+existing weighting scheme in this area responds to the degree of agreement
+between the predictions actually generated.
+\end{enumerate}
+
+% ======================================================= CHAPTER 4
+\chapter{Problem Statement}
+
+Arising from the gaps identified above, the problem addressed by this work is
+stated in three parts.
+
+\begin{enumerate}[leftmargin=*]
+\item The sensitivity of a Large Language Model session recommender to prompt
+wording and to the quantity of item context has not been measured under
+conditions strict enough to attribute the observed variation to those factors
+alone, and no per-session measure of that instability is reported.
+
+\item The mitigations proposed for this instability depend on computational
+resources that are unavailable in most academic and practical settings, and it
+is therefore not known whether comparable reliability can be obtained from a
+single small model without any training.
+
+\item Existing aggregation schemes in this area weight their components using
+quantities known in advance of inference, and it is not known whether a weight
+derived from the agreement between the generated predictions themselves yields a
+measurable improvement, nor whether any such improvement generalises across
+semantically distinct domains.
+\end{enumerate}
+
+Each part of the problem corresponds directly to one of the objectives listed in
+Chapter 5.
+
+% ======================================================= CHAPTER 5
+\chapter{Objectives}
+
+The objectives of this work are as follows.
+
+\begin{enumerate}[leftmargin=*]
+\item To quantify the sensitivity of a Large Language Model session recommender
+to prompt wording and to semantic item context under a controlled protocol in
+which the session, the candidate pool, the model and the decoding configuration
+are held fixed, and to define a per-session measure of ranking instability.
+
+\item To design and implement a reliability-weighted aggregation method that
+combines several controlled prompt variants of a single locally hosted model,
+without model training, without a second model and without a frontier-scale
+model, together with a long-tail-aware extension adapted from the adaptive
+aggregation literature.
+
+\item To validate the proposed method against a single-prompt baseline and an
+unweighted ensemble on two semantically distinct domains, using paired
+statistical testing and an analysis stratified by session history length.
+\end{enumerate}
+
+Table 5.1 shows how each objective responds to the corresponding element of the
+problem statement.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Mapping of problem statement to objectives}
+\begin{tabularx}{\textwidth}{@{}XX@{}}
+\toprule
+\textbf{Problem} & \textbf{Corresponding Objective}\\
+\midrule
+Sensitivity is not measured under controlled conditions and no per-session
+instability measure exists &
+Quantify wording and context sensitivity under a one-factor-at-a-time protocol
+and define a per-session drift score\\[6pt]
+
+Published mitigations require a frontier model or a multi-GPU fine-tuning
+cluster and a second model &
+Design and implement reliability-weighted aggregation over prompt variants of a
+single local model, requiring no training\\[6pt]
+
+Aggregation weights ignore the generated predictions, and cross-domain
+generality is untested &
+Validate against single-prompt and unweighted-ensemble baselines on two domains
+with paired significance testing\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ======================================================= CHAPTER 6
+\chapter{Dataset Description}
+
+\section{MovieLens-1M}
+
+The MovieLens-1M collection is the primary resource for this work. It contains
+1{,}000{,}209 ratings contributed by 6{,}040 users across 3{,}706 distinct
+films, together with 3{,}883 rows of film metadata providing the title, the year
+of release and a pipe-separated list of genres. The collection is widely used as
+a benchmark in the session-recommendation literature and is one of the three
+datasets used by the prompt-optimisation framework that motivates this study,
+which allows results to be positioned against prior work.
+
+\section{Amazon Video Games (2023)}
+
+The second domain is drawn from the Amazon Reviews 2023 collection released by
+the McAuley Laboratory. The Video Games category is used, in the five-core
+rating-only form, in which every retained user and every retained item has at
+least five interactions. This subset contains 814{,}586 interactions from
+94{,}762 users across 25{,}612 items, each interaction recording a user
+identifier, an item identifier, a rating and a millisecond-resolution timestamp.
+Item metadata providing the product title and its category path is obtained from
+the corresponding per-category metadata file.
+
+This domain is chosen deliberately. Product titles in the Video Games category
+frequently contain numerals and platform identifiers, which is precisely the
+condition under which the parsing failure mode described in the reproducibility
+literature arises, and the semantics of the domain differ substantially from
+those of film, which makes it a meaningful test of cross-domain generality.
+
+\section{Comparison of the Two Datasets}
+
+Table 6.1 contrasts the characteristics of the two collections.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Comparison of the MovieLens-1M and Amazon Video Games datasets}
+\begin{tabularx}{\textwidth}{@{}p{3.6cm}XX@{}}
+\toprule
+\textbf{Property} & \textbf{MovieLens-1M} & \textbf{Amazon Video Games}\\
+\midrule
+Interactions & 1{,}000{,}209 & 814{,}586\\
+Users (sessions) & 6{,}040 & 94{,}762\\
+Distinct items & 3{,}706 & 25{,}612\\
+Item context available & Title, year, genres & Title, category path\\
+Identifier type & Integer & String (remapped to integer)\\
+Timestamp resolution & Seconds & Milliseconds\\
+Numerals in item titles & Rare & Frequent\\
+Domain noun used in prompt & ``movie'' & ``game''\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Construction of Evaluation Instances}
+
+Both collections are reduced to evaluation instances by an identical,
+dataset-agnostic procedure, so that no difference in results between the two
+domains can be attributed to a difference in preprocessing.
+
+For each user, interactions are sorted by timestamp, with the item identifier
+used as a deterministic tie-breaker so that the ordering is reproducible. The
+final interaction is withheld as the prediction target and all preceding
+interactions form the session prefix presented to the model. Users whose history
+is shorter than a specified minimum are excluded. This yields one evaluation
+instance per eligible user: 6{,}040 for MovieLens-1M and 94{,}762 for Amazon
+Video Games.
+
+Each instance is then assigned a candidate pool of exactly twenty items,
+comprising the withheld target and nineteen negative items. Negatives are
+selected by popularity computed from training interactions only, with each user's
+withheld target removed before the popularity counts are formed, so that the
+target cannot influence the construction of its own candidate pool. Items
+already present in the session prefix are excluded from the negative set, and
+popularity ties are broken by item identifier so that the pool is deterministic.
+The position of the target within the pool is cycled systematically across
+instances, which prevents the model from benefiting from a fixed target
+position.
+
+Because the identifiers used in the Amazon collection are strings, they are
+remapped to dense integers through a sorted, deterministic mapping that is
+persisted alongside the processed data, so that any synthetic identifier can be
+traced back to the original record.
+
+% ======================================================= CHAPTER 7
+\chapter{Proposed Methodology}
+
+\section{Overview of the Processing Pipeline}
+
+The proposed pipeline is organised in four stages: preparation of evaluation
+instances, generation of ensemble members, aggregation, and evaluation. Table
+7.1 summarises the stages and their constituent steps.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Stages of the proposed processing pipeline}
+\begin{tabularx}{\textwidth}{@{}p{3.0cm}XX@{}}
+\toprule
+\textbf{Stage} & \textbf{Steps} & \textbf{Output}\\
+\midrule
+1. Instance preparation & Load dataset; construct chronological sessions;
+build candidate pools & One session and one twenty-item pool per user\\[4pt]
+
+2. Ensemble generation & Render each prompt variant; query the fixed local model;
+parse each response strictly & Per-variant candidate scores and ranking\\[4pt]
+
+3. Aggregation & Compute pairwise agreement, reliability weights and the
+long-tail weight; combine scores & Aggregated ranking and drift score\\[4pt]
+
+4. Evaluation & Compute accuracy and stability metrics; paired significance
+tests; stratify by history length & Per-condition performance and significance\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Frozen Experimental Configuration}
+
+All comparisons are made under a single frozen configuration. The model is
+Qwen2.5-3B-Instruct, served locally through the Ollama runtime, with the exact
+model digest recorded. Decoding is deterministic: temperature is set to zero and
+nucleus sampling is disabled. The maximum output length, the response schema and
+the parser are identical across every condition.
+
+This configuration is deliberate in one respect that bears on the design of the
+method. Because decoding is deterministic, repeating the same prompt produces the
+same output, and the diversity required by any ensemble cannot be obtained by
+resampling. It must instead be obtained from the prompt itself, which is also the
+factor to which the recommender has been shown to be sensitive.
+
+\section{Controlled Prompt Variants}
+
+Two families of controlled variation are defined. Wording variants alter only
+the scoring instruction, leaving the session, the candidate list, the output
+schema and all surrounding text unchanged. Context variants alter only the item
+information presented, ranging from the title alone, through title with genre or
+category, to title with genre and year of release.
+
+Each variant carries a stable identifier which is recorded with every trial,
+together with the fully rendered prompt, so that any result can be traced to the
+exact text that produced it. Unrecognised identifiers are rejected by the
+implementation, which prevents an unintended prompt modification from being
+recorded as a controlled condition.
+
+\section{Output Protocol and Strict Parsing}
+
+The model is required to return a JSON object containing one numeric score in
+the range zero to one hundred for each candidate position. Ranking is then
+performed by the program rather than by the model: scores are sorted in
+descending order, ties are broken by ascending candidate position, and positions
+are mapped back to item identifiers.
+
+This protocol addresses the parsing failure mode reported in the literature. The
+model is never asked to reproduce item identifiers, so numerals occurring within
+item titles cannot be mistaken for ranking positions. Responses that do not
+conform to the schema are recorded as parsing failures together with the raw
+text and the reason for rejection; they are never silently repaired, since
+repairing them would conceal exactly the unreliability the study sets out to
+measure. Parsing failures are reported separately from recommendation failures,
+in which a well-formed response simply ranks the target poorly.
+
+\section{Reliability-Weighted Rank Aggregation}
+
+For a given session, let $k$ prompt variants each produce a vector of candidate
+scores and a corresponding ranking $r_i$. Agreement between two rankings is
+measured by Kendall's rank correlation coefficient, which is $+1$ for identical
+orderings, $-1$ for exactly reversed orderings, and zero in expectation for
+unrelated orderings.
+
+The mean agreement of member $i$ with the remainder of the ensemble is
+
+\begin{equation}
+\tau_i = \frac{1}{k-1}\sum_{j \neq i} \operatorname{KendallTau}(r_i, r_j).
+\end{equation}
+
+The reliability weight of member $i$ is obtained by shifting this quantity to be
+non-negative and normalising across members,
+
+\begin{equation}
+w_i = \frac{\tau_i + 1}{\sum_{j=1}^{k} (\tau_j + 1)},
+\end{equation}
+
+and the aggregated score of each candidate is the weighted combination
+
+\begin{equation}
+s = \sum_{i=1}^{k} w_i \, s_i .
+\end{equation}
+
+The shift by unity is necessary because $\tau_i$ may be negative, and a negative
+weight would correspond to inverting a member's ranking rather than discounting
+it. Under this formulation a member that disagrees with the remainder of the
+ensemble on a particular session receives a reduced weight on that session
+alone, and the weight is computed without reference to the ground-truth item, so
+the procedure is applicable at inference time.
+
+A member whose response failed to parse is excluded from the ensemble rather
+than assigned a default score. If fewer than two members remain, the aggregation
+is recorded as a structured failure for that session rather than computed from a
+degenerate ensemble.
+
+\section{Per-Session Drift Score}
+
+The same pairwise agreement computation yields a diagnostic quantity. The mean
+pairwise Kendall correlation across all members, together with the mean pairwise
+Jaccard overlap of the top five and top ten ranked items, is recorded for every
+session as a drift score. A session on which the members agree closely receives
+a value near unity; a session on which the ensemble divides receives a low or
+negative value.
+
+This quantity expresses semantic drift as a directly inspectable per-session
+measurement rather than as an inference drawn from an aggregate decline in
+accuracy, which addresses the first research gap identified in Chapter 3.
+
+\section{Long-Tail-Aware Weighting}
+
+An extension is adapted from the adaptive aggregation mechanism of Luo and
+colleagues (2026). In the original formulation the output of a Large Language
+Model is blended with that of a separately trained conventional recommender, and
+the blend weight is derived from the logarithm of the user's interaction count,
+so that users with sparse histories are weighted towards the language model.
+
+The present work contains only one model family, so the mechanism is repurposed
+rather than reused directly. The blend is formed between the aggregated ensemble
+and the single baseline prompt, and the weight is derived from the length of the
+session prefix. Writing $\ell_s$ for the logarithm of the prefix length
+incremented by one, and $\ell_{\min}$ and $\ell_{\max}$ for the corresponding
+extremes over the whole dataset,
+
+\begin{equation}
+\beta_s = \max\!\left(\frac{\ell_{\max} - \ell_s}{\ell_{\max} - \ell_{\min}},\;
+\beta_2\right)\cdot \beta_1,
+\end{equation}
+
+\begin{equation}
+s_{\text{final}} = \beta_s \, s_{\text{ensemble}} + (1 - \beta_s)\,
+s_{\text{baseline}} .
+\end{equation}
+
+The parameter $\beta_1$ bounds the weight assigned to the ensemble, and
+$\beta_2$ imposes a floor, so that neither component is ever entirely
+discarded. The extremes $\ell_{\min}$ and $\ell_{\max}$ are computed once over
+the complete dataset rather than over the evaluated subset, so that the weight
+assigned to a session does not depend on which sample it is drawn into.
+
+The underlying hypothesis is that a short prefix provides little evidence for
+any individual prompt to reason from, so that agreement across prompts is more
+informative there, whereas a long prefix may already be handled reliably by a
+single prompt. This is stated as a hypothesis to be tested, not as an
+established property, and the stratified analysis described below is its test.
+
+\section{Validation Strategy}
+
+Four conditions are compared on identical sessions and identical candidate
+pools: the single baseline prompt alone, the unweighted mean of the ensemble,
+reliability-weighted aggregation, and the long-tail-weighted blend. Only the
+aggregation rule differs between conditions, so any difference in outcome is
+attributable to that rule.
+
+Comparisons are restricted to sessions on which both compared conditions
+produced a valid ranking. Paired testing is used throughout: a bootstrap
+confidence interval is computed over the paired per-session difference in
+reciprocal rank, and the Wilcoxon signed-rank test is applied to the same paired
+values. All four conditions are additionally recomputed separately on short,
+medium and long session-prefix tertiles, which tests directly whether any
+improvement is concentrated in sessions with sparse history.
+
+The complete protocol is executed independently on both domains, with no
+domain-specific tuning of prompts, weights or parameters, so that cross-domain
+generality is assessed rather than assumed.
+
+\section{Evaluation Metrics}
+
+Accuracy is reported as the hit ratio at ranks one, five and ten, and as
+normalised discounted cumulative gain at ranks five and ten, computed only over
+sessions that produced a valid ranking. Stability is reported as the mean
+pairwise Kendall correlation and the mean pairwise Jaccard overlap at ranks five
+and ten. Operational reliability is reported as the proportion of parsing
+failures and of request failures, which are counted separately from
+recommendation errors so that an invalid output is never conflated with a poor
+recommendation.
+
+\section{Implementation Status}
+
+The data preparation, prompting, parsing, aggregation and evaluation components
+have been implemented as a single reproducible package, accompanied by
+seventy-five automated tests which are presently passing. These tests verify the
+metric definitions against known values, confirm that the aggregation
+down-weights a synthetically divergent member, and confirm that parsing failures
+and degenerate ensembles are reported rather than silently repaired. The complete
+pipeline has been executed end to end on both domains using a deterministic
+substitute model, which validates the data path without consuming inference time.
+
+Evaluation using the real model has so far been limited to a small pilot on
+MovieLens-1M, conducted to confirm that the local model produces parseable output
+under each wording variant. The pilot comprised five instances per condition and
+is reported in Chapter 9 solely as evidence that the instability under
+investigation is present; it is not treated as a measurement of performance. The
+full-scale evaluation described in Section 7.7 remains to be executed and is
+scheduled in Chapter 8.
+
+% ======================================================= CHAPTER 8
+\chapter{Work Plan}
+
+The work is scheduled over twelve months and divided into three phases. Phase 1
+covers the study, the experimental protocol and data preparation. Phase 2 covers
+the design and implementation of the aggregation method. Phase 3 covers
+full-scale evaluation, statistical validation and documentation. Table 8.1 lists
+the work packages and their planned durations.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Work plan and schedule}
+\begin{tabularx}{\textwidth}{@{}p{0.6cm}Xp{1.8cm}p{2.0cm}@{}}
+\toprule
+\textbf{No.} & \textbf{Task / Work Package} & \textbf{Phase} & \textbf{Duration}\\
+\midrule
+1 & Literature survey and research gap identification & Phase 1 & M1 -- M2\\
+2 & Experimental protocol and frozen configuration & Phase 1 & M2 -- M3\\
+3 & Dataset acquisition and session construction & Phase 1 & M3 -- M4\\
+4 & Candidate pool generation and leakage controls & Phase 1 & M4 -- M5\\
+5 & Prompt variant design and strict output parser & Phase 2 & M5 -- M6\\
+6 & Reliability-weighted aggregation and drift score & Phase 2 & M6 -- M7\\
+7 & Long-tail-aware weighting extension & Phase 2 & M7 -- M8\\
+8 & Cross-domain extension to the second dataset & Phase 2 & M8 -- M9\\
+9 & Full-scale evaluation on both domains & Phase 3 & M9 -- M10\\
+10 & Statistical and stratified analysis & Phase 3 & M10 -- M11\\
+11 & Comparison with published baselines & Phase 3 & M11\\
+12 & Thesis writing and paper submission & Phase 3 & M11 -- M12\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The phases are deliberately overlapped at their boundaries, so that the
+aggregation method is implemented while the prompt variants are still being
+refined, and statistical analysis begins while the full-scale evaluation is
+still producing results. This reduces the risk that a delay in one package
+propagates through the whole schedule. Packages 1 to 8 are complete at the time
+of writing; packages 9 to 12 are pending the availability of accelerated
+computing resources.
+
+% ======================================================= CHAPTER 9
+\chapter{Expected Outcomes}
+
+The following outcomes are anticipated from this work.
+
+\begin{itemize}[leftmargin=*]
+\item A quantitative characterisation of how far the ranking produced by a Large
+Language Model session recommender moves when only the prompt wording or the
+item context is altered, obtained under a protocol in which every other factor
+is held fixed. A preliminary pilot on five instances already exhibits variation
+in the hit ratio at rank one across wording variants, which motivates the
+full-scale measurement but does not constitute a result.
+
+\item A per-session drift score that expresses semantic drift as an inspectable
+quantity, allowing an individual recommendation to be identified as having been
+produced under unstable conditions rather than requiring instability to be
+inferred from aggregate accuracy.
+
+\item An aggregation method that improves reliability using a single locally
+hosted model, requiring no model training, no second model and no frontier-scale
+model, evaluated against both a single-prompt baseline and an unweighted
+ensemble under paired significance testing.
+
+\item Evidence on whether the benefit of ensembling is concentrated in sessions
+with short interaction histories, obtained from the stratified analysis. A
+negative result here is itself informative, since it would indicate that prompt
+sensitivity is not governed by the quantity of available history.
+
+\item Evidence on whether the method transfers between semantically distinct
+domains without domain-specific tuning, obtained by executing an identical
+protocol on film and video-game data.
+
+\item A reproducible open implementation, with the model digest, decoding
+configuration, prompt text, candidate pools and raw responses recorded for every
+trial, so that the reported figures can be regenerated independently.
+\end{itemize}
+
+% ======================================================= CHAPTER 10
+\chapter{Conclusion}
+
+Large Language Models have been applied to session-based recommendation with
+encouraging results, but the reported accuracy is generally obtained under a
+single prompt, and the ranking produced by such a system has been shown to move
+when that prompt is rephrased or when the item context is altered. Existing
+remedies for this instability are effective but assume either a frontier-scale
+proprietary model or full-parameter fine-tuning across a multi-GPU cluster
+alongside a second trained model, and neither assumption holds in most academic
+or privacy-constrained settings.
+
+This work proceeds from the observation that the instability itself is a usable
+signal. If semantically equivalent prompts produce different rankings, the
+degree of disagreement between those rankings can be measured without labels,
+without training and without a second model. The proposed method scores each
+candidate pool under several controlled prompt variants of one small, locally
+hosted model, weights each variant by its agreement with the remainder of the
+ensemble, and reports the same agreement statistic as a per-session drift score.
+A long-tail-aware extension, adapted from a recent adaptive aggregation
+mechanism and repurposed for a single-model setting, blends the ensemble with the
+single baseline prompt according to the length of the session prefix.
+
+The design is deliberately conservative in what it claims. Agreement between
+prompt variants is a proxy for reliability and not for correctness: if every
+member of the ensemble shares the same error, the method will weight them
+equally and return that error confidently. The approach also forgoes the
+collaborative signal that a conventional recommender contributes in the fusion
+framework from which the weighting mechanism is adapted, and it incurs a
+multiple of the inference cost of a single prompt. What it offers in exchange is
+reliability obtained on hardware that is widely available, under a configuration
+that can be pinned exactly and reproduced by others.
+
+The value of the outcome accordingly lies less in obtaining the highest figure
+than in obtaining a figure that can be trusted, reproduced and inspected at the
+level of the individual session. Should the method prove effective, the practical
+implication is that improved reliability in prompt-based recommendation need not
+be purchased with a frontier model or a training cluster, but can be obtained by
+asking a small model the same question in several ways and listening to how
+consistently it answers.
+
+% ======================================================= REFERENCES
+\chapter*{REFERENCES}
+\addcontentsline{toc}{chapter}{References}
+\markboth{REFERENCES}{REFERENCES}
+
+\begin{enumerate}[label={[\arabic*]},leftmargin=*,itemsep=6pt]
+
+\item Hidasi, B., Karatzoglou, A., Baltrunas, L., \& Tikk, D. (2016).
+Session-based recommendations with recurrent neural networks. \emph{International
+Conference on Learning Representations (ICLR)}.
+
+\item Li, J., Ren, P., Chen, Z., Ren, Z., Lian, T., \& Ma, J. (2017). Neural
+attentive session-based recommendation. \emph{Proceedings of the 26th ACM
+International Conference on Information and Knowledge Management (CIKM)},
+1419--1428.
+
+\item Liu, Q., Zeng, Y., Mokhosi, R., \& Zhang, H. (2018). STAMP: Short-term
+attention/memory priority model for session-based recommendation.
+\emph{Proceedings of the 24th ACM SIGKDD International Conference on Knowledge
+Discovery and Data Mining}, 1831--1839.
+
+\item Wu, S., Tang, Y., Zhu, Y., Wang, L., Xie, X., \& Tan, T. (2019).
+Session-based recommendation with graph neural networks. \emph{Proceedings of the
+AAAI Conference on Artificial Intelligence}, 33(1), 346--353.
+
+\item Kang, W.-C., \& McAuley, J. (2018). Self-attentive sequential
+recommendation. \emph{IEEE International Conference on Data Mining (ICDM)},
+197--206.
+
+\item Sun, F., Liu, J., Wu, J., Pei, C., Lin, X., Ou, W., \& Jiang, P. (2019).
+BERT4Rec: Sequential recommendation with bidirectional encoder representations
+from transformer. \emph{Proceedings of the 28th ACM International Conference on
+Information and Knowledge Management (CIKM)}, 1441--1450.
+
+\item Sun, Z., Liu, H., Qu, X., Feng, K., Wang, Y., \& Ong, Y. S. (2024). Large
+language models for intent-driven session recommendations. \emph{Proceedings of
+the 47th International ACM SIGIR Conference on Research and Development in
+Information Retrieval}, 324--334.
+
+\item Tiwari, A., Rekha, K. N. L., \& Mundotiya, R. K. (2026). A reproducibility
+analysis of PO4ISR: Diagnosing and mitigating semantic drift in LLM-based session
+recommendation. \emph{arXiv preprint arXiv:2605.18780}.
+
+\item Luo, S., Yao, Y., He, B., Shao, W., Xu, J., Huang, Y., Zhou, A., Zhang, X.,
+Xiao, Y., Hou, H., Zhan, M., \& Song, L. (2026). Integrating large language
+models into recommendation via mutual augmentation and adaptive aggregation.
+\emph{IEEE Journal of Selected Topics in Signal Processing}, 20(1), 77--89.
+
+\item Wang, X., Wei, J., Schuurmans, D., Le, Q. V., Chi, E. H., Narang, S.,
+Chowdhery, A., \& Zhou, D. (2023). Self-consistency improves chain of thought
+reasoning in language models. \emph{International Conference on Learning
+Representations (ICLR)}.
+
+\item Bao, K., Zhang, J., Zhang, Y., Wang, W., Feng, F., \& He, X. (2023).
+TALLRec: An effective and efficient tuning framework to align large language
+model with recommendation. \emph{Proceedings of the 17th ACM Conference on
+Recommender Systems}, 1007--1014.
+
+\item Zhao, Z., Fan, W., Li, J., Liu, Y., Mei, X., Wang, Y., Wen, Z., Wang, F.,
+Zhao, X., Tang, J., \& Li, Q. (2024). Recommender systems in the era of large
+language models (LLMs). \emph{IEEE Transactions on Knowledge and Data
+Engineering}, 36(11), 6889--6907.
+
+\item Kendall, M. G. (1938). A new measure of rank correlation.
+\emph{Biometrika}, 30(1--2), 81--93.
+
+\item Harper, F. M., \& Konstan, J. A. (2015). The MovieLens datasets: History
+and context. \emph{ACM Transactions on Interactive Intelligent Systems}, 5(4),
+1--19.
+
+\item Hou, Y., Li, J., He, Z., Yan, A., Chen, X., \& McAuley, J. (2024). Bridging
+language and items for retrieval and recommendation. \emph{arXiv preprint
+arXiv:2403.03952}.
+
+\end{enumerate}
+
+\end{document}
