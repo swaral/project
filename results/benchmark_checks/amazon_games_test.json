@@ -6,7 +6,16 @@
       "sessions": 3000,
       "random_RR": 0.1799,
       "target_least_popular_share": 0.9503,
-      "target_popularity_rank_uniformity_p": 0.0,
+      "target_popularity_midrank_mean": 1.59,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.956,
+        0.007,
+        0.008,
+        0.016,
+        0.014
+      ],
+      "target_popularity_uniformity_p": 0.0,
       "rankers": {
         "random": {
           "all_sessions": {
@@ -109,8 +118,17 @@
     "popularity_matched": {
       "sessions": 3000,
       "random_RR": 0.1799,
-      "target_least_popular_share": 0.4347,
-      "target_popularity_rank_uniformity_p": 0.0,
+      "target_least_popular_share": 0.012,
+      "target_popularity_midrank_mean": 10.75,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.099,
+        0.143,
+        0.496,
+        0.156,
+        0.106
+      ],
+      "target_popularity_uniformity_p": 0.0,
       "rankers": {
         "random": {
           "all_sessions": {
@@ -213,8 +231,17 @@
     "retrieval": {
       "sessions": 3000,
       "random_RR": 0.1799,
-      "target_least_popular_share": 0.0883,
-      "target_popularity_rank_uniformity_p": 8.623528084374379e-292,
+      "target_least_popular_share": 0.0747,
+      "target_popularity_midrank_mean": 12.3,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.195,
+        0.134,
+        0.132,
+        0.164,
+        0.375
+      ],
+      "target_popularity_uniformity_p": 5.2923754324449766e-132,
       "rankers": {
         "random": {
           "retrieved_subset": {
@@ -503,7 +530,7 @@
         "popularity": true,
         "inverse_popularity": true
       },
-      "retrieved_subset_target_least_popular_share": 0.0225,
+      "retrieved_subset_target_least_popular_share": 0.0161,
       "inserted_diagnostic_shortcut_flags": {
         "popularity": true,
         "inverse_popularity": false

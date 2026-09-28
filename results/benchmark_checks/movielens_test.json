@@ -6,7 +6,16 @@
       "sessions": 1434,
       "random_RR": 0.1799,
       "target_least_popular_share": 0.9156,
-      "target_popularity_rank_uniformity_p": 0.0,
+      "target_popularity_midrank_mean": 1.92,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.925,
+        0.015,
+        0.019,
+        0.019,
+        0.022
+      ],
+      "target_popularity_uniformity_p": 0.0,
       "rankers": {
         "random": {
           "all_sessions": {
@@ -109,8 +118,17 @@
     "popularity_matched": {
       "sessions": 1434,
       "random_RR": 0.1799,
-      "target_least_popular_share": 0.046,
-      "target_popularity_rank_uniformity_p": 0.4767633473268763,
+      "target_least_popular_share": 0.0349,
+      "target_popularity_midrank_mean": 10.92,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.173,
+        0.204,
+        0.201,
+        0.219,
+        0.204
+      ],
+      "target_popularity_uniformity_p": 0.09076417183105055,
       "rankers": {
         "random": {
           "all_sessions": {
@@ -213,8 +231,17 @@
     "retrieval": {
       "sessions": 1434,
       "random_RR": 0.1799,
-      "target_least_popular_share": 0.6179,
-      "target_popularity_rank_uniformity_p": 0.0,
+      "target_least_popular_share": 0.6172,
+      "target_popularity_midrank_mean": 4.29,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.727,
+        0.079,
+        0.063,
+        0.06,
+        0.071
+      ],
+      "target_popularity_uniformity_p": 0.0,
       "rankers": {
         "random": {
           "retrieved_subset": {
