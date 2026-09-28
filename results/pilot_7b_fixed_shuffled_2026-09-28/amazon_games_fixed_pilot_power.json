@@ -1,0 +1,114 @@
+{
+  "model": "qwen2.5:7b-instruct",
+  "pilot_sessions": 300,
+  "planned_sessions": 3000,
+  "alpha": 0.05,
+  "target_power": 0.8,
+  "wilcoxon_are_assumed": 0.864,
+  "comparisons": {
+    "reliability_weighted_vs_single_prompt_baseline": {
+      "n_pairs": 300,
+      "mean_rr_difference": 0.004160021752127016,
+      "sd_rr_difference": 0.12240106927792851,
+      "effect_size_dz": 0.0339868089116208,
+      "sessions_improved": 125,
+      "sessions_worsened": 117,
+      "sessions_tied": 58,
+      "pilot_bootstrap_ci": {
+        "mean_difference": 0.004160021752127016,
+        "ci_low": -0.010175545928100103,
+        "ci_high": 0.01757365157990158,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "pilot_wilcoxon": {
+        "statistic": 13086.5,
+        "p_value": 0.13844660983614493,
+        "n_pairs": 300
+      },
+      "sessions_needed": 7865,
+      "sessions_needed_at_ci_bound": null,
+      "power_at_planned_n": 0.4092984733905293,
+      "verdict": "underpowered: 3000 sessions give 41% power; need 7865"
+    },
+    "reliability_weighted_vs_naive_mean_ensemble": {
+      "n_pairs": 300,
+      "mean_rr_difference": -0.000221039724522697,
+      "sd_rr_difference": 0.016179791957325218,
+      "effect_size_dz": -0.013661468893153707,
+      "sessions_improved": 28,
+      "sessions_worsened": 26,
+      "sessions_tied": 246,
+      "pilot_bootstrap_ci": {
+        "mean_difference": -0.000221039724522697,
+        "ci_low": -0.0021268727771340005,
+        "ci_high": 0.00156963452497508,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "pilot_wilcoxon": {
+        "statistic": 713.5,
+        "p_value": 0.8027684934051394,
+        "n_pairs": 300
+      },
+      "sessions_needed": 48675,
+      "sessions_needed_at_ci_bound": null,
+      "power_at_planned_n": 0.10699650737751397,
+      "verdict": "underpowered: 3000 sessions give 11% power; need 48675"
+    },
+    "naive_mean_ensemble_vs_single_prompt_baseline": {
+      "n_pairs": 300,
+      "mean_rr_difference": 0.004381061476649713,
+      "sd_rr_difference": 0.12250933464442074,
+      "effect_size_dz": 0.03576104212275414,
+      "sessions_improved": 126,
+      "sessions_worsened": 117,
+      "sessions_tied": 57,
+      "pilot_bootstrap_ci": {
+        "mean_difference": 0.004381061476649713,
+        "ci_low": -0.010053552719496987,
+        "ci_high": 0.01778046415121686,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "pilot_wilcoxon": {
+        "statistic": 13061.0,
+        "p_value": 0.1081644170327749,
+        "n_pairs": 300
+      },
+      "sessions_needed": 7104,
+      "sessions_needed_at_ci_bound": null,
+      "power_at_planned_n": 0.44468122571259266,
+      "verdict": "underpowered: 3000 sessions give 44% power; need 7104"
+    },
+    "long_tail_weighted_vs_reliability_weighted": {
+      "n_pairs": 300,
+      "mean_rr_difference": 0.0005944487802072934,
+      "sd_rr_difference": 0.058362151747606984,
+      "effect_size_dz": 0.01018551856651974,
+      "sessions_improved": 75,
+      "sessions_worsened": 93,
+      "sessions_tied": 132,
+      "pilot_bootstrap_ci": {
+        "mean_difference": 0.0005944487802072934,
+        "ci_low": -0.0058038651399913,
+        "ci_high": 0.007852143524260396,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "pilot_wilcoxon": {
+        "statistic": 6591.5,
+        "p_value": 0.4223530019318168,
+        "n_pairs": 300
+      },
+      "sessions_needed": 87565,
+      "sessions_needed_at_ci_bound": null,
+      "power_at_planned_n": 0.08133189340143437,
+      "verdict": "underpowered: 3000 sessions give 8% power; need 87565"
+    }
+  }
+}
