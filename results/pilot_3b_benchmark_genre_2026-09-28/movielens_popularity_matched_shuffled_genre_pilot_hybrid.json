@@ -1,0 +1,117 @@
+{
+  "pool_type": "popularity_matched",
+  "members": [
+    "baseline_scores_v1:context_genre_v1",
+    "wording_detailed_v1:context_genre_v1",
+    "wording_direct_v1:context_genre_v1",
+    "wording_preference_v1:context_genre_v1"
+  ],
+  "validation_sessions": 162,
+  "test_sessions": 335,
+  "fitted_on_validation": {
+    "nonllm_blend_weights": {
+      "item_knn": 0.5,
+      "sequential_transitions": 0.5,
+      "genre_overlap": 0.0,
+      "title_overlap": 0.25
+    },
+    "nonllm_blend_validation_mrr": 0.4721577614522804,
+    "llm_weight": {
+      "hybrid": 0.0,
+      "item_knn+llm": 0.0,
+      "sequential+llm": 0.0
+    }
+  },
+  "methods": {
+    "item_knn": {
+      "RR": 0.3472409129385471,
+      "HR@1": 0.21194029850746268,
+      "HR@5": 0.48059701492537316,
+      "NDCG@10": 0.41161524176757014
+    },
+    "sequential_transitions": {
+      "RR": 0.4197927499866267,
+      "HR@1": 0.28298507462686573,
+      "HR@5": 0.5366174160158957,
+      "NDCG@10": 0.4788419889831522
+    },
+    "genre_overlap": {
+      "RR": 0.22652386176504552,
+      "HR@1": 0.07885572139303482,
+      "HR@5": 0.3426581378820185,
+      "NDCG@10": 0.2910324943040809
+    },
+    "title_overlap": {
+      "RR": 0.19691181906690564,
+      "HR@1": 0.06592039800995024,
+      "HR@5": 0.268412003450241,
+      "NDCG@10": 0.24343670937052644
+    },
+    "llm": {
+      "RR": 0.1834501758247195,
+      "HR@1": 0.03880597014925373,
+      "HR@5": 0.28059701492537314,
+      "NDCG@10": 0.2455283308034223
+    },
+    "nonllm_blend": {
+      "RR": 0.43340486806038303,
+      "HR@1": 0.3044776119402985,
+      "HR@5": 0.5283582089552239,
+      "NDCG@10": 0.4928202622114124
+    },
+    "hybrid": {
+      "RR": 0.43340486806038303,
+      "HR@1": 0.3044776119402985,
+      "HR@5": 0.5283582089552239,
+      "NDCG@10": 0.4928202622114124
+    },
+    "item_knn+llm": {
+      "RR": 0.3472409129385471,
+      "HR@1": 0.21194029850746268,
+      "HR@5": 0.48059701492537316,
+      "NDCG@10": 0.41161524176757014
+    },
+    "sequential+llm": {
+      "RR": 0.4197927499866267,
+      "HR@1": 0.28298507462686573,
+      "HR@5": 0.5366174160158957,
+      "NDCG@10": 0.4788419889831522
+    }
+  },
+  "primary_comparisons": {
+    "hybrid_vs_nonllm_blend": {
+      "mean_difference": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "p_value": 1.0,
+      "n_pairs": 335,
+      "p_holm": 1.0
+    }
+  },
+  "secondary_comparisons": {
+    "item_knn+llm_vs_item_knn": {
+      "mean_difference": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "p_value": 1.0,
+      "n_pairs": 335,
+      "p_holm": 1.0
+    },
+    "sequential+llm_vs_sequential": {
+      "mean_difference": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "p_value": 1.0,
+      "n_pairs": 335,
+      "p_holm": 1.0
+    },
+    "llm_vs_nonllm_blend": {
+      "mean_difference": -0.24995469223566355,
+      "ci_low": -0.29799589635997953,
+      "ci_high": -0.2020379053210138,
+      "p_value": 9.999000099990002e-05,
+      "n_pairs": 335,
+      "p_holm": 0.00029997000299970003
+    }
+  }
+}

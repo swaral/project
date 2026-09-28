@@ -1,0 +1,140 @@
+{
+  "pool_type": "retrieval",
+  "members": [
+    "baseline_scores_v1:context_genre_v1",
+    "wording_detailed_v1:context_genre_v1",
+    "wording_direct_v1:context_genre_v1",
+    "wording_preference_v1:context_genre_v1"
+  ],
+  "validation_sessions": 167,
+  "test_sessions": 333,
+  "test_sessions_all_members_parsed": 332,
+  "preselected_single_prompt": "wording_detailed_v1:context_genre_v1",
+  "validation_mrr_by_member": {
+    "baseline_scores_v1:context_genre_v1": 0.16060386392888784,
+    "wording_detailed_v1:context_genre_v1": 0.19738836319365594,
+    "wording_direct_v1:context_genre_v1": 0.17259114378180995,
+    "wording_preference_v1:context_genre_v1": 0.18240404905997198
+  },
+  "slot_prior_spread_by_member": {
+    "baseline_scores_v1:context_genre_v1": 1.6212785773563145,
+    "wording_direct_v1:context_genre_v1": 1.832724525290824,
+    "wording_preference_v1:context_genre_v1": 2.273097273242886,
+    "wording_detailed_v1:context_genre_v1": 1.9989359608472388
+  },
+  "methods": {
+    "single_prompt_preselected": {
+      "RR": 0.18159666721802928,
+      "HR@1": 0.05130418289700154,
+      "HR@5": 0.24681529634682026,
+      "NDCG@10": 0.22247663181887278
+    },
+    "naive_mean": {
+      "RR": 0.1917864658551219,
+      "HR@1": 0.06528331370595163,
+      "HR@5": 0.25165568288190354,
+      "NDCG@10": 0.24542704199996007
+    },
+    "zscore_mean": {
+      "RR": 0.19149053221591056,
+      "HR@1": 0.06227126551318054,
+      "HR@5": 0.26564019234834074,
+      "NDCG@10": 0.24172972820864813
+    },
+    "debiased_ensemble": {
+      "RR": 0.20105815739418262,
+      "HR@1": 0.06626506024096386,
+      "HR@5": 0.2921686746987952,
+      "NDCG@10": 0.261115851892343
+    },
+    "rwra_recorded": {
+      "RR": 0.19248543309931668,
+      "HR@1": 0.06528331370595163,
+      "HR@5": 0.24455585499894314,
+      "NDCG@10": 0.24717195458122768
+    }
+  },
+  "primary_comparisons": {
+    "debiased_ensemble_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.019461490176153323,
+      "ci_low": -0.006717125205421809,
+      "ci_high": 0.04581839460631092,
+      "p_value": 0.1394860513948605,
+      "n_pairs": 332,
+      "p_holm": 0.278972102789721
+    },
+    "debiased_ensemble_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.009271691539060678,
+      "ci_low": -0.007350853924995207,
+      "ci_high": 0.027327229523433506,
+      "p_value": 0.3106689331066893,
+      "n_pairs": 332,
+      "p_holm": 0.3106689331066893
+    }
+  },
+  "secondary_comparisons": {
+    "zscore_mean_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.00029593363921138333,
+      "ci_low": -0.012378817544336606,
+      "ci_high": 0.012030884800515562,
+      "p_value": 0.9634036596340366,
+      "n_pairs": 332,
+      "p_holm": 1.0
+    },
+    "naive_mean_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.010189798637092646,
+      "ci_low": -0.01476493822894526,
+      "ci_high": 0.03523894594142918,
+      "p_value": 0.41745825417458254,
+      "n_pairs": 332,
+      "p_holm": 1.0
+    },
+    "rwra_recorded_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.0006989672441947598,
+      "ci_low": -0.002433325587487381,
+      "ci_high": 0.003713813280023346,
+      "p_value": 0.6594340565943405,
+      "n_pairs": 332,
+      "p_holm": 1.0
+    }
+  },
+  "retrieval_recall_test": 0.09959365325077399,
+  "end_to_end_methods": {
+    "single_prompt_preselected": {
+      "RR": 0.018085875506408604,
+      "HR@1": 0.0051095710017582605,
+      "HR@5": 0.02458123704135224,
+      "NDCG@10": 0.022157260525768926
+    },
+    "naive_mean": {
+      "RR": 0.019100714778566417,
+      "HR@1": 0.006501803708292047,
+      "HR@5": 0.02506330881952704,
+      "NDCG@10": 0.024442975719307168
+    },
+    "zscore_mean": {
+      "RR": 0.019071241666317563,
+      "HR@1": 0.006201822825006583,
+      "HR@5": 0.026456077206209554,
+      "NDCG@10": 0.024074746731615942
+    },
+    "debiased_ensemble": {
+      "RR": 0.020024116410755764,
+      "HR@1": 0.006599579432280204,
+      "HR@5": 0.029098145678689992,
+      "NDCG@10": 0.026005481611646463
+    },
+    "rwra_recorded": {
+      "RR": 0.0191703274799184,
+      "HR@1": 0.006501803708292047,
+      "HR@5": 0.024356211023211307,
+      "NDCG@10": 0.024616757937878847
+    }
+  },
+  "note": "methods = reranking quality on test sessions where the retriever found the target; end_to_end_methods = recall x that quality (unretrieved targets are misses)"
+}
