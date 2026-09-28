@@ -1,0 +1,25 @@
+{
+  "started_utc": "2026-09-28T11:20:03Z",
+  "model": "qwen2.5:3b-instruct",
+  "model_digest": "357c53fb659c",
+  "expected_digest": "357c53fb659c",
+  "ollama_version": "Warning: could not connect to a running Ollama instance\nWarning: client version is 0.32.15",
+  "ollama_version_pinned": "0.32.15",
+  "context_length": 32768,
+  "num_parallel": 1,
+  "gpus": [
+    "Tesla T4",
+    "Tesla T4"
+  ],
+  "pilot_sessions_per_domain": 500,
+  "conditions": [
+    "shuffled"
+  ],
+  "pools": [
+    "popularity_matched",
+    "retrieval"
+  ],
+  "sample_seed": 0,
+  "code_sha256": "7fa0e6f17ab71e16d69b581c26d167ce10e77992e7cf8972833ea736b287949f",
+  "finished_utc": "2026-09-28T13:18:42Z"
+}

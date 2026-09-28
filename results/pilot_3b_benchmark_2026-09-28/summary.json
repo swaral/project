@@ -1,0 +1,102 @@
+{
+  "popularity_matched_shuffled": {
+    "movielens": {
+      "test_sessions": 335,
+      "validation_sessions": 163,
+      "preselected_single_prompt": "wording_direct_v1:context_title_v1",
+      "mrr": {
+        "single_prompt_preselected": 0.1863,
+        "naive_mean": 0.1826,
+        "zscore_mean": 0.1879,
+        "debiased_ensemble": 0.1929,
+        "rwra_recorded": 0.1861
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0067,
+          "p_holm": 0.5514
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0103,
+          "p_holm": 0.4362
+        }
+      },
+      "max_prompt_tokens": 29600
+    },
+    "amazon_games": {
+      "test_sessions": 325,
+      "validation_sessions": 174,
+      "preselected_single_prompt": "wording_preference_v1:context_title_v1",
+      "mrr": {
+        "single_prompt_preselected": 0.1927,
+        "naive_mean": 0.2188,
+        "zscore_mean": 0.2194,
+        "debiased_ensemble": 0.2218,
+        "rwra_recorded": 0.2299
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0291,
+          "p_holm": 0.0742
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0029,
+          "p_holm": 0.722
+        }
+      },
+      "max_prompt_tokens": 2421
+    }
+  },
+  "retrieval_shuffled": {
+    "movielens": {
+      "test_sessions": 205,
+      "validation_sessions": 94,
+      "preselected_single_prompt": "baseline_scores_v1:context_title_v1",
+      "mrr": {
+        "single_prompt_preselected": 0.2013,
+        "naive_mean": 0.1913,
+        "zscore_mean": 0.1839,
+        "debiased_ensemble": 0.1877,
+        "rwra_recorded": 0.1942
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": -0.0135,
+          "p_holm": 0.8431
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": -0.0036,
+          "p_holm": 0.8431
+        }
+      },
+      "max_prompt_tokens": 19534,
+      "retrieval_recall_test": 0.1437
+    },
+    "amazon_games": {
+      "test_sessions": 332,
+      "validation_sessions": 167,
+      "preselected_single_prompt": "baseline_scores_v1:context_title_v1",
+      "mrr": {
+        "single_prompt_preselected": 0.188,
+        "naive_mean": 0.2049,
+        "zscore_mean": 0.2059,
+        "debiased_ensemble": 0.2059,
+        "rwra_recorded": 0.2053
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0179,
+          "p_holm": 0.3656
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0009,
+          "p_holm": 0.9193
+        }
+      },
+      "max_prompt_tokens": 3605,
+      "retrieval_recall_test": 0.0996
+    }
+  },
+  "context_ok": true,
+  "elapsed_minutes": 118.6
+}
