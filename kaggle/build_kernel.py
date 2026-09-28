@@ -57,6 +57,8 @@ def main() -> None:
         default="stress",
         help="comma-separated pools: stress, popularity_matched, retrieval",
     )
+    parser.add_argument("--context", default="title", choices=("title", "genre"),
+                        help="item context shown to every ensemble member")
     parser.add_argument("--sessions", type=int, default=300, help="sessions per domain and pool")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
@@ -76,8 +78,10 @@ def main() -> None:
     suffix = f"{size}-{'-'.join(conditions)}"
     if pools != ["stress"]:
         suffix = f"{size}-" + "-".join(p.replace("popularity_", "") for p in pools)
+    if args.context != "title":
+        suffix += f"-{args.context}"
     slug = KERNEL_SLUG
-    if args.model != DEFAULT_MODEL or conditions != ["fixed"] or pools != ["stress"]:
+    if args.model != DEFAULT_MODEL or conditions != ["fixed"] or pools != ["stress"] or args.context != "title":
         slug = f"{KERNEL_SLUG}-{suffix}"
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -91,6 +95,8 @@ def main() -> None:
             'os.environ.get("PILOT_POOLS", "stress").split(",")', repr(pools)
         ).replace(
             'int(os.environ.get("PILOT_SESSIONS", "300"))', repr(args.sessions)
+        ).replace(
+            'os.environ.get("PILOT_CONTEXT", "title")', repr(args.context)
         )
         + f"\n\nPAYLOAD = {_source_archive()!r}\n\n"
         + 'if __name__ == "__main__":\n    main()\n'

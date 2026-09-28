@@ -34,6 +34,10 @@ PLANNED_SESSIONS = 3000
 # seeded candidate order (run_ensemble.py --shuffle-candidates).
 CONDITIONS = os.environ.get("PILOT_CONDITIONS", "fixed").split(",")
 POOLS = os.environ.get("PILOT_POOLS", "stress").split(",")
+# Item context shown to every ensemble member: "title" or "genre" (title plus
+# genres; on Amazon the genres include the platform).
+CONTEXT = os.environ.get("PILOT_CONTEXT", "title")
+WORDINGS = ("baseline_scores_v1", "wording_direct_v1", "wording_preference_v1", "wording_detailed_v1")
 BENCHMARK_POOLS = ("popularity_matched", "retrieval")
 MAX_RUNTIME_MINUTES = 660  # total budget, inside Kaggle's 12-hour limit
 
@@ -179,7 +183,12 @@ def pool_args(domain, pool):
 
 
 def run_name(domain, pool, condition):
-    return f"{domain}_{condition}" if pool == "stress" else f"{domain}_{pool}_{condition}"
+    name = f"{domain}_{condition}" if pool == "stress" else f"{domain}_{pool}_{condition}"
+    return name if CONTEXT == "title" else f"{name}_{CONTEXT}"
+
+
+def member_args():
+    return [arg for wording in WORDINGS for arg in ("--member", f"{wording}:context_{CONTEXT}_v1")]
 
 
 def run_domains(pool, condition, minutes):
@@ -190,7 +199,7 @@ def run_domains(pool, condition, minutes):
         cmd = [sys.executable, "scripts/run_ensemble.py",
                "--provider", "chat-completions", "--model", MODEL,
                "--base-url", f"http://127.0.0.1:{spec['port']}/v1",
-               "--domain", domain, *pool_args(domain, pool),
+               "--domain", domain, *pool_args(domain, pool), *member_args(),
                "--sample-size", str(PILOT_SESSIONS), "--sample-seed", "0",
                "--continue-on-error", "--resume",
                "--max-runtime-minutes", str(minutes),
@@ -230,7 +239,16 @@ def analyse_benchmark(pool, condition):
              "--pools", f"data/processed/{spec['prefix']}_pool_{pool}.jsonl",
              "--output", str(report_path)], cwd=PROJECT)
         report = json.loads(report_path.read_text())
+        hybrid_path = OUT / f"{name}_pilot_hybrid.json"
+        run([sys.executable, "scripts/evaluate_hybrid.py", "--domain", domain, "--trials", str(trials),
+             "--pools", f"data/processed/{spec['prefix']}_pool_{pool}.jsonl",
+             "--output", str(hybrid_path)], cwd=PROJECT)
+        hybrid = json.loads(hybrid_path.read_text())
         summary[domain] = {
+            "hybrid_mrr": {m: round(v["RR"], 4) for m, v in hybrid["methods"].items()},
+            "hybrid_llm_weight": hybrid["fitted_on_validation"]["llm_weight"],
+            "hybrid_primary": {k: {"diff": round(v["mean_difference"], 4), "p": round(v["p_value"], 4)}
+                               for k, v in hybrid["primary_comparisons"].items()},
             "test_sessions": report["test_sessions_all_members_parsed"],
             "validation_sessions": report["validation_sessions"],
             "preselected_single_prompt": report["preselected_single_prompt"],
@@ -297,6 +315,7 @@ def main():
         "pilot_sessions_per_domain": PILOT_SESSIONS,
         "conditions": CONDITIONS,
         "pools": POOLS,
+        "context": CONTEXT,
         "sample_seed": 0,
         "code_sha256": hashlib.sha256(PAYLOAD.encode()).hexdigest(),
     }
