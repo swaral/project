@@ -9,7 +9,8 @@ and writes kaggle/build/{run_pilot.py,kernel-metadata.json}. Push it with:
 
     kaggle kernels output <kaggle-user>/llm-session-reco-pilot -p data/processed/kaggle_pilot
 
-Pass --model and --conditions (fixed, shuffled) to pilot another setup; any
+Pass --model, --conditions (fixed, shuffled), --pools (stress,
+popularity_matched, retrieval) and --sessions to pilot another setup; any
 setup other than the original fixed-order 3B run gets its own kernel, e.g.
 llm-session-reco-pilot-7b-fixed-shuffled.
 """
@@ -51,19 +52,32 @@ def main() -> None:
         default="fixed",
         help="comma-separated candidate-order conditions: fixed, shuffled",
     )
+    parser.add_argument(
+        "--pools",
+        default="stress",
+        help="comma-separated pools: stress, popularity_matched, retrieval",
+    )
+    parser.add_argument("--sessions", type=int, default=300, help="sessions per domain and pool")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
 
     conditions = [c.strip() for c in args.conditions.split(",") if c.strip()]
     if not conditions or set(conditions) - {"fixed", "shuffled"}:
         parser.error("--conditions must list fixed and/or shuffled")
+    pools = [p.strip() for p in args.pools.split(",") if p.strip()]
+    if not pools or set(pools) - {"stress", "popularity_matched", "retrieval"}:
+        parser.error("--pools must list stress, popularity_matched and/or retrieval")
+    if set(pools) - {"stress"} and "shuffled" not in conditions:
+        parser.error("benchmark pools run shuffled only; include shuffled in --conditions")
 
     # The original fixed-order 3B run keeps the base kernel; every other setup
     # gets its own kernel so a new run never replaces earlier outputs.
     size = args.model.split(":")[-1].split("-")[0]
     suffix = f"{size}-{'-'.join(conditions)}"
+    if pools != ["stress"]:
+        suffix = f"{size}-" + "-".join(p.replace("popularity_", "") for p in pools)
     slug = KERNEL_SLUG
-    if args.model != DEFAULT_MODEL or conditions != ["fixed"]:
+    if args.model != DEFAULT_MODEL or conditions != ["fixed"] or pools != ["stress"]:
         slug = f"{KERNEL_SLUG}-{suffix}"
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -73,6 +87,10 @@ def main() -> None:
             'os.environ.get("PILOT_MODEL", "qwen2.5:3b-instruct")', repr(args.model)
         ).replace(
             'os.environ.get("PILOT_CONDITIONS", "fixed").split(",")', repr(conditions)
+        ).replace(
+            'os.environ.get("PILOT_POOLS", "stress").split(",")', repr(pools)
+        ).replace(
+            'int(os.environ.get("PILOT_SESSIONS", "300"))', repr(args.sessions)
         )
         + f"\n\nPAYLOAD = {_source_archive()!r}\n\n"
         + 'if __name__ == "__main__":\n    main()\n'

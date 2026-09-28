@@ -555,3 +555,84 @@ Results are saved per domain beside the 3B input, as
 overwrite each other. The generated comparisons are the source for the report
 and presentation updates; do not rewrite those documents until 7B results are
 available.
+
+## Addendum v7: Repaired Benchmark and Debiased Ensemble
+
+### Why the benchmark changed
+
+The 300-session pilots (results/pilot_*) showed that the original pools cannot
+measure personalization:
+
+- The 19 negatives are the most popular non-history items, so the target is
+  the least popular candidate in ~95% of pools. A "pick the least popular
+  item" rule reaches HR@1 = 0.94 (MovieLens) and 0.95 (Amazon). Qwen2.5-7B
+  scores below random there because it prefers well-known items.
+- On MovieLens, 42% of final ratings share a timestamp with the previous
+  rating, so the target was chosen by item ID within that second; 18% of
+  targets were rated 2 stars or lower.
+
+The original pool is kept only as a shortcut diagnostic (`top_popular`).
+
+### Clean targets (`scripts/build_benchmark.py`)
+
+- Target: each user's final interaction, kept only if rated >= 4 stars and
+  strictly later than the previous interaction. Tied final timestamps are
+  excluded, because their order is unknown.
+- Prefix: every earlier interaction, unchanged.
+- Training frame: every user's final interaction is removed, so no evaluated
+  target is ever seen by popularity counts, retrievers or baselines.
+- Split: 30% validation / 70% test by a seeded hash of the session ID.
+- Result: MovieLens 2,053 sessions (619 / 1,434); Amazon 74,017 sessions
+  (22,337 / 51,680).
+
+### Pools (identical candidate lists for every method)
+
+- `popularity_matched` (controlled comparison): 19 negatives from the target's
+  popularity neighbourhood; the number less popular than the target is drawn
+  uniformly from 0..19, so the target's popularity rank carries no signal.
+  Candidates are stored in a seeded random order.
+- `retrieval` (practical system test): item-KNN cosine over the last 20
+  history items, fitted on training data only; top 20 non-history items.
+  Reported three ways: retriever recall@20; reranking quality on sessions
+  where the retriever found the target; and end to end, where an unretrieved
+  target is a miss (= recall x reranking quality). Inserting a missed target
+  is kept only as a flagged diagnostic: the retriever favours popular items,
+  so an inserted target is usually the least popular candidate and inverse
+  popularity finds it (MovieLens MRR 0.686).
+- `top_popular` (diagnostic only): the original construction on the clean
+  examples.
+
+### Shortcut checks before any GPU run (`scripts/check_benchmark.py`)
+
+On every pool, test split: the target's popularity mid-rank distribution,
+popularity and inverse-popularity rankers against random (flag when the whole
+MRR interval is more than 0.02 from random), and the non-LLM baselines
+(genre/platform overlap, title-word overlap, item-KNN, sequential transitions,
+retrieval order). Results: results/benchmark_checks/.
+
+### Debiased ensemble (`scripts/evaluate_debiased.py`)
+
+Benchmark pools are always run with `--shuffle-candidates`. Aggregation:
+z-score each member's scores within the session, subtract that member's slot
+prior (its mean z-score per presented slot), then average.
+
+Everything data-driven is fitted on validation sessions only:
+
+- the slot priors;
+- the preselected single prompt (the member with the best validation MRR).
+
+Metrics are tie-aware (expected values under random tie-breaking): MRR, HR@1,
+HR@5, NDCG@10. HR@10 is dropped: with 20 candidates random already scores 0.5.
+
+### Pre-registered primary comparisons (per domain and pool, test split)
+
+1. Debiased ensemble vs preselected single prompt.
+2. Debiased ensemble vs naive mean of raw scores.
+
+Test: paired sign-flip permutation test on the mean reciprocal-rank
+difference, Holm-corrected across the two, with a paired bootstrap 95% CI.
+The Wilcoxon signed-rank test is no longer primary: it tests a median shift
+and disagreed with the mean in the pilots. Secondary comparisons (z-score mean
+vs naive mean, naive mean vs single prompt, RWRA vs naive mean) are
+Holm-corrected as a separate family. Every LLM result is reported next to the
+non-LLM baselines on the same candidates.

@@ -85,3 +85,49 @@ def wilcoxon_signed_rank(
         "p_value": float(p_value),
         "n_pairs": len(a),
     }
+
+
+def paired_sign_flip_test(
+    values_a: Sequence[float],
+    values_b: Sequence[float],
+    *,
+    n_permutations: int = 10000,
+    seed: int | None = 0,
+) -> dict[str, float]:
+    """Two-sided paired permutation test of the mean difference (a - b).
+
+    Tests the same quantity the bootstrap interval estimates (the mean), unlike
+    the Wilcoxon signed-rank test, which tests a median shift and can disagree
+    with the mean when gains are concentrated in a minority of sessions.
+    """
+
+    if len(values_a) != len(values_b):
+        raise ValueError("values_a and values_b must have the same length")
+    if len(values_a) == 0:
+        raise ValueError("values_a/values_b cannot be empty")
+    diffs = np.asarray(values_a, dtype=float) - np.asarray(values_b, dtype=float)
+    observed = abs(diffs.mean())
+    rng = np.random.default_rng(seed)
+    signs = rng.choice((-1.0, 1.0), size=(n_permutations, len(diffs)))
+    null = np.abs((signs * diffs).mean(axis=1))
+    # +1 smoothing keeps the p-value strictly positive.
+    p_value = (np.sum(null >= observed - 1e-12) + 1) / (n_permutations + 1)
+    return {
+        "mean_difference": float(diffs.mean()),
+        "p_value": float(p_value),
+        "n_pairs": len(diffs),
+        "n_permutations": n_permutations,
+    }
+
+
+def holm_adjust(p_values: dict[str, float]) -> dict[str, float]:
+    """Holm-Bonferroni adjusted p-values for a family of tests."""
+
+    ordered = sorted(p_values.items(), key=lambda item: item[1])
+    adjusted: dict[str, float] = {}
+    running = 0.0
+    m = len(ordered)
+    for index, (name, p) in enumerate(ordered):
+        running = max(running, min(1.0, (m - index) * p))
+        adjusted[name] = running
+    return adjusted

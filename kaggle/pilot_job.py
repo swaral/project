@@ -1,4 +1,10 @@
-"""Kaggle GPU pilot: RWRA ensemble on a sample of both domains, then power analysis.
+"""Kaggle GPU pilot: prompt ensemble on a sample of both domains, then evaluation.
+
+POOLS selects the candidate pools: "stress" is the original top-popular pool
+(evaluated with evaluate_ensemble.py and power_analysis.py);
+"popularity_matched" and "retrieval" are the repaired benchmark built by
+scripts/build_benchmark.py, always run with shuffled candidates and evaluated
+with evaluate_debiased.py (validation-fitted calibration, test-split scores).
 
 This file is the job template. kaggle/build_kernel.py appends the project
 source as an embedded archive and writes a pushable kernel to kaggle/build/.
@@ -27,6 +33,8 @@ PLANNED_SESSIONS = 3000
 # "fixed" keeps the stored pool order; "shuffled" gives every prompt its own
 # seeded candidate order (run_ensemble.py --shuffle-candidates).
 CONDITIONS = os.environ.get("PILOT_CONDITIONS", "fixed").split(",")
+POOLS = os.environ.get("PILOT_POOLS", "stress").split(",")
+BENCHMARK_POOLS = ("popularity_matched", "retrieval")
 MAX_RUNTIME_MINUTES = 660  # total budget, inside Kaggle's 12-hour limit
 
 PROJECT = Path("/tmp/project")
@@ -35,12 +43,14 @@ OUT = Path("/kaggle/working/pilot")
 DOMAINS = {
     "movielens": {
         "port": 11434,
+        "prefix": "ml1m",
         "extra": [],
         "popularity": "data/processed/ml1m_item_popularity.json",
         "popularity_domain": "movielens",
     },
     "amazon_games": {
         "port": 11435,
+        "prefix": "amazon_games",
         "extra": [
             "--examples", "data/processed/amazon_games_leave_one_out.jsonl",
             "--candidates", "data/processed/amazon_games_candidate_pools.jsonl",
@@ -141,16 +151,46 @@ def prepare_data():
     for spec in DOMAINS.values():
         run([python, "scripts/build_item_popularity.py", "--domain",
              spec["popularity_domain"]], cwd=PROJECT)
+    if set(POOLS) & set(BENCHMARK_POOLS):
+        for domain, spec in DOMAINS.items():
+            run([python, "scripts/build_benchmark.py", "--domain", domain], cwd=PROJECT)
+            # Rerankers only matter where the retriever found the target; an
+            # unretrieved target is a miss end to end whatever the reranker does.
+            processed = PROJECT / "data/processed"
+            source = processed / f"{spec['prefix']}_pool_retrieval.jsonl"
+            with source.open() as handle, (processed / f"{spec['prefix']}_pool_retrieval_found.jsonl").open("w") as out:
+                for line in handle:
+                    if json.loads(line)["target_retrieved"]:
+                        out.write(line)
 
 
-def run_domains(condition, minutes):
+def pool_args(domain, pool):
+    """run_ensemble.py arguments selecting a domain's examples and pool file."""
+    spec = DOMAINS[domain]
+    if pool == "stress":
+        return list(spec["extra"])
+    items = ["--items-file", "data/processed/amazon_games_items.jsonl"] if domain == "amazon_games" else []
+    pool_file = "retrieval_found" if pool == "retrieval" else pool
+    return [
+        "--examples", f"data/processed/{spec['prefix']}_clean_examples.jsonl",
+        "--candidates", f"data/processed/{spec['prefix']}_pool_{pool_file}.jsonl",
+        *items,
+    ]
+
+
+def run_name(domain, pool, condition):
+    return f"{domain}_{condition}" if pool == "stress" else f"{domain}_{pool}_{condition}"
+
+
+def run_domains(pool, condition, minutes):
     processes = {}
     for domain, spec in DOMAINS.items():
-        output = OUT / f"{domain}_{condition}_pilot_trials.jsonl"
+        name = run_name(domain, pool, condition)
+        output = OUT / f"{name}_pilot_trials.jsonl"
         cmd = [sys.executable, "scripts/run_ensemble.py",
                "--provider", "chat-completions", "--model", MODEL,
                "--base-url", f"http://127.0.0.1:{spec['port']}/v1",
-               "--domain", domain, *spec["extra"],
+               "--domain", domain, *pool_args(domain, pool),
                "--sample-size", str(PILOT_SESSIONS), "--sample-seed", "0",
                "--continue-on-error", "--resume",
                "--max-runtime-minutes", str(minutes),
@@ -159,13 +199,13 @@ def run_domains(condition, minutes):
             cmd += ["--shuffle-candidates", "--shuffle-seed", "0"]
         log(f"starting {domain}: " + " ".join(cmd))
         processes[domain] = subprocess.Popen(
-            cmd, cwd=PROJECT, stdout=open(OUT / f"{domain}_{condition}_run.log", "w"),
+            cmd, cwd=PROJECT, stdout=open(OUT / f"{name}_run.log", "w"),
             stderr=subprocess.STDOUT)
     for domain, process in processes.items():
         code = process.wait()
         log(f"{domain} finished with exit code {code}")
         if code != 0:
-            raise RuntimeError(f"{domain} run failed; see {domain}_{condition}_run.log")
+            raise RuntimeError(f"{domain} run failed; see {run_name(domain, pool, condition)}_run.log")
 
 
 def max_prompt_tokens(path):
@@ -178,6 +218,30 @@ def max_prompt_tokens(path):
                 usage = trial.get("usage") or {}
                 largest = max(largest, int(usage.get("prompt_tokens") or 0))
     return largest
+
+
+def analyse_benchmark(pool, condition):
+    summary = {}
+    for domain, spec in DOMAINS.items():
+        name = run_name(domain, pool, condition)
+        trials = OUT / f"{name}_pilot_trials.jsonl"
+        report_path = OUT / f"{name}_pilot_debiased.json"
+        run([sys.executable, "scripts/evaluate_debiased.py", "--trials", str(trials),
+             "--pools", f"data/processed/{spec['prefix']}_pool_{pool}.jsonl",
+             "--output", str(report_path)], cwd=PROJECT)
+        report = json.loads(report_path.read_text())
+        summary[domain] = {
+            "test_sessions": report["test_sessions_all_members_parsed"],
+            "validation_sessions": report["validation_sessions"],
+            "preselected_single_prompt": report["preselected_single_prompt"],
+            "mrr": {m: round(v["RR"], 4) for m, v in report["methods"].items()},
+            "primary": {k: {"diff": round(v["mean_difference"], 4), "p_holm": round(v["p_holm"], 4)}
+                        for k, v in report["primary_comparisons"].items()},
+            "max_prompt_tokens": max_prompt_tokens(trials),
+        }
+        if "retrieval_recall_test" in report:
+            summary[domain]["retrieval_recall_test"] = round(report["retrieval_recall_test"], 4)
+    return summary
 
 
 def analyse(condition):
@@ -232,6 +296,7 @@ def main():
         "gpus": gpus,
         "pilot_sessions_per_domain": PILOT_SESSIONS,
         "conditions": CONDITIONS,
+        "pools": POOLS,
         "sample_seed": 0,
         "code_sha256": hashlib.sha256(PAYLOAD.encode()).hexdigest(),
     }
@@ -239,15 +304,19 @@ def main():
 
     prepare_data()
     summary = {}
-    for index, condition in enumerate(CONDITIONS):
-        # Split what is left of the budget evenly over the remaining conditions.
+    # Benchmark pools are only ever run shuffled: calibration needs it.
+    plan = [(pool, condition) for pool in POOLS for condition in CONDITIONS
+            if pool == "stress" or condition == "shuffled"]
+    for index, (pool, condition) in enumerate(plan):
+        # Split what is left of the budget evenly over the remaining runs.
         left = MAX_RUNTIME_MINUTES - (time.time() - started) / 60
-        run_domains(condition, max(int(left / (len(CONDITIONS) - index)), 1))
-        summary[condition] = analyse(condition)
+        run_domains(pool, condition, max(int(left / (len(plan) - index)), 1))
+        key = condition if pool == "stress" else f"{pool}_{condition}"
+        summary[key] = analyse(condition) if pool == "stress" else analyse_benchmark(pool, condition)
         (OUT / "summary.json").write_text(json.dumps(summary, indent=2))
     summary["context_ok"] = all(
         domain["max_prompt_tokens"] < CONTEXT_LENGTH
-        for condition in CONDITIONS for domain in summary[condition].values())
+        for runs in summary.values() for domain in runs.values())
     summary["elapsed_minutes"] = round((time.time() - started) / 60, 1)
     manifest["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     (OUT / "run_manifest.json").write_text(json.dumps(manifest, indent=2))

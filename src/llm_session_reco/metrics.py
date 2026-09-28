@@ -8,7 +8,7 @@ definitions never drift between the two.
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 DEFAULT_HR_KS: tuple[int, ...] = (1, 5, 10)
 DEFAULT_NDCG_KS: tuple[int, ...] = (5, 10)
@@ -70,3 +70,31 @@ def extract_valid_ranks(
             continue
         valid_ranks.append(rank)
     return valid_ranks
+
+
+def tie_aware_metrics(
+    scores: Mapping[int, float],
+    target_item_id: int,
+    *,
+    hr_ks: Sequence[int] = (1, 5, 10),
+    ndcg_ks: Sequence[int] = (5, 10),
+) -> dict[str, float]:
+    """Expected RR, HR@k and NDCG@k when ties are broken uniformly at random.
+
+    A ranker that gives the target the same score as other candidates should
+    not be credited (or penalized) by an arbitrary tie-break such as list
+    position, so each tied rank is averaged over. Constant scores give exactly
+    the random-ranking expectation.
+    """
+
+    target_score = scores[target_item_id]
+    greater = sum(1 for item, s in scores.items() if item != target_item_id and s > target_score)
+    tied = sum(1 for item, s in scores.items() if item != target_item_id and s == target_score)
+    ranks = range(greater + 1, greater + tied + 2)
+    count = len(ranks)
+    metrics = {"RR": sum(1.0 / r for r in ranks) / count}
+    for k in hr_ks:
+        metrics[f"HR@{k}"] = sum(r <= k for r in ranks) / count
+    for k in ndcg_ks:
+        metrics[f"NDCG@{k}"] = sum(ndcg_at_k(r, k) for r in ranks) / count
+    return metrics
