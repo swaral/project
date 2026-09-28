@@ -1,0 +1,456 @@
+{
+  "schema_version": "ensemble_evaluation_v3",
+  "model": "qwen2.5:3b-instruct",
+  "total_trials": 300,
+  "reference_baselines": {
+    "computed": true,
+    "random_analytic_metrics": {
+      "HR@1": 0.05,
+      "HR@5": 0.25,
+      "HR@10": 0.5,
+      "NDCG@5": 0.14742295594396962,
+      "NDCG@10": 0.2271779669044173
+    },
+    "popularity_available": true,
+    "random_available": true,
+    "random_seed": 0,
+    "popularity_items": 25600,
+    "note": "Candidate pools are built from training-only popularity, so the popularity row is adversarial by construction and falls below the random floor; read the two together."
+  },
+  "conditions": {
+    "single_prompt_baseline": {
+      "total_trials": 300,
+      "valid_trials": 300,
+      "failed_trials": 0,
+      "metrics": {
+        "HR@1": 0.06333333333333334,
+        "HR@5": 0.25666666666666665,
+        "HR@10": 0.51,
+        "NDCG@5": 0.15869870204460337,
+        "NDCG@10": 0.23896911803769952
+      }
+    },
+    "naive_mean_ensemble": {
+      "total_trials": 300,
+      "valid_trials": 300,
+      "failed_trials": 0,
+      "metrics": {
+        "HR@1": 0.09333333333333334,
+        "HR@5": 0.35333333333333333,
+        "HR@10": 0.5666666666666667,
+        "NDCG@5": 0.225446324170358,
+        "NDCG@10": 0.29417492504924087
+      }
+    },
+    "reliability_weighted": {
+      "total_trials": 300,
+      "valid_trials": 300,
+      "failed_trials": 0,
+      "metrics": {
+        "HR@1": 0.09333333333333334,
+        "HR@5": 0.36,
+        "HR@10": 0.57,
+        "NDCG@5": 0.22948071959043237,
+        "NDCG@10": 0.2969028401353044
+      }
+    },
+    "long_tail_weighted": {
+      "total_trials": 300,
+      "valid_trials": 300,
+      "failed_trials": 0,
+      "metrics": {
+        "HR@1": 0.09,
+        "HR@5": 0.3333333333333333,
+        "HR@10": 0.57,
+        "NDCG@5": 0.21499432340515479,
+        "NDCG@10": 0.2915526937359512
+      }
+    },
+    "random_baseline": {
+      "total_trials": 300,
+      "valid_trials": 300,
+      "failed_trials": 0,
+      "metrics": {
+        "HR@1": 0.06333333333333334,
+        "HR@5": 0.2733333333333333,
+        "HR@10": 0.5,
+        "NDCG@5": 0.16239301225139602,
+        "NDCG@10": 0.23534339583034836
+      }
+    },
+    "popularity_baseline": {
+      "total_trials": 300,
+      "valid_trials": 300,
+      "failed_trials": 0,
+      "metrics": {
+        "HR@1": 0.0033333333333333335,
+        "HR@5": 0.013333333333333334,
+        "HR@10": 0.023333333333333334,
+        "NDCG@5": 0.00787117705382262,
+        "NDCG@10": 0.011144948865330606
+      }
+    }
+  },
+  "comparisons": {
+    "reliability_weighted_vs_single_prompt_baseline": {
+      "n_pairs": 300,
+      "metric": "reciprocal_rank",
+      "bootstrap_ci": {
+        "mean_difference": 0.0514319712651756,
+        "ci_low": 0.012752405401186368,
+        "ci_high": 0.0911979101902283,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "wilcoxon": {
+        "statistic": 17025.5,
+        "p_value": 0.0633502150597542,
+        "n_pairs": 300
+      }
+    },
+    "reliability_weighted_vs_naive_mean_ensemble": {
+      "n_pairs": 300,
+      "metric": "reciprocal_rank",
+      "bootstrap_ci": {
+        "mean_difference": 0.002313776909365145,
+        "ci_low": -0.00298602473234826,
+        "ci_high": 0.007828333281642105,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "wilcoxon": {
+        "statistic": 328.5,
+        "p_value": 0.1860610477385719,
+        "n_pairs": 300
+      }
+    },
+    "naive_mean_ensemble_vs_single_prompt_baseline": {
+      "n_pairs": 300,
+      "metric": "reciprocal_rank",
+      "bootstrap_ci": {
+        "mean_difference": 0.049118194355810454,
+        "ci_low": 0.010531967040384225,
+        "ci_high": 0.08892171961810115,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "wilcoxon": {
+        "statistic": 16613.0,
+        "p_value": 0.05961475796056683,
+        "n_pairs": 300
+      }
+    },
+    "long_tail_weighted_vs_single_prompt_baseline": {
+      "n_pairs": 300,
+      "metric": "reciprocal_rank",
+      "bootstrap_ci": {
+        "mean_difference": 0.044637667458100896,
+        "ci_low": 0.012243959465099173,
+        "ci_high": 0.07868314526782985,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "wilcoxon": {
+        "statistic": 13971.0,
+        "p_value": 0.02265499397397609,
+        "n_pairs": 300
+      }
+    },
+    "long_tail_weighted_vs_reliability_weighted": {
+      "n_pairs": 300,
+      "metric": "reciprocal_rank",
+      "bootstrap_ci": {
+        "mean_difference": -0.0067943038070747055,
+        "ci_low": -0.025090386264921865,
+        "ci_high": 0.010448753311030772,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "wilcoxon": {
+        "statistic": 1794.5,
+        "p_value": 0.0984941907842047,
+        "n_pairs": 300
+      }
+    },
+    "reliability_weighted_vs_random_baseline": {
+      "n_pairs": 300,
+      "metric": "reciprocal_rank",
+      "bootstrap_ci": {
+        "mean_difference": 0.0523892459020168,
+        "ci_low": 0.011702207833303039,
+        "ci_high": 0.09568618682909502,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "wilcoxon": {
+        "statistic": 16793.0,
+        "p_value": 0.010051524538440021,
+        "n_pairs": 300
+      }
+    },
+    "reliability_weighted_vs_popularity_baseline": {
+      "n_pairs": 300,
+      "metric": "reciprocal_rank",
+      "bootstrap_ci": {
+        "mean_difference": 0.18592687114513737,
+        "ci_low": 0.15399829206347201,
+        "ci_high": 0.22011849839939043,
+        "confidence": 0.95,
+        "n_boot": 2000,
+        "n_pairs": 300
+      },
+      "wilcoxon": {
+        "statistic": 1030.0,
+        "p_value": 1.4566310469185987e-43,
+        "n_pairs": 300
+      }
+    }
+  },
+  "stratified_by_history_length": {
+    "short_history": {
+      "session_count": 147,
+      "conditions": {
+        "single_prompt_baseline": {
+          "total_trials": 147,
+          "valid_trials": 147,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.06802721088435375,
+            "HR@5": 0.23129251700680273,
+            "HR@10": 0.4897959183673469,
+            "NDCG@5": 0.14968812994244812,
+            "NDCG@10": 0.2327083621397904
+          }
+        },
+        "naive_mean_ensemble": {
+          "total_trials": 147,
+          "valid_trials": 147,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.09523809523809523,
+            "HR@5": 0.3401360544217687,
+            "HR@10": 0.5238095238095238,
+            "NDCG@5": 0.21874296405550894,
+            "NDCG@10": 0.27874068178605077
+          }
+        },
+        "reliability_weighted": {
+          "total_trials": 147,
+          "valid_trials": 147,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.09523809523809523,
+            "HR@5": 0.3401360544217687,
+            "HR@10": 0.5238095238095238,
+            "NDCG@5": 0.21916205461091612,
+            "NDCG@10": 0.2795685476299194
+          }
+        },
+        "long_tail_weighted": {
+          "total_trials": 147,
+          "valid_trials": 147,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.09523809523809523,
+            "HR@5": 0.3333333333333333,
+            "HR@10": 0.5170068027210885,
+            "NDCG@5": 0.2165267191947281,
+            "NDCG@10": 0.2765105117813296
+          }
+        },
+        "random_baseline": {
+          "total_trials": 147,
+          "valid_trials": 147,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.05442176870748299,
+            "HR@5": 0.2857142857142857,
+            "HR@10": 0.5170068027210885,
+            "NDCG@5": 0.16802910642758842,
+            "NDCG@10": 0.24085315998497192
+          }
+        },
+        "popularity_baseline": {
+          "total_trials": 147,
+          "valid_trials": 147,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.006802721088435374,
+            "HR@5": 0.013605442176870748,
+            "HR@10": 0.027210884353741496,
+            "NDCG@5": 0.009732493592336008,
+            "NDCG@10": 0.014267640984626257
+          }
+        }
+      }
+    },
+    "medium_history": {
+      "session_count": 67,
+      "conditions": {
+        "single_prompt_baseline": {
+          "total_trials": 67,
+          "valid_trials": 67,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.07462686567164178,
+            "HR@5": 0.23880597014925373,
+            "HR@10": 0.5373134328358209,
+            "NDCG@5": 0.15505462102286463,
+            "NDCG@10": 0.24781918885039225
+          }
+        },
+        "naive_mean_ensemble": {
+          "total_trials": 67,
+          "valid_trials": 67,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.07462686567164178,
+            "HR@5": 0.3880597014925373,
+            "HR@10": 0.582089552238806,
+            "NDCG@5": 0.24037994308924127,
+            "NDCG@10": 0.3011166608014452
+          }
+        },
+        "reliability_weighted": {
+          "total_trials": 67,
+          "valid_trials": 67,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.07462686567164178,
+            "HR@5": 0.40298507462686567,
+            "HR@10": 0.582089552238806,
+            "NDCG@5": 0.2510968946758691,
+            "NDCG@10": 0.3067325331942481
+          }
+        },
+        "long_tail_weighted": {
+          "total_trials": 67,
+          "valid_trials": 67,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.07462686567164178,
+            "HR@5": 0.3582089552238806,
+            "HR@10": 0.582089552238806,
+            "NDCG@5": 0.22350039452847326,
+            "NDCG@10": 0.2953168230074986
+          }
+        },
+        "random_baseline": {
+          "total_trials": 67,
+          "valid_trials": 67,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.08955223880597014,
+            "HR@5": 0.26865671641791045,
+            "HR@10": 0.5074626865671642,
+            "NDCG@5": 0.16783011597229827,
+            "NDCG@10": 0.24705542797206698
+          }
+        },
+        "popularity_baseline": {
+          "total_trials": 67,
+          "valid_trials": 67,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.0,
+            "HR@5": 0.014925373134328358,
+            "HR@10": 0.014925373134328358,
+            "NDCG@5": 0.006428008329453627,
+            "NDCG@10": 0.006428008329453627
+          }
+        }
+      }
+    },
+    "long_history": {
+      "session_count": 86,
+      "conditions": {
+        "single_prompt_baseline": {
+          "total_trials": 86,
+          "valid_trials": 86,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.046511627906976744,
+            "HR@5": 0.313953488372093,
+            "HR@10": 0.5232558139534884,
+            "NDCG@5": 0.17693948724778147,
+            "NDCG@10": 0.24277582004400455
+          }
+        },
+        "naive_mean_ensemble": {
+          "total_trials": 86,
+          "valid_trials": 86,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.10465116279069768,
+            "HR@5": 0.3488372093023256,
+            "HR@10": 0.627906976744186,
+            "NDCG@5": 0.22527006218567927,
+            "NDCG@10": 0.3151486164944878
+          }
+        },
+        "reliability_weighted": {
+          "total_trials": 86,
+          "valid_trials": 86,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.10465116279069768,
+            "HR@5": 0.36046511627906974,
+            "HR@10": 0.6395348837209303,
+            "NDCG@5": 0.23027792914002107,
+            "NDCG@10": 0.3188743699416111
+          }
+        },
+        "long_tail_weighted": {
+          "total_trials": 86,
+          "valid_trials": 86,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.09302325581395349,
+            "HR@5": 0.313953488372093,
+            "HR@10": 0.6511627906976745,
+            "NDCG@5": 0.20574817286643834,
+            "NDCG@10": 0.31433181101659885
+          }
+        },
+        "random_baseline": {
+          "total_trials": 86,
+          "valid_trials": 86,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.05813953488372093,
+            "HR@5": 0.2558139534883721,
+            "HR@10": 0.46511627906976744,
+            "NDCG@5": 0.14852334023743397,
+            "NDCG@10": 0.216801052990525
+          }
+        },
+        "popularity_baseline": {
+          "total_trials": 86,
+          "valid_trials": 86,
+          "failed_trials": 0,
+          "metrics": {
+            "HR@1": 0.0,
+            "HR@5": 0.011627906976744186,
+            "HR@10": 0.023255813953488372,
+            "NDCG@5": 0.005813953488372093,
+            "NDCG@10": 0.009482149730066614
+          }
+        }
+      }
+    }
+  },
+  "drift": {
+    "mean_kendall_tau": 0.473046783625731,
+    "mean_jaccard_at_5": 0.4478240740740741,
+    "sessions_with_drift_score": 300
+  },
+  "input": "/kaggle/working/pilot/amazon_games_shuffled_pilot_trials.jsonl",
+  "popularity_file": "data/processed/amazon_games_item_popularity.json",
+  "output": "/kaggle/working/pilot/amazon_games_shuffled_pilot_metrics.json"
+}
