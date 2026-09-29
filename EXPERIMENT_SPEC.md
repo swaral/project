@@ -981,3 +981,50 @@ similarity is genuine personalization, not a construction artifact, so
 removing it answers a different question. It could also cover only 33-53%
 of sessions, dropping exactly those where the target is clear from
 co-purchases, so its population would no longer match the other levels.
+
+## Addendum v14: Context Ensemble Without the Co-Purchase Context
+
+Recorded 2026-09-30. Pre-registered secondary analysis for Film, TV, Books
+and Music (before any run); exploratory for Games and MovieLens, whose
+context trials were already seen.
+
+### Why
+
+In Experiment 2, `context_collab_v2` shows each candidate's co-purchase
+link to the history, the signal item-KNN uses. It was the best member and
+the validation-preselected single prompt at every Games level. Two
+questions follow: how much of the context ensemble's accuracy is that one
+co-purchase context, and does ensembling the three semantic contexts
+(`content`, `crowd`, `personal`) help on its own?
+
+### Method (`evaluate_debiased.py --exclude-member context_collab_v2`)
+
+The same trials, with no new model calls. Everything data-driven (slot
+priors, preselected single prompt) is refitted on the remaining three
+members, and RWRA is recomputed from them (`rwra_recomputed`); recomputing
+it from all four members reproduces the recorded RWRA exactly (1,099 Games
+sessions, maximum score difference 0). The two primary comparisons are
+tested and Holm-corrected as in Addendum v7, as their own family. The
+Kaggle job writes `*_debiased_without_context_collab_v2.json` for every
+context run.
+
+### Exploratory results (test split, MRR; random = 0.180)
+
+| Games | Single | Naive | Debiased | RWRA | Debiased vs single (Holm p) |
+|---|---|---|---|---|---|
+| L1, all four | 0.303 | 0.331 | 0.327 | 0.332 | +0.024 (0.44) |
+| L1, without collab | 0.217 | 0.237 | 0.243 | 0.238 | +0.026 (0.20) |
+| L2, all four | 0.263 | 0.249 | 0.259 | 0.250 | -0.003 (0.81) |
+| L2, without collab | 0.192 | 0.193 | 0.204 | 0.197 | +0.012 (0.40) |
+| L3, all four | 0.229 | 0.229 | 0.218 | 0.230 | -0.011 (0.83) |
+| L3, without collab | 0.183 | 0.194 | 0.186 | 0.193 | +0.002 (0.98) |
+
+On Games most of the context ensemble's accuracy comes from the
+co-purchase context: without it the ensemble drops to 0.243 / 0.204 / 0.186
+and is at random by L3. Ensembling the three semantic contexts gives small
+gains over the best of them that are not significant at any level.
+MovieLens is near random with or without it (0.169-0.254).
+
+Agreement weighting also works against the strongest member here: RWRA
+weights each member by its agreement with the others, and the co-purchase
+context is the one that disagrees, so RWRA cannot favour it.

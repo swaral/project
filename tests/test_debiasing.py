@@ -116,3 +116,42 @@ def test_member_answers_map_presented_scores_to_items():
     assert answers["v:c"].slot_of_item[3] == 0
     assert mean_scores([{1: 1.0, 2: 3.0}, {1: 3.0, 2: 1.0}]) == {1: 2.0, 2: 2.0}
     assert np.isclose(sum(zscore({1: 1.0, 2: 2.0, 3: 6.0}).values()), 0.0)
+
+
+def test_evaluate_debiased_can_exclude_a_member():
+    rng = random.Random(2)
+    trials = []
+    for i in range(400):
+        pool = list(range(100, 120))
+        target = pool[rng.randrange(20)]
+        record = {"session_id": f"user-{i}", "candidate_item_ids": pool, "target_item_id": target,
+                  "member_trials": []}
+        # One member sees the target clearly; the other three barely do.
+        for context, signal in (("context_collab_v2", 15.0), ("context_content_v2", 1.0),
+                                ("context_crowd_v2", 1.0), ("context_personal_v2", 1.0)):
+            presented = pool[:]
+            rng.shuffle(presented)
+            record["member_trials"].append({
+                "variant_id": "baseline_scores_v1", "context_variant_id": context, "parse_success": True,
+                "presented_candidate_item_ids": presented,
+                "position_scores": [50 + rng.gauss(0, 5) + (signal if item == target else 0) for item in presented],
+            })
+        trials.append(record)
+    pools = [{"session_id": r["session_id"], "split": "validation" if i < 150 else "test",
+              "pool_type": "popularity_matched"} for i, r in enumerate(trials)]
+
+    full = evaluate(trials, pools, n_boot=100)
+    without = evaluate(trials, pools, n_boot=100, exclude_members=["context_collab_v2"])
+
+    assert full["preselected_single_prompt"] == "baseline_scores_v1:context_collab_v2"
+    assert without["excluded_members"] == ["baseline_scores_v1:context_collab_v2"]
+    assert "baseline_scores_v1:context_collab_v2" not in without["members"] + [without["preselected_single_prompt"]]
+    # RWRA is recomputed from the remaining members, never read from the record.
+    assert "rwra_recomputed" in without["methods"] and "rwra_recorded" not in without["methods"]
+    assert without["methods"]["debiased_ensemble"]["RR"] < full["methods"]["debiased_ensemble"]["RR"]
+    try:
+        evaluate(trials, pools, n_boot=100, exclude_members=["context_colab_v2"])
+    except ValueError as error:
+        assert "matched no member" in str(error)
+    else:
+        raise AssertionError("a misspelled member must not be silently ignored")

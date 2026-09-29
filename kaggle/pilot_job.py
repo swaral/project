@@ -407,6 +407,15 @@ def analyse_benchmark(pool, condition):
              "--popularity-file", spec["popularity"],
              "--output", str(report_path)], cwd=PROJECT)
         report = json.loads(report_path.read_text())
+        without_collab = None
+        if EXPERIMENT == "context":
+            # Addendum v14: the same trials without the co-purchase context.
+            without_path = OUT / f"{name}_pilot_debiased_without_context_collab_v2.json"
+            run([sys.executable, "scripts/evaluate_debiased.py", "--trials", str(trials),
+                 "--pools", f"data/processed/{spec['prefix']}_pool_{pool}.jsonl",
+                 "--popularity-file", spec["popularity"], "--exclude-member", "context_collab_v2",
+                 "--output", str(without_path)], cwd=PROJECT)
+            without_collab = json.loads(without_path.read_text())
         hybrid_path = OUT / f"{name}_pilot_hybrid.json"
         run([sys.executable, "scripts/evaluate_hybrid.py", "--domain", domain, "--trials", str(trials),
              "--pools", f"data/processed/{spec['prefix']}_pool_{pool}.jsonl",
@@ -432,6 +441,13 @@ def analyse_benchmark(pool, condition):
         }
         if "retrieval_recall_test" in report:
             summary[domain]["retrieval_recall_test"] = round(report["retrieval_recall_test"], 4)
+        if without_collab is not None:
+            summary[domain]["without_collab"] = {
+                "mrr": {m: round(v["RR"], 4) for m, v in without_collab["methods"].items()},
+                "primary": {k: {"diff": round(v["mean_difference"], 4), "p_holm": round(v["p_holm"], 4)}
+                            for k, v in without_collab["primary_comparisons"].items()},
+                "preselected_single_prompt": without_collab["preselected_single_prompt"],
+            }
     return summary
 
 
