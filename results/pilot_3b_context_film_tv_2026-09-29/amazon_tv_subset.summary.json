@@ -1,0 +1,22 @@
+{
+  "raw_ratings": 7441129,
+  "raw_users": 657203,
+  "raw_items": 197943,
+  "media": "tv",
+  "titled_items_by_media": {
+    "movie": 70550,
+    "tv": 19830,
+    "unknown": 24721
+  },
+  "items_with_title": 19830,
+  "user_fraction": 0.15,
+  "user_selection": "sha256('0:<user_id>')[:8] < fraction * 2^32",
+  "min_interactions": 5,
+  "ratings": 30307,
+  "users": 3177,
+  "items": 3104,
+  "items_with_genre": 1543,
+  "same_second_gap_share": 0.0001,
+  "over_one_day_gap_share": 0.4649,
+  "ratings_sha256": "5829ac2564adb207109be3c9a14563b2074e6f48835d3a6adfec50af566cf54a"
+}
