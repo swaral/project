@@ -21,6 +21,8 @@ DEFAULT_OUTPUTS = {
     "amazon-movies": Path("data/processed/amazon_movies_item_popularity.json"),
     "amazon-film": Path("data/processed/amazon_film_item_popularity.json"),
     "amazon-tv": Path("data/processed/amazon_tv_item_popularity.json"),
+    "amazon-books": Path("data/processed/amazon_books_item_popularity.json"),
+    "amazon-music": Path("data/processed/amazon_music_item_popularity.json"),
 }
 
 
@@ -38,6 +40,10 @@ def load_domain_ratings(domain: str, data_root: Path):
         from llm_session_reco.domains import AMAZON_MOVIES_MEDIA
 
         return load_ratings(data_root, media=AMAZON_MOVIES_MEDIA[domain.replace("-", "_")])
+    if domain in ("amazon-books", "amazon-music"):
+        from llm_session_reco.amazon_media import load_ratings
+
+        return load_ratings(domain.replace("-", "_"), data_root)
     raise ValueError(f"unknown domain: {domain}")
 
 

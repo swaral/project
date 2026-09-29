@@ -38,7 +38,9 @@ POOLS = os.environ.get("PILOT_POOLS", "stress").split(",")
 # genres; on Amazon the genres include the platform).
 CONTEXT = os.environ.get("PILOT_CONTEXT", "title")
 WORDINGS = ("baseline_scores_v1", "wording_direct_v1", "wording_preference_v1", "wording_detailed_v1")
-BENCHMARK_POOLS = ("popularity_matched", "retrieval", "random", "attribute_matched")
+BENCHMARK_POOLS = (
+    "popularity_matched", "retrieval", "random", "attribute_matched", "recency_matched",
+)
 # Addendum v8 experiments: "wording" (the original four wordings x CONTEXT),
 # "strategy" (baseline + seven strategy prompts, title context) and "context"
 # (baseline wording x the four four-field context variants).
@@ -48,10 +50,11 @@ STRATEGY_PROMPTS = (
     "rule_out_rank_v2", "preference_enjoy_v2", "preference_pick_now_v2", "skip_risk_v2",
 )
 FIELD_CONTEXTS = ("context_content_v2", "context_crowd_v2", "context_personal_v2", "context_collab_v2")
-# Ladder levels L1 (random) and L3 (attribute_matched) use a seeded subset of
-# the L2 (popularity_matched) sample, so every level scores the same users.
+# Ladder levels L1 (random), L3 (attribute_matched) and L4 (recency_matched)
+# use a seeded subset of the L2 (popularity_matched) sample, so every level
+# scores the same users (L4 only those of them that are matchable).
 LADDER_SESSIONS = int(os.environ.get("PILOT_LADDER_SESSIONS", "300"))
-SAMPLED_POOLS = ("popularity_matched", "random", "attribute_matched")
+SAMPLED_POOLS = ("popularity_matched", "random", "attribute_matched", "recency_matched")
 MAX_RUNTIME_MINUTES = 660  # total budget, inside Kaggle's 12-hour limit
 
 PROJECT = Path("/tmp/project")
@@ -110,6 +113,29 @@ DOMAINS = {
         "popularity": "data/processed/amazon_tv_item_popularity.json",
         "popularity_domain": "amazon-tv",
     },
+    # Addendum v12: Books and CDs & Vinyl, one GPU each.
+    "amazon_books": {
+        "port": 11434,
+        "prefix": "amazon_books",
+        "extra": [
+            "--examples", "data/processed/amazon_books_leave_one_out.jsonl",
+            "--candidates", "data/processed/amazon_books_candidate_pools.jsonl",
+            "--items-file", "data/processed/amazon_books_items.jsonl",
+        ],
+        "popularity": "data/processed/amazon_books_item_popularity.json",
+        "popularity_domain": "amazon-books",
+    },
+    "amazon_music": {
+        "port": 11435,
+        "prefix": "amazon_music",
+        "extra": [
+            "--examples", "data/processed/amazon_music_leave_one_out.jsonl",
+            "--candidates", "data/processed/amazon_music_candidate_pools.jsonl",
+            "--items-file", "data/processed/amazon_music_items.jsonl",
+        ],
+        "popularity": "data/processed/amazon_music_item_popularity.json",
+        "popularity_domain": "amazon-music",
+    },
 }
 PREPARE_SCRIPTS = {
     "movielens": ["scripts/prepare_movielens.py"],
@@ -117,6 +143,8 @@ PREPARE_SCRIPTS = {
     "amazon_movies": ["scripts/prepare_amazon_movies.py"],
     "amazon_film": ["scripts/prepare_amazon_movies.py", "--media", "movie"],
     "amazon_tv": ["scripts/prepare_amazon_movies.py", "--media", "tv"],
+    "amazon_books": ["scripts/prepare_amazon_media.py", "--domain", "amazon_books"],
+    "amazon_music": ["scripts/prepare_amazon_media.py", "--domain", "amazon_music"],
 }
 # Addendum v9: which domains this kernel runs. A single domain is split into
 # one shard per GPU (sessions are independent, so shards merge exactly).
@@ -227,7 +255,7 @@ def prepare_data():
                         out.write(line)
             write_sampled_pools(processed, spec["prefix"])
     # Keep the subset fingerprint so it can be checked against the local build.
-    for prefix in ("amazon_movies", "amazon_film", "amazon_tv"):
+    for prefix in ("amazon_movies", "amazon_film", "amazon_tv", "amazon_books", "amazon_music"):
         for name in (f"{prefix}_subset.summary.json", f"{prefix}_benchmark_summary.json"):
             source = PROJECT / "data/processed" / name
             if source.is_file():

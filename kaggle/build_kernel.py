@@ -70,7 +70,7 @@ def main() -> None:
                         help="sessions per domain on the random and attribute-matched levels")
     parser.add_argument("--domains", default="movielens,amazon_games",
                         help="comma-separated domains: movielens, amazon_games, amazon_movies, "
-                        "amazon_film, amazon_tv; "
+                        "amazon_film, amazon_tv, amazon_books, amazon_music; "
                         "a single domain is split over both GPUs")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
@@ -79,14 +79,20 @@ def main() -> None:
     if not conditions or set(conditions) - {"fixed", "shuffled"}:
         parser.error("--conditions must list fixed and/or shuffled")
     pools = [p.strip() for p in args.pools.split(",") if p.strip()]
-    allowed_pools = {"stress", "popularity_matched", "retrieval", "random", "attribute_matched"}
+    allowed_pools = {
+        "stress", "popularity_matched", "retrieval", "random", "attribute_matched",
+        "recency_matched",
+    }
     if not pools or set(pools) - allowed_pools:
         parser.error(f"--pools must be drawn from {sorted(allowed_pools)}")
     if set(pools) - {"stress"} and "shuffled" not in conditions:
         parser.error("benchmark pools run shuffled only; include shuffled in --conditions")
 
     domains = [d.strip() for d in args.domains.split(",") if d.strip()]
-    allowed_domains = {"movielens", "amazon_games", "amazon_movies", "amazon_film", "amazon_tv"}
+    allowed_domains = {
+        "movielens", "amazon_games", "amazon_movies", "amazon_film", "amazon_tv",
+        "amazon_books", "amazon_music",
+    }
     if not domains or set(domains) - allowed_domains:
         parser.error(f"--domains must be drawn from {sorted(allowed_domains)}")
     if len(domains) > 2:
@@ -102,6 +108,9 @@ def main() -> None:
         suffix += f"-{args.context}"
     if args.experiment != "wording":
         suffix = f"{size}-{args.experiment}-ladder"
+        if "recency_matched" in pools:
+            # Keep L1-L4 runs apart from the earlier L1-L3 kernels.
+            suffix += "-l4"
     if domains != ["movielens", "amazon_games"]:
         suffix += "-" + "-".join(d.replace("amazon_", "") for d in domains)
     slug = KERNEL_SLUG

@@ -19,6 +19,7 @@ import time
 from pathlib import Path
 
 from llm_session_reco.amazon_games import load_items as load_amazon_items
+from llm_session_reco.amazon_media import CATEGORIES as MEDIA_CATEGORIES
 from llm_session_reco.domains import AMAZON_MOVIES_MEDIA, DOMAINS
 from llm_session_reco.ensemble import AggregatedRanking, EnsembleMember, combine_ensemble
 from llm_session_reco.llm_client import (
@@ -249,13 +250,17 @@ def _load_item_context(
         }
         return item_titles, item_genres, "game"
 
-    if domain in AMAZON_MOVIES_MEDIA:
+    if domain in AMAZON_MOVIES_MEDIA or domain in MEDIA_CATEGORIES:
         if items_file is None:
             raise ValueError(f"--items-file is required when --domain={domain}")
         records = _read_jsonl(items_file)
         item_titles = {int(r["item_id"]): str(r["title"]) for r in records}
         item_genres = {int(r["item_id"]): str(r["genres"]) for r in records}
-        return item_titles, item_genres, "TV show" if domain == "amazon_tv" else "movie"
+        if domain in MEDIA_CATEGORIES:
+            noun = MEDIA_CATEGORIES[domain].noun
+        else:
+            noun = "TV show" if domain == "amazon_tv" else "movie"
+        return item_titles, item_genres, noun
 
     raise ValueError(f"Unknown domain {domain!r}; expected one of {DOMAINS}")
 

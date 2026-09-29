@@ -847,3 +847,137 @@ With the no-information stub client on shuffled TV pools (8 strategy
 members, 400 sessions, 40 shuffle seeds), the sign-flip tests rejected at
 p < 0.05 in 4, 3, 1, 0 and 1 of 40 runs for the five debiased-evaluation
 comparisons, within the 0-5 expected by chance.
+
+## Addendum v12: Books and Music Domains
+
+Recorded 2026-09-30, before any Books or Music run.
+
+### Why
+
+Two more taste-driven media domains from the same Amazon-Reviews-2023
+release, so that cross-domain differences come from the domain and not from
+how a dataset was collected: reading (`amazon_books`, category `Books`) and
+music (`amazon_music`, category `CDs_and_Vinyl`). Together with film, TV and
+games this covers five kinds of media with real purchase order.
+
+### Data (`scripts/prepare_amazon_media.py`, `amazon_media.py`)
+
+- Source: `benchmark/5core/rating_only/{Books,CDs_and_Vinyl}.csv` and
+  `raw/meta_categories/meta_{Books,CDs_and_Vinyl}.jsonl`.
+- The Books metadata is 14.7 GB and is never stored: it is streamed once and
+  only title, creator and category path are cached for rated items. The
+  stream checks received bytes against Content-Length and resumes with HTTP
+  Range requests, because a dropped connection can otherwise end the stream
+  silently (a first local run did, caching only 60% of items).
+- Items are shown as `<title> by <creator>` (Books: the `author` name, else
+  the first contributor in `store`; Music: the first artist in `store`).
+  Album titles alone rarely identify an album. Placeholders ("Various
+  Artists", "Rated: ...") give no creator. Reference rankers read the same
+  string.
+- Genre: the first label on the category path found in a fixed list
+  (`BOOK_GENRES`, 31 Amazon top-level genres; `MUSIC_GENRES`, 24 genres plus
+  three aliases used under deals sections). Store sections (deals, record
+  labels, box sets, calendars) are skipped, so an item filed under one takes
+  the genre one level down when present.
+- Users: the v9 rule (`sha256("0:<user_id>")[:8] < fraction * 2^32`, then
+  5-core until stable) with the fraction frozen per domain so each subset is
+  about the size of Movies & TV: Books 0.10, Music 0.30.
+- Everything downstream is unchanged from v7-v11.
+
+| | `amazon_books` | `amazon_music` |
+|---|---|---|
+| Raw ratings / users / items | 9,488,297 / 776,370 / 495,063 | 1,552,764 / 123,876 / 89,370 |
+| Subset ratings / users / items | 263,357 / 24,426 / 22,281 | 269,882 / 22,653 / 22,132 |
+| Items with a genre / a creator | 99.6% / 99.7% | 98.5% / 96.1% (of titled raw items) |
+| Gaps over one day | 81.1% | 54.6% |
+| Clean sessions (validation / test) | 20,471 (6,122 / 14,349) | 19,744 (5,976 / 13,768) |
+| L3 pools genre-matched | 99.6% | 97.9% |
+| Retriever recall@20 | 13.6% | 10.0% |
+| Subset ratings SHA-256 (prefix) | `799cb04f` | `f1e1393c` |
+
+### Shortcut checks (test split, 3,000 sessions, MRR; random = 0.180)
+
+| Ranker | Books L1 / L2 / L3 | Music L1 / L2 / L3 |
+|---|---|---|
+| popularity | 0.372 / 0.178 / 0.183 | 0.330 / 0.180 / 0.183 |
+| genre_overlap | 0.318 / 0.308 / 0.180 | 0.329 / 0.321 / 0.178 |
+| newest_first | 0.275 / 0.274 / 0.279 | 0.254 / 0.262 / 0.252 |
+| title_overlap | 0.444 / 0.426 / 0.393 | 0.415 / 0.401 / 0.373 |
+| item_knn | 0.554 / 0.495 / 0.441 | 0.491 / 0.468 / 0.417 |
+
+The ladder behaves as designed: popularity is at random from L2 and genre
+overlap at random at L3. The recency shortcut is present at every level,
+strongest on Books. Title overlap is high because titles carry the author
+or artist and users return to the same creator; the LLM is judged against
+these baselines (hybrid test), not against random.
+
+### Runs and comparisons
+
+As in Addenda v8-v10: Experiment 1 and Experiment 2 on both domains in one
+Kaggle kernel (`build_kernel.py --domains amazon_books,amazon_music`), one
+domain per GPU, with the pre-registered comparisons per experiment, domain
+and ladder level.
+
+## Addendum v13: Ladder Level L4 (Recency-Matched)
+
+Recorded 2026-09-30, before any run on L4.
+
+### Why
+
+Every Amazon ladder level so far lets "the newest item wins" beat random
+(newest-first MRR 0.25-0.28 at L1-L3, Addendum v11), because targets are
+each user's latest interaction and the pools do not match on time. L4
+removes that construction artifact while keeping every real taste signal.
+
+### Definition (`benchmark.build_recency_matched_pools`, pool `recency_matched`)
+
+- L3 plus release time: negatives share the target's attribute (genre or
+  platform) and are matched on two keys at once, training popularity and
+  first training timestamp (never seen counts as newest).
+- For each key a count `k` in 0..19 is drawn once, independently, and
+  exactly `k` negatives rank below the target on that key, so the target's
+  rank on each key is uniform and popularity and newest-first both score at
+  random. How the two counts combine (e.g. less popular and newer) adapts
+  to the available items; the counts are never redrawn, since redrawing
+  until a draw fits skews the target's rank.
+- Items with exactly the target's popularity count are not used as
+  negatives: counts are small integers, and partial ties pull the target's
+  tie-averaged rank toward the middle of the pool (both popularity rankers
+  then score below random).
+- A session gets an L4 pool only when it is matchable: at least 19 eligible
+  items on each side of the target on both keys, and an arrangement of the
+  drawn counts exists. Other sessions have no L4 pool (no fallback, which
+  would reintroduce the shortcuts). L1-L3 pools are unchanged byte for byte.
+
+Coverage of clean sessions: Books 76.4%, Music 74.7%, TV 66.6%, Film 82.1%,
+MovieLens 69.5%, Games 75.4%. Rebuilding the MovieLens and Games benchmarks
+locally reproduced every candidate list used in the Kaggle ladder pilots
+(4,400 of 4,400 sessions), so L1-L3 are unchanged for them too.
+On Kaggle, L4 runs on the matchable part of the ladder sessions, so it has
+proportionally fewer sessions than L1 and L3.
+
+### Shortcut checks (test split, MRR; random = 0.180)
+
+| Domain | popularity | inverse pop. | newest-first | genre overlap | title overlap | item-KNN |
+|---|---|---|---|---|---|---|
+| Books L4 | 0.184 | 0.177 | 0.179 | 0.179 | 0.408 | 0.445 |
+| Music L4 | 0.177 | 0.179 | 0.178 | 0.177 | 0.387 | 0.409 |
+| TV L4 (n = 1,355) | 0.171 | 0.172 | 0.180 | 0.135 | 0.548 | 0.563 |
+| Film L4 | 0.182 | 0.171 | 0.178 | 0.139 | 0.264 | 0.349 |
+| MovieLens L4 (n = 1,006) | 0.188 | 0.168 | 0.192 | 0.188 | 0.189 | 0.273 |
+| Games L4 | 0.191 | 0.163 | 0.185 | 0.213 | 0.298 | 0.342 |
+
+L4 is the only level with no shortcut flag in any domain. Item-KNN, title
+overlap and sequential transitions keep their L3 values: they are real
+taste and co-purchase signals and remain the baselines the LLM must beat.
+Genre overlap is below random on TV and Film from L3 on (0.135-0.143),
+because many targets have several genres and negatives need share only one.
+
+### L5 considered and rejected
+
+A fifth level matched on each session's item-KNN score as well was built
+and checked (KNN at 0.178), then dropped before any run. Co-purchase
+similarity is genuine personalization, not a construction artifact, so
+removing it answers a different question. It could also cover only 33-53%
+of sessions, dropping exactly those where the target is clear from
+co-purchases, so its population would no longer match the other levels.

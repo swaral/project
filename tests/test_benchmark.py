@@ -12,6 +12,7 @@ from llm_session_reco.benchmark import (
     assign_split,
     build_random_pools,
     build_clean_examples,
+    build_recency_matched_pools,
     build_popularity_matched_pools,
     build_retrieval_pools,
     popularity_midrank,
@@ -178,3 +179,45 @@ def test_amazon_platform_reads_the_console_level():
     )
     assert amazon_platform("Video Games|(unknown)") is None
     assert amazon_platform("Video Games") is None
+
+
+def test_recency_matched_pools_make_popularity_and_recency_uninformative():
+    rng = np.random.default_rng(0)
+    items = list(range(1, 601))
+    popularity = {i: int(rng.integers(1, 200)) for i in items}
+    first_seen = {i: float(rng.integers(0, 10_000)) for i in items}
+    attributes = {i: frozenset({"a" if i % 2 else "b"}) for i in items}
+    examples = []
+    for u in range(400):
+        prefix = tuple(int(i) for i in rng.choice(items, size=6, replace=False))
+        target = next(i for i in items[u:] if i not in prefix)
+        examples.append(BenchmarkExample(user_id=u, session_id=f"user-{u}", prefix_item_ids=prefix,
+                                         target_item_id=target, target_timestamp=0))
+
+    pools = build_recency_matched_pools(
+        examples, popularity, items, item_attributes=attributes, item_first_seen=first_seen,
+    )
+    # Targets at an extreme of either key are not matchable and get no pool.
+    assert 0.6 * len(examples) <= len(pools) < len(examples)
+    by_session = {e.session_id: e for e in examples}
+    ranks = {"popularity": [], "first_seen": []}
+    for pool in pools:
+        example = by_session[pool.session_id]
+        candidates = pool.candidate_item_ids
+        assert pool.pool_type == "recency_matched" and pool.attribute_matched
+        assert len(set(candidates)) == 20 and example.target_item_id in candidates
+        assert not set(candidates) & set(example.prefix_item_ids)
+        assert all(attributes[i] == attributes[example.target_item_id] for i in candidates)
+        for name, key in (("popularity", popularity), ("first_seen", first_seen)):
+            target_value = key[example.target_item_id]
+            # Ties count half, as in the tie-aware metrics.
+            ranks[name].append(
+                sum(key[i] < target_value for i in candidates)
+                + sum(key[i] == target_value for i in candidates if i != example.target_item_id) / 2
+            )
+    # The target's rank on each key is uniform over the pool, so popularity
+    # and newest-first both sit at the random level.
+    for name, values in ranks.items():
+        assert abs(np.mean(values) - 9.5) < 1.0, name
+        counts = np.bincount(np.round(values).astype(int), minlength=20)
+        assert counts.min() > 0, name

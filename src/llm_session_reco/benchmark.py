@@ -24,6 +24,7 @@ inserted) and end to end (an unretrieved target is a miss).
 from __future__ import annotations
 
 import bisect
+import itertools
 import json
 import random
 import zlib
@@ -307,6 +308,165 @@ def build_popularity_matched_pools(
             _shuffled_pool(
                 example, negatives, pool_type, item_popularity, seed, attribute_matched=matched
             )
+        )
+    return pools
+
+
+# Ladder L4 matches the target on both keys at once (plus L3's attribute).
+RECENCY_MATCHED_KEYS = ("popularity", "first_seen")
+
+
+def _cell_counts(
+    margins: Sequence[int],
+    capacities: Mapping[tuple[bool, ...], int],
+    needed: int,
+    rng: random.Random,
+    attempts: int = 200,
+) -> dict[tuple[bool, ...], int] | None:
+    """Negatives per below/above pattern whose per-key totals equal ``margins``.
+
+    Builds the ``needed`` negatives one at a time, each time picking a pattern
+    that still has items (``capacities``) and keeps every key's remaining
+    "below" count reachable. Retries only this arrangement, never the margins.
+    """
+
+    patterns = sorted(capacities)
+    for _ in range(attempts):
+        remaining = list(margins)
+        left = dict(capacities)
+        counts: dict[tuple[bool, ...], int] = {}
+        for slot in range(needed):
+            slots_after = needed - slot - 1
+            options = [
+                pattern for pattern in patterns
+                if left[pattern] > 0
+                and all(0 <= r - bit <= slots_after for r, bit in zip(remaining, pattern))
+            ]
+            if not options:
+                break
+            pattern = rng.choice(options)
+            counts[pattern] = counts.get(pattern, 0) + 1
+            left[pattern] -= 1
+            remaining = [r - bit for r, bit in zip(remaining, pattern)]
+        else:
+            return counts
+    return None
+
+
+def _key_ranks(values: np.ndarray, hashes: np.ndarray, items: np.ndarray) -> np.ndarray:
+    """Rank of each item on one key, ties broken by seeded hash then item ID."""
+
+    order = np.lexsort((items, hashes, values))
+    ranks = np.empty(len(order), dtype=np.int64)
+    ranks[order] = np.arange(len(order))
+    return ranks
+
+
+def build_recency_matched_pools(
+    examples: Sequence[BenchmarkExample],
+    item_popularity: Mapping[int, int],
+    catalog_item_ids: Iterable[int],
+    *,
+    item_attributes: Mapping[int, frozenset[str]],
+    item_first_seen: Mapping[int, float],
+    pool_size: int = 20,
+    seed: int = 0,
+    window_factor: int = 3,
+    min_window: int = 30,
+) -> list[BenchmarkPool]:
+    """Ladder L4: L3 negatives that are also matched on release time.
+
+    L2 makes the target's popularity rank uniform by drawing how many
+    negatives are less popular. This does the same for popularity and first
+    training timestamp at once (``RECENCY_MATCHED_KEYS``; never seen counts
+    as newest, as in ``reference_rankers.newest_first``): a count ``k`` in
+    ``0..pool_size-1`` is drawn independently per key, and the 19 negatives
+    are chosen so that exactly ``k`` rank below the target on that key, so
+    popularity and newest-first both score at random. Negatives come from
+    the target's attribute group (as in L3) and, within each required
+    below/above pattern, from the items nearest the target in rank space.
+
+    The counts are drawn once and never redrawn: redrawing until a draw fits
+    would favour the draws that fit and skew the target's rank. So a session
+    gets a pool only when it is *matchable* (at least ``pool_size - 1``
+    eligible items on each side of the target on every key) and its counts
+    can be arranged across keys; other sessions get no L4 pool, and the
+    caller reports coverage.
+    """
+
+    keys = RECENCY_MATCHED_KEYS
+    pool_type = "recency_matched"
+    items = np.array(sorted(set(int(i) for i in catalog_item_ids)))
+    position = {int(item): index for index, item in enumerate(items)}
+    hashes = np.array([_hash_key(int(i), seed) for i in items], dtype=np.int64)
+    fixed = {
+        "popularity": np.array([item_popularity.get(int(i), 0) for i in items], dtype=float),
+        "first_seen": np.array([item_first_seen.get(int(i), np.inf) for i in items], dtype=float),
+    }
+    groups: dict[frozenset[str], np.ndarray] = {}
+    group_ranks: dict[frozenset[str], dict[str, np.ndarray]] = {}
+    everything = np.arange(len(items))
+    needed = pool_size - 1
+
+    pools: list[BenchmarkPool] = []
+    for example in examples:
+        target = example.target_item_id
+        attributes = item_attributes.get(target, frozenset())
+        if attributes and attributes not in groups:
+            groups[attributes] = np.array(
+                [j for j, i in enumerate(items) if item_attributes.get(int(i), frozenset()) & attributes]
+            )
+        group = groups.get(attributes, everything) if attributes else everything
+        attribute_matched = bool(attributes) and len(group) > needed * 2
+        if not attribute_matched:
+            group, attributes = everything, frozenset()
+        if attributes not in group_ranks:
+            group_ranks[attributes] = {
+                key: _key_ranks(values[group], hashes[group], items[group]) for key, values in fixed.items()
+            }
+        ranks = group_ranks[attributes]
+
+        t = int(np.searchsorted(items[group], target))
+        if target not in position or t >= len(group) or items[group][t] != target:
+            continue
+        excluded = np.isin(items[group], list(set(example.prefix_item_ids) | {target}))
+        # Popularity counts are small integers: partial ties with the target
+        # pull its tie-averaged rank toward the middle of the pool, so items
+        # with exactly the target's count are never negatives here.
+        popularity_values = fixed["popularity"][group]
+        excluded |= popularity_values == popularity_values[t]
+        below = {key: ranks[key] < ranks[key][t] for key in keys}
+        cell_masks = {}
+        for pattern in itertools.product((True, False), repeat=len(keys)):
+            mask = ~excluded
+            for key, bit in zip(keys, pattern):
+                mask &= below[key] if bit else ~below[key]
+            cell_masks[pattern] = mask
+        eligible = ~excluded
+        if any((eligible & below[key]).sum() < needed or (eligible & ~below[key]).sum() < needed
+               for key in keys):
+            continue  # not matchable: the target sits at an extreme of some key
+        distance = sum(np.abs(ranks[key] - ranks[key][t]) for key in keys)
+
+        # The per-key counts ("how many negatives rank below the target") are
+        # all a single-key ranker sees, so they are drawn once and never
+        # redrawn; only how they combine across keys adapts to the items
+        # available.
+        rng = random.Random(f"{seed}:{pool_type}:{example.session_id}")
+        margins = [rng.randrange(pool_size) for _key in keys]
+        capacities = {pattern: int(mask.sum()) for pattern, mask in cell_masks.items()}
+        cells = _cell_counts(margins, capacities, needed, rng)
+        if cells is None:
+            continue  # no arrangement fits these counts (rare); never redraw them
+        negatives: list[int] = []
+        for pattern, count in sorted(cells.items()):
+            candidates = np.flatnonzero(cell_masks[pattern])
+            nearest = candidates[np.lexsort((hashes[group][candidates], distance[candidates]))]
+            window = nearest[: max(window_factor * count, min_window)].tolist()
+            negatives.extend(int(items[group][j]) for j in rng.sample(window, count))
+        pools.append(
+            _shuffled_pool(example, negatives, pool_type, item_popularity, seed,
+                           attribute_matched=attribute_matched)
         )
     return pools
 

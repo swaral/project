@@ -35,7 +35,9 @@ from llm_session_reco.metrics import tie_aware_metrics
 from llm_session_reco.reference_rankers import build_reference_rankers
 from llm_session_reco.session_dataset import build_leave_one_out_training_ratings
 
-POOL_TYPES = ("top_popular", "random", "popularity_matched", "attribute_matched", "retrieval")
+POOL_TYPES = (
+    "top_popular", "random", "popularity_matched", "attribute_matched", "recency_matched", "retrieval",
+)
 METRICS = ("RR", "HR@1", "HR@5", "NDCG@10")
 MISS = {metric: 0.0 for metric in METRICS}
 

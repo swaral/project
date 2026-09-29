@@ -56,6 +56,19 @@
             "NDCG@10": 0.9567
           }
         },
+        "newest_first": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.5323,
+            "RR_ci": [
+              0.5161,
+              0.5491
+            ],
+            "HR@1": 0.471,
+            "HR@5": 0.5813,
+            "NDCG@10": 0.561
+          }
+        },
         "genre_overlap": {
           "all_sessions": {
             "n": 3000,
@@ -112,7 +125,8 @@
       "headline_metrics": "all_sessions",
       "shortcut_flags": {
         "popularity": true,
-        "inverse_popularity": true
+        "inverse_popularity": true,
+        "newest_first": true
       }
     },
     "random": {
@@ -167,6 +181,19 @@
             "HR@1": 0.0301,
             "HR@5": 0.084,
             "NDCG@10": 0.0805
+          }
+        },
+        "newest_first": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.1901,
+            "RR_ci": [
+              0.1822,
+              0.1976
+            ],
+            "HR@1": 0.0473,
+            "HR@5": 0.282,
+            "NDCG@10": 0.2673
           }
         },
         "genre_overlap": {
@@ -225,7 +252,8 @@
       "headline_metrics": "all_sessions",
       "shortcut_flags": {
         "popularity": true,
-        "inverse_popularity": true
+        "inverse_popularity": true,
+        "newest_first": false
       }
     },
     "popularity_matched": {
@@ -280,6 +308,19 @@
             "HR@1": 0.0406,
             "HR@5": 0.2266,
             "NDCG@10": 0.2122
+          }
+        },
+        "newest_first": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.2787,
+            "RR_ci": [
+              0.2688,
+              0.2889
+            ],
+            "HR@1": 0.1138,
+            "HR@5": 0.4392,
+            "NDCG@10": 0.358
           }
         },
         "genre_overlap": {
@@ -338,7 +379,8 @@
       "headline_metrics": "all_sessions",
       "shortcut_flags": {
         "popularity": false,
-        "inverse_popularity": false
+        "inverse_popularity": false,
+        "newest_first": true
       }
     },
     "attribute_matched": {
@@ -393,6 +435,19 @@
             "HR@1": 0.035,
             "HR@5": 0.2061,
             "NDCG@10": 0.1916
+          }
+        },
+        "newest_first": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.239,
+            "RR_ci": [
+              0.2292,
+              0.2485
+            ],
+            "HR@1": 0.0873,
+            "HR@5": 0.3693,
+            "NDCG@10": 0.3078
           }
         },
         "genre_overlap": {
@@ -451,7 +506,135 @@
       "headline_metrics": "all_sessions",
       "shortcut_flags": {
         "popularity": false,
-        "inverse_popularity": false
+        "inverse_popularity": false,
+        "newest_first": true
+      }
+    },
+    "recency_matched": {
+      "sessions": 3000,
+      "random_RR": 0.1799,
+      "target_least_popular_share": 0.0373,
+      "target_popularity_midrank_mean": 10.93,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.177,
+        0.189,
+        0.204,
+        0.215,
+        0.216
+      ],
+      "target_popularity_uniformity_p": 0.0021679446772788977,
+      "rankers": {
+        "random": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.1799,
+            "RR_ci": [
+              0.1799,
+              0.1799
+            ],
+            "HR@1": 0.05,
+            "HR@5": 0.25,
+            "NDCG@10": 0.2272
+          }
+        },
+        "popularity": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.1908,
+            "RR_ci": [
+              0.1824,
+              0.1986
+            ],
+            "HR@1": 0.057,
+            "HR@5": 0.2727,
+            "NDCG@10": 0.2409
+          }
+        },
+        "inverse_popularity": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.1634,
+            "RR_ci": [
+              0.1566,
+              0.1703
+            ],
+            "HR@1": 0.0373,
+            "HR@5": 0.2177,
+            "NDCG@10": 0.2089
+          }
+        },
+        "newest_first": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.1849,
+            "RR_ci": [
+              0.1771,
+              0.1925
+            ],
+            "HR@1": 0.0543,
+            "HR@5": 0.2617,
+            "NDCG@10": 0.2322
+          }
+        },
+        "genre_overlap": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.2135,
+            "RR_ci": [
+              0.2068,
+              0.2203
+            ],
+            "HR@1": 0.0728,
+            "HR@5": 0.3148,
+            "NDCG@10": 0.2711
+          }
+        },
+        "title_overlap": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.2984,
+            "RR_ci": [
+              0.2859,
+              0.31
+            ],
+            "HR@1": 0.1553,
+            "HR@5": 0.4197,
+            "NDCG@10": 0.3628
+          }
+        },
+        "item_knn": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.3418,
+            "RR_ci": [
+              0.3292,
+              0.3542
+            ],
+            "HR@1": 0.1993,
+            "HR@5": 0.4711,
+            "NDCG@10": 0.4029
+          }
+        },
+        "sequential_transitions": {
+          "all_sessions": {
+            "n": 3000,
+            "RR": 0.2706,
+            "RR_ci": [
+              0.2612,
+              0.2802
+            ],
+            "HR@1": 0.1346,
+            "HR@5": 0.3683,
+            "NDCG@10": 0.3232
+          }
+        }
+      },
+      "headline_metrics": "all_sessions",
+      "shortcut_flags": {
+        "popularity": false,
+        "inverse_popularity": false,
+        "newest_first": false
       }
     },
     "retrieval": {
@@ -572,6 +755,41 @@
             "HR@1": 0.0805,
             "HR@5": 0.227,
             "NDCG@10": 0.2027
+          }
+        },
+        "newest_first": {
+          "retrieved_subset": {
+            "n": 311,
+            "RR": 0.1905,
+            "RR_ci": [
+              0.165,
+              0.2174
+            ],
+            "HR@1": 0.074,
+            "HR@5": 0.2444,
+            "NDCG@10": 0.231
+          },
+          "end_to_end": {
+            "n": 3000,
+            "RR": 0.0198,
+            "RR_ci": [
+              0.0163,
+              0.0233
+            ],
+            "HR@1": 0.0077,
+            "HR@5": 0.0253,
+            "NDCG@10": 0.024
+          },
+          "inserted_diagnostic": {
+            "n": 3000,
+            "RR": 0.3749,
+            "RR_ci": [
+              0.3612,
+              0.3869
+            ],
+            "HR@1": 0.2317,
+            "HR@5": 0.513,
+            "NDCG@10": 0.4368
           }
         },
         "genre_overlap": {
@@ -754,7 +972,8 @@
       "headline_metrics": "retrieved_subset",
       "shortcut_flags": {
         "popularity": true,
-        "inverse_popularity": true
+        "inverse_popularity": true,
+        "newest_first": false
       },
       "retrieved_subset_target_least_popular_share": 0.0161,
       "inserted_diagnostic_shortcut_flags": {

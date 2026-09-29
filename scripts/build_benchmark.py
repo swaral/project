@@ -25,6 +25,7 @@ from llm_session_reco.baselines import build_item_popularity
 from llm_session_reco.benchmark import (
     BenchmarkPool,
     ItemKNNRetriever,
+    build_recency_matched_pools,
     build_clean_examples,
     build_popularity_matched_pools,
     amazon_platform,
@@ -103,6 +104,12 @@ def main() -> None:
         examples, popularity, catalog, pool_size=args.pool_size, seed=args.seed,
         item_attributes=attributes, pool_type="attribute_matched",
     )
+    # Ladder L4 (recency_matched): L3 plus matched release time (Addendum v13).
+    first_seen = {int(i): float(t) for i, t in training.groupby("item_id")["timestamp"].min().items()}
+    recency_pools = build_recency_matched_pools(
+        examples, popularity, catalog, item_attributes=attributes, item_first_seen=first_seen,
+        pool_size=args.pool_size, seed=args.seed,
+    )
     by_session = {e.session_id: e for e in examples}
     top_popular = [
         BenchmarkPool(
@@ -127,6 +134,7 @@ def main() -> None:
     write_records(top_popular, out / f"{prefix}_pool_top_popular.jsonl")
     write_records(random_pools, out / f"{prefix}_pool_random.jsonl")
     write_records(attribute_pools, out / f"{prefix}_pool_attribute_matched.jsonl")
+    write_records(recency_pools, out / f"{prefix}_pool_recency_matched.jsonl")
     splits = {s: sum(e.split == s for e in examples) for s in ("validation", "test")}
     summary = {
         "domain": args.domain,
@@ -148,12 +156,17 @@ def main() -> None:
             "random": "ladder L1 (easy): 19 negatives uniform over the catalog",
             "attribute_matched": "ladder L3 (hard): popularity-matched negatives sharing a genre "
             "(MovieLens, Movies & TV) or the platform (games) with the target",
+            "recency_matched": "ladder L4: L3 plus the target's rank on first training timestamp "
+            "drawn uniformly (newest-first scores at random); matchable sessions only",
         },
         "attribute_matched_share": round(
             sum(bool(p.attribute_matched) for p in attribute_pools) / len(attribute_pools), 4
         ),
+        # L4 covers only matchable sessions (see build_recency_matched_pools).
+        "recency_matched_coverage": round(len(recency_pools) / len(examples), 4),
         "ladder": {
             "L1_easy": "random", "L2_medium": "popularity_matched", "L3_hard": "attribute_matched",
+            "L4_recency": "recency_matched",
         },
         "retrieval_recall_at_pool_size": sum(p.target_retrieved for p in retrieval) / len(retrieval),
         "seed": args.seed,

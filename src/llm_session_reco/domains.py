@@ -8,7 +8,10 @@ from pathlib import Path
 
 import pandas as pd
 
-DOMAINS = ("movielens", "amazon_games", "amazon_movies", "amazon_film", "amazon_tv")
+DOMAINS = (
+    "movielens", "amazon_games", "amazon_movies", "amazon_film", "amazon_tv",
+    "amazon_books", "amazon_music",
+)
 
 # Amazon Movies & TV domains: None is the combined category (Addendum v9);
 # 'movie' and 'tv' are the two halves of the Addendum v10 split.
@@ -35,7 +38,9 @@ def load_domain(
     reviews plus the item file written by scripts/prepare_amazon_games.py.
     Amazon Movies & TV reads the subset and item file written by
     scripts/prepare_amazon_movies.py (canonical genres only); its movie-only
-    and TV-only halves read the files written with ``--media``. Games genres
+    and TV-only halves read the files written with ``--media``. Books and
+    CDs & Vinyl read the subsets written by scripts/prepare_amazon_media.py
+    (top-level category as genre). Games genres
     drop the catch-all Amazon categories ("Video Games", "Games") so the
     remaining labels carry platform and sub-category information.
     """
@@ -63,10 +68,15 @@ def load_domain(
                     "Games",
                 }
         return DomainData(domain, "amazon_games", ratings, titles, genres)
-    if domain in AMAZON_MOVIES_MEDIA:
-        from .amazon_movies import load_ratings
+    if domain in AMAZON_MOVIES_MEDIA or domain in ("amazon_books", "amazon_music"):
+        if domain in AMAZON_MOVIES_MEDIA:
+            from .amazon_movies import load_ratings
 
-        ratings = load_ratings(data_root, media=AMAZON_MOVIES_MEDIA[domain])
+            ratings = load_ratings(data_root, media=AMAZON_MOVIES_MEDIA[domain])
+        else:
+            from .amazon_media import load_ratings
+
+            ratings = load_ratings(domain, data_root)
         titles, genres = {}, {}
         with (processed_root / f"{domain}_items.jsonl").open(encoding="utf-8") as handle:
             for line in handle:

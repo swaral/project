@@ -245,20 +245,6 @@ def build_subset(
                     continue
                 items[asin] = {"title": title, "genres": movie_genres(record.get("categories") or [])}
 
-    with_title = raw[raw["parent_asin"].isin(items)]
-    users = with_title["user_id"].unique()
-    selected = {u for u in users if keep_user(str(u), user_fraction, seed)}
-    subset = k_core(with_title[with_title["user_id"].isin(selected)], min_interactions)
-    subset = subset.sort_values(["user_id", "timestamp", "parent_asin"], kind="mergesort")
-
-    ratings_path = raw_dir / ratings_name
-    subset.to_csv(ratings_path, index=False, columns=["user_id", "parent_asin", "rating", "timestamp"])
-    kept_items = sorted(subset["parent_asin"].unique())
-    with (raw_dir / items_name).open("w", encoding="utf-8") as handle:
-        for asin in kept_items:
-            handle.write(json.dumps({"parent_asin": asin, **items[asin]}, sort_keys=True) + "\n")
-
-    gaps = subset.groupby("user_id")["timestamp"].diff().dropna() / 1000
     return {
         "raw_ratings": int(len(raw)),
         "raw_users": int(raw["user_id"].nunique()),
@@ -266,6 +252,43 @@ def build_subset(
         "media": media or "all",
         "titled_items_by_media": media_counts,
         "items_with_title": len(items),
+        **write_subset(
+            raw, items, raw_dir / ratings_name, raw_dir / items_name,
+            user_fraction=user_fraction, seed=seed, min_interactions=min_interactions,
+        ),
+    }
+
+
+def write_subset(
+    raw: pd.DataFrame,
+    items: dict[str, dict[str, object]],
+    ratings_path: Path,
+    items_path: Path,
+    *,
+    user_fraction: float,
+    seed: int,
+    min_interactions: int,
+) -> dict[str, object]:
+    """Keep items in ``items``, hash-select users, re-5-core, write both files.
+
+    Shared by every sampled Amazon domain so they all apply the same rule.
+    ``items`` maps ASIN to the record written to the items file.
+    """
+
+    with_title = raw[raw["parent_asin"].isin(items)]
+    users = with_title["user_id"].unique()
+    selected = {u for u in users if keep_user(str(u), user_fraction, seed)}
+    subset = k_core(with_title[with_title["user_id"].isin(selected)], min_interactions)
+    subset = subset.sort_values(["user_id", "timestamp", "parent_asin"], kind="mergesort")
+
+    subset.to_csv(ratings_path, index=False, columns=["user_id", "parent_asin", "rating", "timestamp"])
+    kept_items = sorted(subset["parent_asin"].unique())
+    with items_path.open("w", encoding="utf-8") as handle:
+        for asin in kept_items:
+            handle.write(json.dumps({"parent_asin": asin, **items[asin]}, sort_keys=True) + "\n")
+
+    gaps = subset.groupby("user_id")["timestamp"].diff().dropna() / 1000
+    return {
         "user_fraction": user_fraction,
         "user_selection": f"sha256('{seed}:<user_id>')[:8] < fraction * 2^32",
         "min_interactions": min_interactions,
