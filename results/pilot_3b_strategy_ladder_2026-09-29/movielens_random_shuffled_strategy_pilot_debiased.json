@@ -1,0 +1,181 @@
+{
+  "pool_type": "random",
+  "members": [
+    "baseline_scores_v1:context_title_v1",
+    "closest_match_v2:context_title_v1",
+    "long_term_taste_v2:context_title_v1",
+    "next_step_v2:context_title_v1",
+    "preference_enjoy_v2:context_title_v1",
+    "preference_pick_now_v2:context_title_v1",
+    "rule_out_rank_v2:context_title_v1",
+    "skip_risk_v2:context_title_v1"
+  ],
+  "validation_sessions": 94,
+  "test_sessions": 206,
+  "test_sessions_all_members_parsed": 205,
+  "preselected_single_prompt": "long_term_taste_v2:context_title_v1",
+  "validation_mrr_by_member": {
+    "baseline_scores_v1:context_title_v1": 0.18813493383097651,
+    "closest_match_v2:context_title_v1": 0.18832482008958182,
+    "long_term_taste_v2:context_title_v1": 0.21887696856499456,
+    "next_step_v2:context_title_v1": 0.16062912315281347,
+    "preference_enjoy_v2:context_title_v1": 0.17474498760656082,
+    "preference_pick_now_v2:context_title_v1": 0.17907798097051056,
+    "rule_out_rank_v2:context_title_v1": 0.18319617408197397,
+    "skip_risk_v2:context_title_v1": 0.1840259291091595
+  },
+  "slot_prior_spread_by_member": {
+    "baseline_scores_v1:context_title_v1": 1.0652784521550338,
+    "next_step_v2:context_title_v1": 1.2372988721151303,
+    "long_term_taste_v2:context_title_v1": 2.0347579932137,
+    "closest_match_v2:context_title_v1": 1.6460600703530126,
+    "rule_out_rank_v2:context_title_v1": 1.2338256784628014,
+    "preference_enjoy_v2:context_title_v1": 0.7281567759695134,
+    "preference_pick_now_v2:context_title_v1": 1.1484593292208505,
+    "skip_risk_v2:context_title_v1": 1.0133597542966828
+  },
+  "methods": {
+    "single_prompt_preselected": {
+      "RR": 0.16555804722929124,
+      "HR@1": 0.03878048780487805,
+      "HR@5": 0.23838789045785194,
+      "NDCG@10": 0.21699479844320474
+    },
+    "naive_mean": {
+      "RR": 0.1669923300406278,
+      "HR@1": 0.04089430894308943,
+      "HR@5": 0.22711962833914054,
+      "NDCG@10": 0.21411532868484487
+    },
+    "zscore_mean": {
+      "RR": 0.17322625470279218,
+      "HR@1": 0.04902439024390244,
+      "HR@5": 0.22967479674796745,
+      "NDCG@10": 0.22111288229005016
+    },
+    "debiased_ensemble": {
+      "RR": 0.1852167838957086,
+      "HR@1": 0.05853658536585366,
+      "HR@5": 0.2682926829268293,
+      "NDCG@10": 0.2378177796279828
+    },
+    "rwra_recorded": {
+      "RR": 0.16667733855144456,
+      "HR@1": 0.04414634146341464,
+      "HR@5": 0.2313008130081301,
+      "NDCG@10": 0.2172623931710937
+    }
+  },
+  "primary_comparisons": {
+    "debiased_ensemble_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.019658736666417362,
+      "ci_low": -0.016951363458195375,
+      "ci_high": 0.056545772162436544,
+      "p_value": 0.30186981301869814,
+      "n_pairs": 205,
+      "p_holm": 0.30186981301869814
+    },
+    "debiased_ensemble_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.018224453855080817,
+      "ci_low": -0.0055350023120253455,
+      "ci_high": 0.04346650754612933,
+      "p_value": 0.14228577142285773,
+      "n_pairs": 205,
+      "p_holm": 0.28457154284571545
+    }
+  },
+  "secondary_comparisons": {
+    "zscore_mean_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.006233924662164382,
+      "ci_low": -0.01401596277609767,
+      "ci_high": 0.027353498426009606,
+      "p_value": 0.5571442855714429,
+      "n_pairs": 205,
+      "p_holm": 1.0
+    },
+    "naive_mean_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.0014342828113365416,
+      "ci_low": -0.03194611708718274,
+      "ci_high": 0.036581948529467334,
+      "p_value": 0.9385061493850615,
+      "n_pairs": 205,
+      "p_holm": 1.0
+    },
+    "rwra_recorded_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.00031499148918324386,
+      "ci_low": -0.007628766409724307,
+      "ci_high": 0.008294739958104905,
+      "p_value": 0.9565043495650435,
+      "n_pairs": 205,
+      "p_holm": 1.0
+    }
+  },
+  "rwra_comparisons": {
+    "rwra_recorded_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.0011192913221532998,
+      "ci_low": -0.0318149271198297,
+      "ci_high": 0.03648806641468211,
+      "p_value": 0.9476052394760524,
+      "n_pairs": 205,
+      "p_holm": 1.0
+    },
+    "rwra_recorded_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.00031499148918324386,
+      "ci_low": -0.007628766409724307,
+      "ci_high": 0.008294739958104905,
+      "p_value": 0.9565043495650435,
+      "n_pairs": 205,
+      "p_holm": 1.0
+    }
+  },
+  "test_mrr_by_member": {
+    "baseline_scores_v1:context_title_v1": 0.19025216362230382,
+    "closest_match_v2:context_title_v1": 0.1748997234496352,
+    "long_term_taste_v2:context_title_v1": 0.16555804722929124,
+    "next_step_v2:context_title_v1": 0.17616091277308762,
+    "preference_enjoy_v2:context_title_v1": 0.19192756029658622,
+    "preference_pick_now_v2:context_title_v1": 0.18447638568152197,
+    "rule_out_rank_v2:context_title_v1": 0.1729093064100331,
+    "skip_risk_v2:context_title_v1": 0.17862194104427342
+  },
+  "member_agreement_tau_b": 0.0004371948078370746,
+  "by_target_rarity": {
+    "rare": {
+      "sessions": 69,
+      "mrr": {
+        "single_prompt_preselected": 0.17240385019219093,
+        "naive_mean": 0.15478863020493228,
+        "zscore_mean": 0.16723694623479252,
+        "debiased_ensemble": 0.17137235505454648,
+        "rwra_recorded": 0.16673565518800407
+      }
+    },
+    "moderate": {
+      "sessions": 68,
+      "mrr": {
+        "single_prompt_preselected": 0.20194962570236194,
+        "naive_mean": 0.15921330962051816,
+        "zscore_mean": 0.18333299830807925,
+        "debiased_ensemble": 0.1886355897208884,
+        "rwra_recorded": 0.15664113000721444
+      }
+    },
+    "popular": {
+      "sessions": 68,
+      "mrr": {
+        "single_prompt_preselected": 0.12221999222033701,
+        "naive_mean": 0.18715451647048725,
+        "zscore_mean": 0.1691968976312106,
+        "debiased_ensemble": 0.19584600145347278,
+        "rwra_recorded": 0.17665437286151864
+      }
+    }
+  }
+}

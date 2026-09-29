@@ -1,0 +1,181 @@
+{
+  "pool_type": "attribute_matched",
+  "members": [
+    "baseline_scores_v1:context_title_v1",
+    "closest_match_v2:context_title_v1",
+    "long_term_taste_v2:context_title_v1",
+    "next_step_v2:context_title_v1",
+    "preference_enjoy_v2:context_title_v1",
+    "preference_pick_now_v2:context_title_v1",
+    "rule_out_rank_v2:context_title_v1",
+    "skip_risk_v2:context_title_v1"
+  ],
+  "validation_sessions": 109,
+  "test_sessions": 191,
+  "test_sessions_all_members_parsed": 190,
+  "preselected_single_prompt": "rule_out_rank_v2:context_title_v1",
+  "validation_mrr_by_member": {
+    "baseline_scores_v1:context_title_v1": 0.17616299838772218,
+    "closest_match_v2:context_title_v1": 0.19841531140657837,
+    "long_term_taste_v2:context_title_v1": 0.19171459577501973,
+    "next_step_v2:context_title_v1": 0.16704236830706384,
+    "preference_enjoy_v2:context_title_v1": 0.18809798042946002,
+    "preference_pick_now_v2:context_title_v1": 0.20116354432475905,
+    "rule_out_rank_v2:context_title_v1": 0.20933413787935756,
+    "skip_risk_v2:context_title_v1": 0.19770870854729047
+  },
+  "slot_prior_spread_by_member": {
+    "baseline_scores_v1:context_title_v1": 1.8398331893690814,
+    "next_step_v2:context_title_v1": 1.8587713692530619,
+    "long_term_taste_v2:context_title_v1": 1.8749739798580047,
+    "closest_match_v2:context_title_v1": 2.177890281907671,
+    "rule_out_rank_v2:context_title_v1": 0.971956833565776,
+    "preference_enjoy_v2:context_title_v1": 1.0212953378212322,
+    "preference_pick_now_v2:context_title_v1": 0.9662114362229735,
+    "skip_risk_v2:context_title_v1": 1.0586823383470698
+  },
+  "methods": {
+    "single_prompt_preselected": {
+      "RR": 0.17998248043653525,
+      "HR@1": 0.04636645794051693,
+      "HR@5": 0.2661978386069962,
+      "NDCG@10": 0.22792315371967034
+    },
+    "naive_mean": {
+      "RR": 0.23383469371170454,
+      "HR@1": 0.08771929824561404,
+      "HR@5": 0.3488418208038951,
+      "NDCG@10": 0.2902329316921125
+    },
+    "zscore_mean": {
+      "RR": 0.2447253805068947,
+      "HR@1": 0.1043859649122807,
+      "HR@5": 0.35600556349395357,
+      "NDCG@10": 0.30793440692133567
+    },
+    "debiased_ensemble": {
+      "RR": 0.2502191567598118,
+      "HR@1": 0.13157894736842105,
+      "HR@5": 0.33157894736842103,
+      "NDCG@10": 0.2991093675468947
+    },
+    "rwra_recorded": {
+      "RR": 0.25716065755761913,
+      "HR@1": 0.11842105263157894,
+      "HR@5": 0.35454357518986,
+      "NDCG@10": 0.3166713959273276
+    }
+  },
+  "primary_comparisons": {
+    "debiased_ensemble_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.07023667632327651,
+      "ci_low": 0.029225406469051925,
+      "ci_high": 0.11635646889794544,
+      "p_value": 0.00039996000399960006,
+      "n_pairs": 190,
+      "p_holm": 0.0007999200079992001
+    },
+    "debiased_ensemble_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.016384463048107256,
+      "ci_low": -0.010269441411351925,
+      "ci_high": 0.04545240579128987,
+      "p_value": 0.23767623237676233,
+      "n_pairs": 190,
+      "p_holm": 0.23767623237676233
+    }
+  },
+  "secondary_comparisons": {
+    "zscore_mean_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.010890686795190218,
+      "ci_low": -0.013086307202499191,
+      "ci_high": 0.03847279033945456,
+      "p_value": 0.411958804119588,
+      "n_pairs": 190,
+      "p_holm": 0.411958804119588
+    },
+    "naive_mean_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.05385221327516927,
+      "ci_low": 0.018893113037851614,
+      "ci_high": 0.09308729265701211,
+      "p_value": 0.0053994600539946005,
+      "n_pairs": 190,
+      "p_holm": 0.010798920107989201
+    },
+    "rwra_recorded_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.02332596384591456,
+      "ci_low": 0.010628127527964073,
+      "ci_high": 0.039477542444474545,
+      "p_value": 0.00029997000299970003,
+      "n_pairs": 190,
+      "p_holm": 0.0008999100089991002
+    }
+  },
+  "rwra_comparisons": {
+    "rwra_recorded_vs_single_prompt_preselected": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.07717817712108382,
+      "ci_low": 0.039631529758452515,
+      "ci_high": 0.11724671563306077,
+      "p_value": 9.999000099990002e-05,
+      "n_pairs": 190,
+      "p_holm": 0.00019998000199980003
+    },
+    "rwra_recorded_vs_naive_mean": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.02332596384591456,
+      "ci_low": 0.010628127527964073,
+      "ci_high": 0.039477542444474545,
+      "p_value": 0.00029997000299970003,
+      "n_pairs": 190,
+      "p_holm": 0.00029997000299970003
+    }
+  },
+  "test_mrr_by_member": {
+    "baseline_scores_v1:context_title_v1": 0.20318115447863647,
+    "closest_match_v2:context_title_v1": 0.19939403891493462,
+    "long_term_taste_v2:context_title_v1": 0.177160708906369,
+    "next_step_v2:context_title_v1": 0.18683773263321213,
+    "preference_enjoy_v2:context_title_v1": 0.19631743797376336,
+    "preference_pick_now_v2:context_title_v1": 0.19683111563194286,
+    "rule_out_rank_v2:context_title_v1": 0.17998248043653525,
+    "skip_risk_v2:context_title_v1": 0.202612108856438
+  },
+  "member_agreement_tau_b": 0.00719298329917697,
+  "by_target_rarity": {
+    "rare": {
+      "sessions": 64,
+      "mrr": {
+        "single_prompt_preselected": 0.1637386544900592,
+        "naive_mean": 0.2522781251421262,
+        "zscore_mean": 0.2624628370932674,
+        "debiased_ensemble": 0.2820088876820204,
+        "rwra_recorded": 0.28095542115340666
+      }
+    },
+    "moderate": {
+      "sessions": 63,
+      "mrr": {
+        "single_prompt_preselected": 0.17817649321218887,
+        "naive_mean": 0.25255082407610097,
+        "zscore_mean": 0.2776322058156723,
+        "debiased_ensemble": 0.2779059654778363,
+        "rwra_recorded": 0.27849608385779007
+      }
+    },
+    "popular": {
+      "sessions": 63,
+      "mrr": {
+        "single_prompt_preselected": 0.19829013211444468,
+        "naive_mean": 0.19638237903703848,
+        "zscore_mean": 0.19379955168180216,
+        "debiased_ensemble": 0.19023801821605155,
+        "rwra_recorded": 0.21165277300141
+      }
+    }
+  }
+}
