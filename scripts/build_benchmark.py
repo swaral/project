@@ -5,6 +5,8 @@ Writes, under data/processed/:
   validation/test split;
 - {prefix}_pool_popularity_matched.jsonl: the clean test pools;
 - {prefix}_pool_retrieval.jsonl: item-KNN retrieval pools (training data only);
+- {prefix}_pool_random.jsonl / {prefix}_pool_attribute_matched.jsonl: the easy
+  and hard levels of the difficulty ladder (popularity-matched is the middle);
 - {prefix}_pool_top_popular.jsonl: the original top-19-popular design on the
   same examples, kept only as a shortcut diagnostic;
 - {prefix}_benchmark_summary.json.
@@ -25,6 +27,8 @@ from llm_session_reco.benchmark import (
     ItemKNNRetriever,
     build_clean_examples,
     build_popularity_matched_pools,
+    amazon_platform,
+    build_random_pools,
     build_retrieval_pools,
     popularity_midrank,
     write_records,
@@ -34,6 +38,20 @@ from llm_session_reco.session_dataset import (
     build_candidate_pools,
     build_leave_one_out_training_ratings,
 )
+
+
+def item_attributes(domain: str, data, processed_dir: Path) -> dict[int, frozenset[str]]:
+    """Attribute the hard ladder level matches on: genres (MovieLens), platform (Amazon)."""
+
+    if domain == "movielens":
+        return {item: frozenset(genres) for item, genres in data.item_genres.items()}
+    attributes = {}
+    with (processed_dir / "amazon_games_items.jsonl").open(encoding="utf-8") as handle:
+        for line in handle:
+            record = json.loads(line)
+            platform = amazon_platform(str(record["genres"]))
+            attributes[int(record["item_id"])] = frozenset([platform]) if platform else frozenset()
+    return attributes
 
 
 def parse_args() -> argparse.Namespace:
@@ -74,6 +92,17 @@ def main() -> None:
     retrieval = build_retrieval_pools(
         examples, retriever, popularity, pool_size=args.pool_size, seed=args.seed
     )
+    # Difficulty ladder: L1 random (easy), L2 popularity-matched (above),
+    # L3 popularity-matched and sharing a genre (MovieLens) or the platform
+    # (Amazon) with the target (hard). Same examples at every level.
+    random_pools = build_random_pools(
+        examples, popularity, catalog, pool_size=args.pool_size, seed=args.seed
+    )
+    attributes = item_attributes(args.domain, data, args.output_dir)
+    attribute_pools = build_popularity_matched_pools(
+        examples, popularity, catalog, pool_size=args.pool_size, seed=args.seed,
+        item_attributes=attributes, pool_type="attribute_matched",
+    )
     by_session = {e.session_id: e for e in examples}
     top_popular = [
         BenchmarkPool(
@@ -96,6 +125,8 @@ def main() -> None:
     write_records(matched, out / f"{prefix}_pool_popularity_matched.jsonl")
     write_records(retrieval, out / f"{prefix}_pool_retrieval.jsonl")
     write_records(top_popular, out / f"{prefix}_pool_top_popular.jsonl")
+    write_records(random_pools, out / f"{prefix}_pool_random.jsonl")
+    write_records(attribute_pools, out / f"{prefix}_pool_attribute_matched.jsonl")
     splits = {s: sum(e.split == s for e in examples) for s in ("validation", "test")}
     summary = {
         "domain": args.domain,
@@ -114,6 +145,15 @@ def main() -> None:
             "retrieval": f"item-KNN cosine over last {args.retriever_history_window} history items, "
             "training data only; target inserted in place of the 20th item when not retrieved",
             "top_popular": "original design (19 most popular non-history items); diagnostic only",
+            "random": "ladder L1 (easy): 19 negatives uniform over the catalog",
+            "attribute_matched": "ladder L3 (hard): popularity-matched negatives sharing a genre "
+            "(MovieLens) or the platform (Amazon) with the target",
+        },
+        "attribute_matched_share": round(
+            sum(bool(p.attribute_matched) for p in attribute_pools) / len(attribute_pools), 4
+        ),
+        "ladder": {
+            "L1_easy": "random", "L2_medium": "popularity_matched", "L3_hard": "attribute_matched",
         },
         "retrieval_recall_at_pool_size": sum(p.target_retrieved for p in retrieval) / len(retrieval),
         "seed": args.seed,

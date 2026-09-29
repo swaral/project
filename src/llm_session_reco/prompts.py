@@ -28,7 +28,54 @@ PROMPT_VARIANT_INSTRUCTION_TEMPLATES: dict[str, tuple[str, ...]] = {
         "candidate and assign a score from 0 to 100 for likely next interaction.",
         "Use higher scores for stronger recommendations.",
     ),
+    # Addendum v8: seven prompts that differ in reasoning strategy, not just
+    # wording. Each is used alongside baseline_scores_v1 as an ensemble member.
+    "next_step_v2": (
+        "Look at the last few {noun}s the user chose. Score each candidate",
+        "from 0 to 100 by how naturally it would come right after them, like",
+        "the next part of a series or the obvious follow-up.",
+    ),
+    "long_term_taste_v2": (
+        "Look at the whole history and find what the user likes again and",
+        "again (type, style, theme). Score each candidate from 0 to 100 by how",
+        "well it fits that lasting taste.",
+    ),
+    "closest_match_v2": (
+        "For each candidate, find the one {noun} in the history it is most",
+        "like. Score each candidate from 0 to 100 by how close that match is.",
+    ),
+    "rule_out_rank_v2": (
+        "First give low scores (below 30) to candidates that clearly do not fit",
+        "this user. Then score the remaining candidates from 30 to 100 by how",
+        "well they fit.",
+    ),
+    "preference_enjoy_v2": (
+        "Based on the user's history, how much would this user enjoy each",
+        "candidate? Score from 0 (would not enjoy it) to 100 (would love it).",
+    ),
+    "preference_pick_now_v2": (
+        "Imagine you are this user and you just chose the {noun}s above. How",
+        "much would you want to pick each candidate next? Score from 0 (not at",
+        "all) to 100 (right away).",
+    ),
+    "skip_risk_v2": (
+        "For each candidate, think about how likely the user would skip or",
+        "ignore it. Give 100 to candidates they would almost surely NOT skip,",
+        "and 0 to ones they would surely skip.",
+    ),
 }
+
+#: Experiment 1 (Addendum v8): the anchor prompt plus the seven strategy prompts.
+STRATEGY_PROMPT_SET: tuple[str, ...] = (
+    "baseline_scores_v1",
+    "next_step_v2",
+    "long_term_taste_v2",
+    "closest_match_v2",
+    "rule_out_rank_v2",
+    "preference_enjoy_v2",
+    "preference_pick_now_v2",
+    "skip_risk_v2",
+)
 
 # Backward-compatible alias for the pre-multi-domain name.
 PROMPT_VARIANT_INSTRUCTIONS = PROMPT_VARIANT_INSTRUCTION_TEMPLATES
@@ -38,7 +85,25 @@ CONTEXT_VARIANT_DESCRIPTION_TEMPLATES: dict[str, str] = {
     "context_title_v1": "{noun} titles only",
     "context_genre_v1": "{noun} titles and genres",
     "context_rich_v1": "{noun} titles, genres, and release year",
+    # Addendum v8: four-field variants built from the datasets only
+    # (fields come from context_features.ContextFeatureBuilder).
+    "context_content_v2": "{noun} title, genres, series, and year",
+    "context_crowd_v2": "{noun} title, average rating, audience size, and rating trend",
+    "context_personal_v2": (
+        "{noun} title, the user's own rating, how recent it is, and which of the "
+        "user's most frequent genres it shares"
+    ),
+    "context_collab_v2": (
+        "{noun} title, the past {noun} it is most often chosen with by other users, "
+        "how strong that link is compared with the other candidates, and the recent "
+        "past {noun} it most often follows"
+    ),
 }
+
+#: Context variants whose fields are supplied by the caller via ``item_fields``.
+FIELD_CONTEXT_VARIANTS: frozenset[str] = frozenset(
+    {"context_content_v2", "context_crowd_v2", "context_personal_v2", "context_collab_v2"}
+)
 
 # Backward-compatible alias, rendered with the default domain noun ("movie").
 CONTEXT_VARIANT_DESCRIPTIONS: dict[str, str] = {
@@ -90,8 +155,13 @@ def _item_line(
     *,
     context_variant_id: str,
     item_genres: Mapping[int, str] | None,
+    fields: Mapping[int, str] | None = None,
 ) -> str:
     title = _title(item_id, item_titles)
+    if context_variant_id in FIELD_CONTEXT_VARIANTS:
+        # Items without fields (older history beyond the window) show the title only.
+        extra = fields.get(item_id) if fields else None
+        return f"{index}. title={title}" + (f"; {extra}" if extra else "")
     if context_variant_id == "context_title_v1":
         context = f"title={title}"
     else:
@@ -115,6 +185,7 @@ def render_baseline_prompt(
     context_variant_id: str = "context_title_v1",
     item_genres: Mapping[int, str] | None = None,
     domain_noun: str = "movie",
+    item_fields: tuple[Mapping[int, str], Mapping[int, str]] | None = None,
 ) -> RenderedPrompt:
     """Render the fixed, neutral baseline recommendation prompt.
 
@@ -142,6 +213,10 @@ def render_baseline_prompt(
             f"Unknown context variant {context_variant_id!r}; supported variants: {supported}"
         )
     candidate_count = len(candidates)
+    field_context = context_variant_id in FIELD_CONTEXT_VARIANTS
+    if field_context and item_fields is None:
+        raise ValueError(f"item_fields is required for context variant {context_variant_id}")
+    history_fields, candidate_fields = item_fields if field_context else (None, None)
 
     history_lines = [
         _item_line(
@@ -150,6 +225,7 @@ def render_baseline_prompt(
             item_titles,
             context_variant_id=context_variant_id,
             item_genres=item_genres,
+            fields=history_fields,
         )
         for index, item_id in enumerate(prefix, start=1)
     ]
@@ -160,9 +236,15 @@ def render_baseline_prompt(
             item_titles,
             context_variant_id=context_variant_id,
             item_genres=item_genres,
+            fields=candidate_fields,
         )
         for index, item_id in enumerate(candidates, start=1)
     ]
+    evidence = (
+        "the item information shown and the history"
+        if field_context
+        else f"the {domain_noun} titles and history"
+    )
 
     system_message = (
         f"You are a precise next-item {domain_noun} recommendation system. "
@@ -193,7 +275,7 @@ def render_baseline_prompt(
             "Rules:",
             f"- Return exactly {candidate_count} numeric scores in the scores array.",
             f"- Array entry 1 scores candidate position 1, entry 2 scores position 2, and so on through position {candidate_count}.",
-            f"- Use only the {domain_noun} titles and history for relevance; do not use the position number as the score.",
+            f"- Use only {evidence} for relevance; do not use the position number as the score.",
             "- Score every candidate; do not stop early or return a top-k answer.",
             "- Return only one JSON object; do not use Markdown or explanations.",
             "- The JSON object must have exactly this shape:",

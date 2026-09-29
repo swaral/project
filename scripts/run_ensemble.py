@@ -26,7 +26,7 @@ from llm_session_reco.llm_client import (
 )
 from llm_session_reco.movielens import load_movies
 from llm_session_reco.parser import parse_ranking
-from llm_session_reco.prompts import render_baseline_prompt
+from llm_session_reco.prompts import FIELD_CONTEXT_VARIANTS, render_baseline_prompt
 
 DEFAULT_MEMBERS: tuple[tuple[str, str], ...] = (
     ("baseline_scores_v1", "context_title_v1"),
@@ -251,6 +251,33 @@ def _load_item_context(
     raise ValueError(f"Unknown domain {domain!r}; expected movielens or amazon_games")
 
 
+def _context_feature_builder(args: argparse.Namespace, item_titles, item_genres):
+    """Build the Addendum v8 four-field context features from training data only."""
+
+    from llm_session_reco.baselines import build_item_popularity
+    from llm_session_reco.benchmark import ItemKNNRetriever
+    from llm_session_reco.context_features import ContextFeatureBuilder
+    from llm_session_reco.domains import load_domain
+    from llm_session_reco.session_dataset import build_leave_one_out_training_ratings
+
+    processed_dir = args.items_file.parent if args.items_file else Path("data/processed")
+    data = load_domain(args.domain, args.data_root, processed_dir)
+    training = build_leave_one_out_training_ratings(data.ratings)
+    popularity = build_item_popularity(training)
+    catalog = sorted(set(int(i) for i in data.ratings["item_id"].unique()) & set(item_titles))
+    ordered_genres = {
+        item: [g for g in str(genres).split("|") if g and g not in ("Video Games", "Games")]
+        for item, genres in item_genres.items()
+    }
+    return ContextFeatureBuilder(
+        training,
+        item_titles,
+        ordered_genres,
+        ItemKNNRetriever(training, catalog, popularity),
+        year_source="title" if args.domain == "movielens" else "first_seen",
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -403,6 +430,9 @@ def main() -> None:
     item_titles, item_genres, domain_noun = _load_item_context(
         args.domain, args.data_root, args.id_map, args.items_file
     )
+    feature_builder = None
+    if any(context in FIELD_CONTEXT_VARIANTS for _, context in members_config):
+        feature_builder = _context_feature_builder(args, item_titles, item_genres)
     candidate_count = (
         len(candidate_records[0]["candidate_item_ids"]) if candidate_records else 20
     )
@@ -464,7 +494,18 @@ def main() -> None:
             member_trials: list[dict[str, object]] = []
             ensemble_members: list[EnsembleMember] = []
             shuffle_seed = args.shuffle_seed if args.shuffle_candidates else None
+            session_fields: dict[str, tuple] = {}
             for variant_id, context_variant_id in members_config:
+                item_fields = None
+                if context_variant_id in FIELD_CONTEXT_VARIANTS:
+                    if context_variant_id not in session_fields:
+                        session_fields[context_variant_id] = feature_builder.fields(
+                            context_variant_id,
+                            int(example["user_id"]),
+                            prefix_item_ids,
+                            candidate_item_ids,
+                        )
+                    item_fields = session_fields[context_variant_id]
                 presented_item_ids = presented_candidate_order(
                     candidate_item_ids,
                     session_id=session_id,
@@ -480,6 +521,7 @@ def main() -> None:
                     context_variant_id=context_variant_id,
                     item_genres=item_genres,
                     domain_noun=domain_noun,
+                    item_fields=item_fields,
                 )
                 try:
                     response = client.generate(prompt.system_message, prompt.user_message)

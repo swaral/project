@@ -64,12 +64,18 @@ class BenchmarkPool:
     retrieved_item_ids: tuple[int, ...] | None = None
     target_retrieved: bool | None = None
     target_retrieval_rank: int | None = None
+    # Attribute-matched pools only: False when the target had no usable
+    # attribute (or too few same-attribute items) and plain popularity
+    # matching was used instead.
+    attribute_matched: bool | None = None
 
     def to_dict(self) -> dict[str, object]:
         data = asdict(self)
         if self.pool_type != "retrieval":
             for key in ("retrieved_item_ids", "target_retrieved", "target_retrieval_rank"):
                 data.pop(key)
+        if self.attribute_matched is None:
+            data.pop("attribute_matched")
         return data
 
 
@@ -161,6 +167,80 @@ def popularity_midrank(candidates: Sequence[int], target: int, popularity: Mappi
     return 1 + less + tied / 2
 
 
+def _popularity_ordering(items: Iterable[int], item_popularity: Mapping[int, int], seed: int):
+    """Items in ascending popularity (seeded hash within ties), plus lookups."""
+
+    order = sorted(
+        set(int(item) for item in items),
+        key=lambda item: (item_popularity.get(item, 0), _hash_key(item, seed), item),
+    )
+    index_of = {item: position for position, item in enumerate(order)}
+    keys = [(item_popularity.get(item, 0), _hash_key(item, seed), item) for item in order]
+    return order, index_of, keys
+
+
+def _matched_negatives(
+    example: BenchmarkExample,
+    ordering,
+    item_popularity: Mapping[int, int],
+    rng: random.Random,
+    *,
+    pool_size: int,
+    seed: int,
+    window_factor: int,
+    min_window: int,
+) -> list[int]:
+    """Popularity-matched negatives from ``ordering`` (see the builder below)."""
+
+    order, index_of, keys = ordering
+    negatives_needed = pool_size - 1
+    target = example.target_item_id
+    excluded = set(example.prefix_item_ids) | {target}
+    if target in index_of:
+        anchor = index_of[target]
+    else:
+        anchor = bisect.bisect_left(
+            keys, (item_popularity.get(target, 0), _hash_key(target, seed), target)
+        )
+
+    def nearest(step: int, count: int, start: int) -> list[int]:
+        found: list[int] = []
+        position = start
+        while 0 <= position < len(order) and len(found) < count:
+            item = order[position]
+            if item not in excluded:
+                found.append(item)
+            position += step
+        return found
+
+    above_start = anchor + 1 if target in index_of else anchor
+
+    def windows(below: int, above: int) -> tuple[list[int], list[int]]:
+        return (
+            nearest(-1, max(window_factor * below, min_window), anchor - 1),
+            nearest(1, max(window_factor * above, min_window), above_start),
+        )
+
+    below_count = rng.randrange(pool_size)
+    above_count = negatives_needed - below_count
+    below_window, above_window = windows(below_count, above_count)
+    # At the popularity extremes one side can run short; borrow from the other.
+    if len(below_window) < below_count:
+        below_count = len(below_window)
+        above_count = negatives_needed - below_count
+        below_window, above_window = windows(below_count, above_count)
+    elif len(above_window) < above_count:
+        above_count = len(above_window)
+        below_count = negatives_needed - above_count
+        below_window, above_window = windows(below_count, above_count)
+    if len(below_window) < below_count or len(above_window) < above_count:
+        raise ValueError(f"Not enough eligible negatives for {example.session_id}")
+    negatives = rng.sample(below_window, below_count) + rng.sample(above_window, above_count)
+    if len(negatives) != negatives_needed:
+        raise ValueError(f"Not enough eligible negatives for {example.session_id}")
+    return negatives
+
+
 def build_popularity_matched_pools(
     examples: Sequence[BenchmarkExample],
     item_popularity: Mapping[int, int],
@@ -170,6 +250,8 @@ def build_popularity_matched_pools(
     seed: int = 0,
     window_factor: int = 3,
     min_window: int = 30,
+    item_attributes: Mapping[int, frozenset[str]] | None = None,
+    pool_type: str = "popularity_matched",
 ) -> list[BenchmarkPool]:
     """Negatives drawn from the target's popularity neighbourhood.
 
@@ -181,66 +263,97 @@ def build_popularity_matched_pools(
     rank inside the pool is therefore uniform, so popularity and inverse
     popularity rankers score at the random level. Only at the extremes of the
     popularity range, where one side runs out, does the draw deviate.
+
+    With ``item_attributes`` (the hard ladder level), negatives must also
+    share at least one attribute with the target - a genre on MovieLens, the
+    platform on Amazon - so attribute overlap alone cannot find the target.
+    A target without attributes, or with too few same-attribute items, falls
+    back to plain popularity matching and is flagged ``attribute_matched``.
     """
 
     if pool_size < 2:
         raise ValueError("pool_size must be at least 2")
-    # Ascending popularity; equal counts ordered by a seeded hash.
-    order = sorted(
-        set(int(item) for item in catalog_item_ids),
-        key=lambda item: (item_popularity.get(item, 0), _hash_key(item, seed), item),
-    )
-    index_of = {item: position for position, item in enumerate(order)}
-    keys = [(item_popularity.get(item, 0), _hash_key(item, seed), item) for item in order]
+    catalog = sorted(set(int(item) for item in catalog_item_ids))
+    full = _popularity_ordering(catalog, item_popularity, seed)
+    by_attributes: dict[frozenset[str], tuple] = {}
+    # L2 keeps its original seed label so its pools are unchanged.
+    rng_label = "matched" if pool_type == "popularity_matched" else pool_type
+    params = dict(pool_size=pool_size, seed=seed, window_factor=window_factor, min_window=min_window)
 
     pools: list[BenchmarkPool] = []
-    negatives_needed = pool_size - 1
     for example in examples:
-        rng = random.Random(f"{seed}:matched:{example.session_id}")
-        target = example.target_item_id
-        excluded = set(example.prefix_item_ids) | {target}
-        if target in index_of:
-            anchor = index_of[target]
-        else:
-            anchor = bisect.bisect_left(
-                keys, (item_popularity.get(target, 0), _hash_key(target, seed), target)
+        rng = random.Random(f"{seed}:{rng_label}:{example.session_id}")
+        if item_attributes is None:
+            negatives = _matched_negatives(example, full, item_popularity, rng, **params)
+            pools.append(_shuffled_pool(example, negatives, pool_type, item_popularity, seed))
+            continue
+        attributes = item_attributes.get(example.target_item_id, frozenset())
+        matched = False
+        if attributes:
+            if attributes not in by_attributes:
+                eligible = [i for i in catalog if item_attributes.get(i, frozenset()) & attributes]
+                by_attributes[attributes] = _popularity_ordering(eligible, item_popularity, seed)
+            try:
+                negatives = _matched_negatives(
+                    example, by_attributes[attributes], item_popularity, rng, **params
+                )
+                matched = True
+            except ValueError:
+                # Too few same-attribute items: redraw from the full catalog.
+                rng = random.Random(f"{seed}:{rng_label}:fallback:{example.session_id}")
+        if not matched:
+            negatives = _matched_negatives(example, full, item_popularity, rng, **params)
+        pools.append(
+            _shuffled_pool(
+                example, negatives, pool_type, item_popularity, seed, attribute_matched=matched
             )
-
-        def nearest(step: int, count: int, start: int) -> list[int]:
-            found: list[int] = []
-            position = start
-            while 0 <= position < len(order) and len(found) < count:
-                item = order[position]
-                if item not in excluded:
-                    found.append(item)
-                position += step
-            return found
-
-        above_start = anchor + 1 if target in index_of else anchor
-
-        def windows(below: int, above: int) -> tuple[list[int], list[int]]:
-            return (
-                nearest(-1, max(window_factor * below, min_window), anchor - 1),
-                nearest(1, max(window_factor * above, min_window), above_start),
-            )
-
-        below_count = rng.randrange(pool_size)
-        above_count = negatives_needed - below_count
-        below_window, above_window = windows(below_count, above_count)
-        # At the popularity extremes one side can run short; borrow from the other.
-        if len(below_window) < below_count:
-            below_count = len(below_window)
-            above_count = negatives_needed - below_count
-            below_window, above_window = windows(below_count, above_count)
-        elif len(above_window) < above_count:
-            above_count = len(above_window)
-            below_count = negatives_needed - above_count
-            below_window, above_window = windows(below_count, above_count)
-        negatives = rng.sample(below_window, below_count) + rng.sample(above_window, above_count)
-        if len(negatives) != negatives_needed:
-            raise ValueError(f"Not enough eligible negatives for {example.session_id}")
-        pools.append(_shuffled_pool(example, negatives, "popularity_matched", item_popularity, seed))
+        )
     return pools
+
+
+def build_random_pools(
+    examples: Sequence[BenchmarkExample],
+    item_popularity: Mapping[int, int],
+    catalog_item_ids: Iterable[int],
+    *,
+    pool_size: int = 20,
+    seed: int = 0,
+) -> list[BenchmarkPool]:
+    """Easy ladder level: 19 negatives drawn uniformly from the catalog.
+
+    Most catalog items are rarely chosen, so these pools carry a strong
+    popularity signal (the target is usually more popular than its
+    negatives). That is the point of the easy level; the shortcut checks
+    report it rather than hide it.
+    """
+
+    catalog = sorted(set(int(item) for item in catalog_item_ids))
+    pools: list[BenchmarkPool] = []
+    for example in examples:
+        rng = random.Random(f"{seed}:random:{example.session_id}")
+        excluded = set(example.prefix_item_ids) | {example.target_item_id}
+        negatives: list[int] = []
+        while len(negatives) < pool_size - 1:
+            item = catalog[rng.randrange(len(catalog))]
+            if item not in excluded and item not in negatives:
+                negatives.append(item)
+        pools.append(_shuffled_pool(example, negatives, "random", item_popularity, seed))
+    return pools
+
+
+def amazon_platform(genres: str) -> str | None:
+    """Platform from an Amazon category path, e.g. 'Video Games|Xbox One|Games'.
+
+    The first category after 'Video Games' is the platform, except under
+    'Legacy Systems', where the console is the next level down.
+    """
+
+    path = [part for part in genres.split("|") if part and part not in ("Video Games", "Games")]
+    if not path or path[0] == "(unknown)":
+        return None
+    if path[0] == "Legacy Systems":
+        return f"Legacy Systems|{path[1]}" if len(path) > 1 else None
+    return path[0]
 
 
 def _shuffled_pool(

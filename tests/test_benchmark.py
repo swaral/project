@@ -8,7 +8,9 @@ import pandas as pd
 from llm_session_reco.benchmark import (
     BenchmarkExample,
     ItemKNNRetriever,
+    amazon_platform,
     assign_split,
+    build_random_pools,
     build_clean_examples,
     build_popularity_matched_pools,
     build_retrieval_pools,
@@ -113,3 +115,66 @@ def test_retrieval_pools_record_whether_the_target_was_found():
     assert not missed.target_retrieved and missed.target_retrieval_rank == 4
     # The missed target replaces the lowest-ranked retrieved item.
     assert set(missed.candidate_item_ids) == {2, 9}
+
+
+def _ladder_setup():
+    catalog = list(range(1, 601))
+    popularity = {item: item for item in catalog}
+    attributes = {item: frozenset(["even" if item % 2 == 0 else "odd"]) for item in catalog}
+    rng = np.random.default_rng(1)
+    examples = []
+    for i, target in enumerate(rng.integers(100, 500, size=200)):
+        prefix = [int(x) for x in rng.choice(catalog, 5, replace=False) if x != target]
+        examples.append(_example(i, prefix, int(target)))
+    return catalog, popularity, attributes, examples
+
+
+def test_random_pools_are_valid_and_deterministic():
+    catalog, popularity, _, examples = _ladder_setup()
+    pools = build_random_pools(examples, popularity, catalog, seed=0)
+    for example, pool in zip(examples, pools):
+        assert pool.pool_type == "random"
+        assert len(set(pool.candidate_item_ids)) == 20
+        assert pool.candidate_item_ids[pool.target_position] == example.target_item_id
+        assert not set(pool.candidate_item_ids) & set(example.prefix_item_ids)
+    assert pools == build_random_pools(examples, popularity, catalog, seed=0)
+
+
+def test_attribute_matched_negatives_share_the_target_attribute():
+    catalog, popularity, attributes, examples = _ladder_setup()
+    pools = build_popularity_matched_pools(
+        examples, popularity, catalog, item_attributes=attributes, pool_type="attribute_matched"
+    )
+    for example, pool in zip(examples, pools):
+        assert pool.pool_type == "attribute_matched" and pool.attribute_matched
+        target_attrs = attributes[example.target_item_id]
+        assert all(attributes[i] & target_attrs for i in pool.candidate_item_ids)
+    ranks = np.array([p.target_popularity_rank for p in pools])
+    assert abs(ranks.mean() - 10.5) < 1.5
+
+
+def test_attribute_matching_falls_back_when_the_target_has_no_attribute():
+    catalog, popularity, attributes, examples = _ladder_setup()
+    attributes = dict(attributes)
+    attributes[examples[0].target_item_id] = frozenset()
+    pools = build_popularity_matched_pools(
+        examples[:1], popularity, catalog, item_attributes=attributes, pool_type="attribute_matched"
+    )
+    assert pools[0].attribute_matched is False
+    assert "attribute_matched" in pools[0].to_dict()
+
+
+def test_default_matched_pools_are_unchanged_by_the_attribute_option():
+    catalog, popularity, _, examples = _ladder_setup()
+    default = build_popularity_matched_pools(examples, popularity, catalog, seed=0)
+    assert all(p.pool_type == "popularity_matched" and p.attribute_matched is None for p in default)
+    assert "attribute_matched" not in default[0].to_dict()
+
+
+def test_amazon_platform_reads_the_console_level():
+    assert amazon_platform("Video Games|Xbox One|Games") == "Xbox One"
+    assert amazon_platform("Video Games|Legacy Systems|PlayStation Systems|PlayStation 3") == (
+        "Legacy Systems|PlayStation Systems"
+    )
+    assert amazon_platform("Video Games|(unknown)") is None
+    assert amazon_platform("Video Games") is None

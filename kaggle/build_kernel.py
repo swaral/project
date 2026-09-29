@@ -60,6 +60,14 @@ def main() -> None:
     parser.add_argument("--context", default="title", choices=("title", "genre"),
                         help="item context shown to every ensemble member")
     parser.add_argument("--sessions", type=int, default=300, help="sessions per domain and pool")
+    parser.add_argument(
+        "--experiment",
+        default="wording",
+        choices=("wording", "strategy", "context"),
+        help="ensemble members: original wordings, 8 strategy prompts, or 4 field contexts",
+    )
+    parser.add_argument("--ladder-sessions", type=int, default=300,
+                        help="sessions per domain on the random and attribute-matched levels")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
 
@@ -67,8 +75,9 @@ def main() -> None:
     if not conditions or set(conditions) - {"fixed", "shuffled"}:
         parser.error("--conditions must list fixed and/or shuffled")
     pools = [p.strip() for p in args.pools.split(",") if p.strip()]
-    if not pools or set(pools) - {"stress", "popularity_matched", "retrieval"}:
-        parser.error("--pools must list stress, popularity_matched and/or retrieval")
+    allowed_pools = {"stress", "popularity_matched", "retrieval", "random", "attribute_matched"}
+    if not pools or set(pools) - allowed_pools:
+        parser.error(f"--pools must be drawn from {sorted(allowed_pools)}")
     if set(pools) - {"stress"} and "shuffled" not in conditions:
         parser.error("benchmark pools run shuffled only; include shuffled in --conditions")
 
@@ -80,8 +89,11 @@ def main() -> None:
         suffix = f"{size}-" + "-".join(p.replace("popularity_", "") for p in pools)
     if args.context != "title":
         suffix += f"-{args.context}"
+    if args.experiment != "wording":
+        suffix = f"{size}-{args.experiment}-ladder"
     slug = KERNEL_SLUG
-    if args.model != DEFAULT_MODEL or conditions != ["fixed"] or pools != ["stress"] or args.context != "title":
+    if (args.model != DEFAULT_MODEL or conditions != ["fixed"] or pools != ["stress"]
+            or args.context != "title" or args.experiment != "wording"):
         slug = f"{KERNEL_SLUG}-{suffix}"
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -97,6 +109,10 @@ def main() -> None:
             'int(os.environ.get("PILOT_SESSIONS", "300"))', repr(args.sessions)
         ).replace(
             'os.environ.get("PILOT_CONTEXT", "title")', repr(args.context)
+        ).replace(
+            'os.environ.get("PILOT_EXPERIMENT", "wording")', repr(args.experiment)
+        ).replace(
+            'int(os.environ.get("PILOT_LADDER_SESSIONS", "300"))', repr(args.ladder_sessions)
         )
         + f"\n\nPAYLOAD = {_source_archive()!r}\n\n"
         + 'if __name__ == "__main__":\n    main()\n'

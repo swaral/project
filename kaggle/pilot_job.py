@@ -38,7 +38,20 @@ POOLS = os.environ.get("PILOT_POOLS", "stress").split(",")
 # genres; on Amazon the genres include the platform).
 CONTEXT = os.environ.get("PILOT_CONTEXT", "title")
 WORDINGS = ("baseline_scores_v1", "wording_direct_v1", "wording_preference_v1", "wording_detailed_v1")
-BENCHMARK_POOLS = ("popularity_matched", "retrieval")
+BENCHMARK_POOLS = ("popularity_matched", "retrieval", "random", "attribute_matched")
+# Addendum v8 experiments: "wording" (the original four wordings x CONTEXT),
+# "strategy" (baseline + seven strategy prompts, title context) and "context"
+# (baseline wording x the four four-field context variants).
+EXPERIMENT = os.environ.get("PILOT_EXPERIMENT", "wording")
+STRATEGY_PROMPTS = (
+    "baseline_scores_v1", "next_step_v2", "long_term_taste_v2", "closest_match_v2",
+    "rule_out_rank_v2", "preference_enjoy_v2", "preference_pick_now_v2", "skip_risk_v2",
+)
+FIELD_CONTEXTS = ("context_content_v2", "context_crowd_v2", "context_personal_v2", "context_collab_v2")
+# Ladder levels L1 (random) and L3 (attribute_matched) use a seeded subset of
+# the L2 (popularity_matched) sample, so every level scores the same users.
+LADDER_SESSIONS = int(os.environ.get("PILOT_LADDER_SESSIONS", "300"))
+SAMPLED_POOLS = ("popularity_matched", "random", "attribute_matched")
 MAX_RUNTIME_MINUTES = 660  # total budget, inside Kaggle's 12-hour limit
 
 PROJECT = Path("/tmp/project")
@@ -166,6 +179,28 @@ def prepare_data():
                 for line in handle:
                     if json.loads(line)["target_retrieved"]:
                         out.write(line)
+            write_sampled_pools(processed, spec["prefix"])
+
+
+def write_sampled_pools(processed, prefix):
+    """Fix the sessions every ladder level runs on.
+
+    L2 uses the same draw as the earlier benchmark pilots (run_ensemble's
+    --sample-size 500 --sample-seed 0 over the pool file sorted by session),
+    so those results stay comparable; L1 and L3 use a seeded subset of it.
+    """
+    import random as _random
+    with (processed / f"{prefix}_pool_popularity_matched.jsonl").open() as handle:
+        ordered = sorted((json.loads(line) for line in handle), key=lambda r: str(r["session_id"]))
+    main = [r["session_id"] for r in _random.Random(0).sample(ordered, min(PILOT_SESSIONS, len(ordered)))]
+    ladder = set(_random.Random(1).sample(main, min(LADDER_SESSIONS, len(main))))
+    for pool in SAMPLED_POOLS:
+        keep = set(main) if pool == "popularity_matched" else ladder
+        with (processed / f"{prefix}_pool_{pool}.jsonl").open() as handle, \
+                (processed / f"{prefix}_pool_{pool}_pilot.jsonl").open("w") as out:
+            for line in handle:
+                if json.loads(line)["session_id"] in keep:
+                    out.write(line)
 
 
 def pool_args(domain, pool):
@@ -175,6 +210,8 @@ def pool_args(domain, pool):
         return list(spec["extra"])
     items = ["--items-file", "data/processed/amazon_games_items.jsonl"] if domain == "amazon_games" else []
     pool_file = "retrieval_found" if pool == "retrieval" else pool
+    if EXPERIMENT != "wording" and pool in SAMPLED_POOLS:
+        pool_file = f"{pool}_pilot"
     return [
         "--examples", f"data/processed/{spec['prefix']}_clean_examples.jsonl",
         "--candidates", f"data/processed/{spec['prefix']}_pool_{pool_file}.jsonl",
@@ -184,11 +221,26 @@ def pool_args(domain, pool):
 
 def run_name(domain, pool, condition):
     name = f"{domain}_{condition}" if pool == "stress" else f"{domain}_{pool}_{condition}"
+    if EXPERIMENT != "wording":
+        return f"{name}_{EXPERIMENT}"
     return name if CONTEXT == "title" else f"{name}_{CONTEXT}"
 
 
 def member_args():
-    return [arg for wording in WORDINGS for arg in ("--member", f"{wording}:context_{CONTEXT}_v1")]
+    if EXPERIMENT == "strategy":
+        members = [f"{p}:context_title_v1" for p in STRATEGY_PROMPTS]
+    elif EXPERIMENT == "context":
+        members = [f"baseline_scores_v1:{c}" for c in FIELD_CONTEXTS]
+    else:
+        members = [f"{w}:context_{CONTEXT}_v1" for w in WORDINGS]
+    return [arg for member in members for arg in ("--member", member)]
+
+
+def sample_args(pool):
+    # v8 runs read pre-sampled pool files so every ladder level scores the same users.
+    if EXPERIMENT != "wording" and pool in SAMPLED_POOLS:
+        return []
+    return ["--sample-size", str(PILOT_SESSIONS), "--sample-seed", "0"]
 
 
 def run_domains(pool, condition, minutes):
@@ -200,7 +252,7 @@ def run_domains(pool, condition, minutes):
                "--provider", "chat-completions", "--model", MODEL,
                "--base-url", f"http://127.0.0.1:{spec['port']}/v1",
                "--domain", domain, *pool_args(domain, pool), *member_args(),
-               "--sample-size", str(PILOT_SESSIONS), "--sample-seed", "0",
+               *sample_args(pool),
                "--continue-on-error", "--resume",
                "--max-runtime-minutes", str(minutes),
                "--output", str(output)]
@@ -237,6 +289,7 @@ def analyse_benchmark(pool, condition):
         report_path = OUT / f"{name}_pilot_debiased.json"
         run([sys.executable, "scripts/evaluate_debiased.py", "--trials", str(trials),
              "--pools", f"data/processed/{spec['prefix']}_pool_{pool}.jsonl",
+             "--popularity-file", spec["popularity"],
              "--output", str(report_path)], cwd=PROJECT)
         report = json.loads(report_path.read_text())
         hybrid_path = OUT / f"{name}_pilot_hybrid.json"
@@ -255,6 +308,11 @@ def analyse_benchmark(pool, condition):
             "mrr": {m: round(v["RR"], 4) for m, v in report["methods"].items()},
             "primary": {k: {"diff": round(v["mean_difference"], 4), "p_holm": round(v["p_holm"], 4)}
                         for k, v in report["primary_comparisons"].items()},
+            "rwra": {k: {"diff": round(v["mean_difference"], 4), "p_holm": round(v["p_holm"], 4)}
+                     for k, v in report.get("rwra_comparisons", {}).items()},
+            "member_test_mrr": {m.split(":")[0] if EXPERIMENT != "context" else m.split(":")[1]: round(v, 4)
+                                for m, v in report.get("test_mrr_by_member", {}).items()},
+            "member_agreement_tau_b": report.get("member_agreement_tau_b"),
             "max_prompt_tokens": max_prompt_tokens(trials),
         }
         if "retrieval_recall_test" in report:

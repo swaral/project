@@ -636,3 +636,55 @@ and disagreed with the mean in the pilots. Secondary comparisons (z-score mean
 vs naive mean, naive mean vs single prompt, RWRA vs naive mean) are
 Holm-corrected as a separate family. Every LLM result is reported next to the
 non-LLM baselines on the same candidates.
+
+## Addendum v8: Strategy Prompts, Four-Field Contexts, Difficulty Ladder
+
+Recorded before any run. Model `qwen2.5:3b-instruct`, shuffled candidate
+order, clean examples and validation/test split from Addendum v7.
+
+### Difficulty ladder (same examples at every level)
+
+- L1 easy, `random`: 19 negatives uniform over the catalog.
+- L2 medium, `popularity_matched`: unchanged from Addendum v7 (pools are
+  byte-identical, so earlier L2 results stay comparable).
+- L3 hard, `attribute_matched`: popularity-matched negatives that also share
+  a genre (MovieLens) or the platform (Amazon, read from the existing genre
+  path) with the target. Targets without a usable attribute fall back to L2
+  sampling and are flagged `attribute_matched: false`.
+
+Sessions: L2 uses the same 500 per domain as the earlier benchmark pilots
+(seed 0); L1 and L3 use a seeded 300-session subset of those, so every level
+scores the same users.
+
+### Experiment 1: strategy prompts (8 members, title context)
+
+`baseline_scores_v1` plus `next_step_v2`, `long_term_taste_v2`,
+`closest_match_v2`, `rule_out_rank_v2`, `preference_enjoy_v2`,
+`preference_pick_now_v2`, `skip_risk_v2` (texts in `prompts.py`).
+
+### Experiment 2: four-field contexts (4 members, baseline wording)
+
+Built only from the datasets (no external metadata); statistics from the
+leave-one-out training frame; candidates never show a rating by the user;
+fields shown for the last 50 history items.
+
+- `context_content_v2`: title, genres, series (from titles), year (MovieLens
+  title; Amazon first year seen in training ratings).
+- `context_crowd_v2`: title, average rating, audience tertile, rating trend.
+- `context_personal_v2`: title, user's own rating, recency, overlap with the
+  user's top-3 genres.
+- `context_collab_v2`: title, history item most often co-chosen (cosine),
+  link strength relative to the other candidates, recent history item it
+  most often follows.
+
+### Pre-registered comparisons (per experiment, domain and ladder level; test split)
+
+Primary (Holm across the two): RWRA vs the validation-preselected single
+prompt, and RWRA vs the naive mean. Also reported, Holm-corrected as their
+own families: the Addendum v7 debiased-ensemble comparisons and the
+secondary comparisons. Paired sign-flip test on mean reciprocal rank with a
+bootstrap 95% CI; tie-aware metrics.
+
+Descriptive: each member's test MRR, mean pairwise tau-b between members on
+raw scores, and all methods split by target rarity (training-popularity
+tertiles of the test targets: rare / moderate / popular).

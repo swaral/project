@@ -27,7 +27,9 @@ import json
 from pathlib import Path
 
 import numpy as np
+from scipy.stats import kendalltau
 
+from llm_session_reco.baselines import load_item_popularity
 from llm_session_reco.debiasing import (
     calibrated_scores,
     fit_slot_priors,
@@ -65,7 +67,14 @@ def compare(values: dict[str, list[float]], a: str, b: str, *, n_boot: int, seed
     }
 
 
-def evaluate(trials: list[dict], pools: list[dict], *, n_boot: int = 2000, seed: int = 0) -> dict:
+def evaluate(
+    trials: list[dict],
+    pools: list[dict],
+    *,
+    n_boot: int = 2000,
+    seed: int = 0,
+    item_popularity: dict[int, int] | None = None,
+) -> dict:
     pool_by_session = {p["session_id"]: p for p in pools}
     records = [r for r in trials if r["session_id"] in pool_by_session]
     answers = {r["session_id"]: member_answers(r) for r in records}
@@ -113,10 +122,51 @@ def evaluate(trials: list[dict], pools: list[dict], *, n_boot: int = 2000, seed:
         f"{a}_vs_{b}": compare(rr, a, b, n_boot=n_boot, seed=seed)
         for a, b in SECONDARY if a in rr and b in rr
     }
-    for family in (primary, secondary):
+    # Addendum v8: RWRA, the proposed method, against the two references.
+    rwra = {
+        f"rwra_recorded_vs_{b}": compare(rr, "rwra_recorded", b, n_boot=n_boot, seed=seed)
+        for b in ("single_prompt_preselected", "naive_mean")
+        if "rwra_recorded" in rr
+    }
+    for family in (primary, secondary, rwra):
+        if not family:
+            continue
         adjusted = holm_adjust({k: v["p_value"] for k, v in family.items()})
         for key, value in family.items():
             value["p_holm"] = adjusted[key]
+
+    # Each member alone on test, and how much members agree (tau-b on raw
+    # scores, so ties are not broken by list position).
+    test_mrr = {
+        m: float(np.mean([
+            tie_aware_metrics(answers[r["session_id"]][m].item_scores, r["target_item_id"])["RR"]
+            for r in complete
+        ]))
+        for m in members
+    }
+    taus = []
+    for record in complete:
+        pool = record["candidate_item_ids"]
+        vectors = [[answers[record["session_id"]][m].item_scores[i] for i in pool] for m in members]
+        pair_taus = []
+        for a in range(len(vectors)):
+            for b in range(a + 1, len(vectors)):
+                tau = kendalltau(vectors[a], vectors[b]).statistic
+                pair_taus.append(0.0 if tau != tau else float(tau))
+        if pair_taus:
+            taus.append(float(np.mean(pair_taus)))
+
+    by_rarity = {}
+    if item_popularity is not None and complete:
+        counts = np.array([item_popularity.get(int(r["target_item_id"]), 0) for r in complete])
+        low, high = np.quantile(counts, [1 / 3, 2 / 3])
+        groups = np.where(counts <= low, "rare", np.where(counts <= high, "moderate", "popular"))
+        for group in ("rare", "moderate", "popular"):
+            mask = groups == group
+            by_rarity[group] = {
+                "sessions": int(mask.sum()),
+                "mrr": {name: float(np.mean(np.array(v)[mask])) for name, v in rr.items()} if mask.any() else {},
+            }
 
     pool_type = pools[0]["pool_type"]
     summary = {
@@ -134,6 +184,10 @@ def evaluate(trials: list[dict], pools: list[dict], *, n_boot: int = 2000, seed:
         },
         "primary_comparisons": primary,
         "secondary_comparisons": secondary,
+        "rwra_comparisons": rwra,
+        "test_mrr_by_member": test_mrr,
+        "member_agreement_tau_b": float(np.mean(taus)) if taus else None,
+        "by_target_rarity": by_rarity,
     }
     if pool_type == "retrieval":
         test_pools = [p for p in pools if p["split"] == "test"]
@@ -157,12 +211,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--n-boot", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument(
+        "--popularity-file",
+        type=Path,
+        default=None,
+        help="training item popularity JSON; enables the rare/moderate/popular target split",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    summary = evaluate(read_jsonl(args.trials), read_jsonl(args.pools), n_boot=args.n_boot, seed=args.seed)
+    popularity = load_item_popularity(args.popularity_file) if args.popularity_file else None
+    summary = evaluate(
+        read_jsonl(args.trials), read_jsonl(args.pools), n_boot=args.n_boot, seed=args.seed,
+        item_popularity=popularity,
+    )
     output = args.output or args.trials.with_name(args.trials.stem.removesuffix("_trials") + "_debiased.json")
     output.write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
