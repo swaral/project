@@ -688,3 +688,56 @@ bootstrap 95% CI; tie-aware metrics.
 Descriptive: each member's test MRR, mean pairwise tau-b between members on
 raw scores, and all methods split by target rarity (training-popularity
 tertiles of the test targets: rare / moderate / popular).
+
+## Addendum v9: Amazon Movies & TV as the Movie Domain
+
+Recorded 2026-09-29, before any Movies & TV run.
+
+### Why
+
+MovieLens-1M has no usable consumption order: 53% of consecutive ratings by
+a user share the same second, 89% fall within a minute, and 63% of users
+rated their whole history within one day (bulk rating on sign-up). The
+held-out "next" item is therefore the last one clicked on a rating page, not
+the next one watched. Amazon Movies & TV 2023 (5-core, rating-only) has 0%
+same-second gaps, 61% gaps over a day and a 12-day median gap, like the games
+domain. MovieLens results are kept as a contrast domain without sequential
+signal; nothing about them changes.
+
+### Data (`scripts/prepare_amazon_movies.py`, `amazon_movies.py`)
+
+- Source: McAuley-Lab Amazon-Reviews-2023, `benchmark/5core/rating_only/
+  Movies_and_TV.csv` and `raw/meta_categories/meta_Movies_and_TV.jsonl`.
+  Only dataset fields are used: title and `categories`.
+- Items without a title in the metadata are dropped.
+- Users: kept when `sha256("0:<user_id>")[:8] < 0.15 * 2^32` (about 15%,
+  independent of library versions and row order), then the 5-core filter is
+  re-applied until stable. The subset's SHA-256 is recorded locally and by
+  the Kaggle job, and the two must match.
+- Genres: `categories` mapped to a fixed canonical set (`GENRE_MAP`:
+  Drama, Comedy, Documentary, Thriller, Horror, Action & Adventure, Sci-Fi &
+  Fantasy, Romance, Animation, Kids & Family, Special Interest, Fitness,
+  Music & Performing Arts, Sports, Western, War, Historical, International,
+  Arthouse, Unscripted, LGBTQ, Faith & Spirituality). Formats, studios, store
+  sections and mood tags are dropped.
+- Everything downstream is unchanged from v7/v8: clean targets (final rating
+  >= 4, strictly later than the previous interaction), 30/70
+  validation/test hash split, training-only statistics, the three ladder
+  levels (L3 matches on a shared canonical genre, as for MovieLens), the
+  shortcut checks and the non-LLM reference rankers. Context `year` uses the
+  first year seen in training ratings, as for games.
+
+### Runs
+
+Experiment 1 (8 strategy prompts) and Experiment 2 (4 four-field contexts)
+exactly as in Addendum v8: same model, Ollama version, shuffled candidates,
+L2 500 sessions and L1/L3 a seeded 300-session subset. With a single domain,
+the Kaggle job splits each level's sessions over the two GPUs (alternate
+sessions) and merges the trial files; sessions are independent, so this does
+not change any result.
+
+### Comparisons
+
+The same pre-registered comparisons as Addendum v8, per experiment and
+ladder level. The Movies & TV runs are an additional family: Holm correction
+stays within each (experiment, domain, level) pair of primary comparisons.

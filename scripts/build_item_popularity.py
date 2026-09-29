@@ -18,6 +18,7 @@ from llm_session_reco.session_dataset import build_leave_one_out_training_rating
 DEFAULT_OUTPUTS = {
     "movielens": Path("data/processed/ml1m_item_popularity.json"),
     "amazon-games": Path("data/processed/amazon_games_item_popularity.json"),
+    "amazon-movies": Path("data/processed/amazon_movies_item_popularity.json"),
 }
 
 
@@ -30,6 +31,10 @@ def load_domain_ratings(domain: str, data_root: Path):
         from llm_session_reco.amazon_games import load_ratings
 
         return load_ratings(data_root / "amazon-games")
+    if domain == "amazon-movies":
+        from llm_session_reco.amazon_movies import load_ratings
+
+        return load_ratings(data_root)
     raise ValueError(f"unknown domain: {domain}")
 
 

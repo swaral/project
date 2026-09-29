@@ -118,9 +118,14 @@ def load_ratings(
     back to the original Amazon reviewer ID / ASIN.
     """
 
-    dataset_dir = _dataset_directory(data_dir)
+    return load_ratings_file(_dataset_directory(data_dir) / _RATINGS_FILENAME, id_map_output)
+
+
+def load_ratings_file(path: str | Path, id_map_output: str | Path | None = None) -> pd.DataFrame:
+    """Read an Amazon-Reviews-2023 rating-only CSV; see :func:`load_ratings`."""
+
     raw = pd.read_csv(
-        dataset_dir / _RATINGS_FILENAME,
+        path,
         dtype={"user_id": "string", "parent_asin": "string", "rating": "float64"},
     )
 

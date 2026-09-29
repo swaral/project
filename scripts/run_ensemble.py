@@ -248,7 +248,15 @@ def _load_item_context(
         }
         return item_titles, item_genres, "game"
 
-    raise ValueError(f"Unknown domain {domain!r}; expected movielens or amazon_games")
+    if domain == "amazon_movies":
+        if items_file is None:
+            raise ValueError("--items-file is required when --domain=amazon_movies")
+        records = _read_jsonl(items_file)
+        item_titles = {int(r["item_id"]): str(r["title"]) for r in records}
+        item_genres = {int(r["item_id"]): str(r["genres"]) for r in records}
+        return item_titles, item_genres, "movie"
+
+    raise ValueError(f"Unknown domain {domain!r}; expected movielens, amazon_games or amazon_movies")
 
 
 def _context_feature_builder(args: argparse.Namespace, item_titles, item_genres):
@@ -286,7 +294,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default=None)
     parser.add_argument("--base-url", default=None)
     parser.add_argument(
-        "--domain", choices=["movielens", "amazon_games"], default="movielens"
+        "--domain", choices=["movielens", "amazon_games", "amazon_movies"], default="movielens"
     )
     parser.add_argument("--data-root", type=Path, default=Path("data/raw"))
     parser.add_argument(

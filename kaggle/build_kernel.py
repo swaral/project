@@ -68,6 +68,9 @@ def main() -> None:
     )
     parser.add_argument("--ladder-sessions", type=int, default=300,
                         help="sessions per domain on the random and attribute-matched levels")
+    parser.add_argument("--domains", default="movielens,amazon_games",
+                        help="comma-separated domains: movielens, amazon_games, amazon_movies; "
+                        "a single domain is split over both GPUs")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
 
@@ -81,6 +84,10 @@ def main() -> None:
     if set(pools) - {"stress"} and "shuffled" not in conditions:
         parser.error("benchmark pools run shuffled only; include shuffled in --conditions")
 
+    domains = [d.strip() for d in args.domains.split(",") if d.strip()]
+    if not domains or set(domains) - {"movielens", "amazon_games", "amazon_movies"}:
+        parser.error("--domains must be drawn from movielens, amazon_games, amazon_movies")
+
     # The original fixed-order 3B run keeps the base kernel; every other setup
     # gets its own kernel so a new run never replaces earlier outputs.
     size = args.model.split(":")[-1].split("-")[0]
@@ -91,9 +98,12 @@ def main() -> None:
         suffix += f"-{args.context}"
     if args.experiment != "wording":
         suffix = f"{size}-{args.experiment}-ladder"
+    if domains != ["movielens", "amazon_games"]:
+        suffix += "-" + "-".join(d.replace("amazon_", "") for d in domains)
     slug = KERNEL_SLUG
     if (args.model != DEFAULT_MODEL or conditions != ["fixed"] or pools != ["stress"]
-            or args.context != "title" or args.experiment != "wording"):
+            or args.context != "title" or args.experiment != "wording"
+            or domains != ["movielens", "amazon_games"]):
         slug = f"{KERNEL_SLUG}-{suffix}"
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -113,6 +123,8 @@ def main() -> None:
             'os.environ.get("PILOT_EXPERIMENT", "wording")', repr(args.experiment)
         ).replace(
             'int(os.environ.get("PILOT_LADDER_SESSIONS", "300"))', repr(args.ladder_sessions)
+        ).replace(
+            'os.environ.get("PILOT_DOMAINS", "movielens,amazon_games").split(",")', repr(domains)
         )
         + f"\n\nPAYLOAD = {_source_archive()!r}\n\n"
         + 'if __name__ == "__main__":\n    main()\n'

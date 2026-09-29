@@ -11,7 +11,7 @@ Writes, under data/processed/:
   same examples, kept only as a shortcut diagnostic;
 - {prefix}_benchmark_summary.json.
 
-Run scripts/prepare_movielens.py or scripts/prepare_amazon_games.py first so
+Run scripts/prepare_movielens.py, prepare_amazon_games.py or prepare_amazon_movies.py first so
 the raw data (and the Amazon item file) exist.
 """
 
@@ -41,9 +41,9 @@ from llm_session_reco.session_dataset import (
 
 
 def item_attributes(domain: str, data, processed_dir: Path) -> dict[int, frozenset[str]]:
-    """Attribute the hard ladder level matches on: genres (MovieLens), platform (Amazon)."""
+    """Attribute the hard ladder level matches on: genres (MovieLens, Movies & TV), platform (games)."""
 
-    if domain == "movielens":
+    if domain in ("movielens", "amazon_movies"):
         return {item: frozenset(genres) for item, genres in data.item_genres.items()}
     attributes = {}
     with (processed_dir / "amazon_games_items.jsonl").open(encoding="utf-8") as handle:
@@ -147,7 +147,7 @@ def main() -> None:
             "top_popular": "original design (19 most popular non-history items); diagnostic only",
             "random": "ladder L1 (easy): 19 negatives uniform over the catalog",
             "attribute_matched": "ladder L3 (hard): popularity-matched negatives sharing a genre "
-            "(MovieLens) or the platform (Amazon) with the target",
+            "(MovieLens, Movies & TV) or the platform (games) with the target",
         },
         "attribute_matched_share": round(
             sum(bool(p.attribute_matched) for p in attribute_pools) / len(attribute_pools), 4

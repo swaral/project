@@ -76,7 +76,28 @@ DOMAINS = {
         "popularity": "data/processed/amazon_games_item_popularity.json",
         "popularity_domain": "amazon-games",
     },
+    "amazon_movies": {
+        "port": 11434,
+        "prefix": "amazon_movies",
+        "extra": [
+            "--examples", "data/processed/amazon_movies_leave_one_out.jsonl",
+            "--candidates", "data/processed/amazon_movies_candidate_pools.jsonl",
+            "--items-file", "data/processed/amazon_movies_items.jsonl",
+        ],
+        "popularity": "data/processed/amazon_movies_item_popularity.json",
+        "popularity_domain": "amazon-movies",
+    },
 }
+PREPARE_SCRIPTS = {
+    "movielens": "scripts/prepare_movielens.py",
+    "amazon_games": "scripts/prepare_amazon_games.py",
+    "amazon_movies": "scripts/prepare_amazon_movies.py",
+}
+# Addendum v9: which domains this kernel runs. A single domain is split into
+# one shard per GPU (sessions are independent, so shards merge exactly).
+SELECTED_DOMAINS = os.environ.get("PILOT_DOMAINS", "movielens,amazon_games").split(",")
+DOMAINS = {name: DOMAINS[name] for name in SELECTED_DOMAINS}
+SHARD_PORTS = (11434, 11435)
 
 
 def log(message):
@@ -163,8 +184,8 @@ def warm_up(port):
 
 def prepare_data():
     python = sys.executable
-    run([python, "scripts/prepare_movielens.py"], cwd=PROJECT)
-    run([python, "scripts/prepare_amazon_games.py"], cwd=PROJECT)
+    for domain in DOMAINS:
+        run([python, PREPARE_SCRIPTS[domain]], cwd=PROJECT)
     for spec in DOMAINS.values():
         run([python, "scripts/build_item_popularity.py", "--domain",
              spec["popularity_domain"]], cwd=PROJECT)
@@ -180,6 +201,11 @@ def prepare_data():
                     if json.loads(line)["target_retrieved"]:
                         out.write(line)
             write_sampled_pools(processed, spec["prefix"])
+    # Keep the subset fingerprint so it can be checked against the local build.
+    for name in ("amazon_movies_subset.summary.json", "amazon_movies_benchmark_summary.json"):
+        source = PROJECT / "data/processed" / name
+        if source.is_file():
+            (OUT / name).write_text(source.read_text())
 
 
 def write_sampled_pools(processed, prefix):
@@ -208,7 +234,7 @@ def pool_args(domain, pool):
     spec = DOMAINS[domain]
     if pool == "stress":
         return list(spec["extra"])
-    items = ["--items-file", "data/processed/amazon_games_items.jsonl"] if domain == "amazon_games" else []
+    items = ["--items-file", f"data/processed/{spec['prefix']}_items.jsonl"] if domain != "movielens" else []
     pool_file = "retrieval_found" if pool == "retrieval" else pool
     if EXPERIMENT != "wording" and pool in SAMPLED_POOLS:
         pool_file = f"{pool}_pilot"
@@ -243,30 +269,65 @@ def sample_args(pool):
     return ["--sample-size", str(PILOT_SESSIONS), "--sample-seed", "0"]
 
 
+def sharded(pool):
+    return len(DOMAINS) == 1 and EXPERIMENT != "wording" and pool in SAMPLED_POOLS
+
+
+def write_shards(domain, pool):
+    """Split a pre-sampled pool file into one file per GPU, alternating sessions."""
+    processed = PROJECT / "data/processed"
+    prefix = DOMAINS[domain]["prefix"]
+    with (processed / f"{prefix}_pool_{pool}_pilot.jsonl").open() as handle:
+        lines = [line for line in handle if line.strip()]
+    for index in range(len(SHARD_PORTS)):
+        (processed / f"{prefix}_pool_{pool}_pilot_shard{index}.jsonl").write_text(
+            "".join(lines[index::len(SHARD_PORTS)]))
+
+
 def run_domains(pool, condition, minutes):
-    processes = {}
+    jobs = []  # (label, domain, port, extra argument overrides, output)
     for domain, spec in DOMAINS.items():
         name = run_name(domain, pool, condition)
-        output = OUT / f"{name}_pilot_trials.jsonl"
+        if sharded(pool):
+            write_shards(domain, pool)
+            for index, port in enumerate(SHARD_PORTS):
+                args = pool_args(domain, pool)
+                args[args.index("--candidates") + 1] = (
+                    f"data/processed/{spec['prefix']}_pool_{pool}_pilot_shard{index}.jsonl")
+                jobs.append((f"{name}_shard{index}", domain, port, args,
+                             OUT / f"{name}_shard{index}_pilot_trials.jsonl"))
+        else:
+            jobs.append((name, domain, spec["port"], pool_args(domain, pool),
+                         OUT / f"{name}_pilot_trials.jsonl"))
+    processes = {}
+    for label, domain, port, args, output in jobs:
         cmd = [sys.executable, "scripts/run_ensemble.py",
                "--provider", "chat-completions", "--model", MODEL,
-               "--base-url", f"http://127.0.0.1:{spec['port']}/v1",
-               "--domain", domain, *pool_args(domain, pool), *member_args(),
+               "--base-url", f"http://127.0.0.1:{port}/v1",
+               "--domain", domain, *args, *member_args(),
                *sample_args(pool),
                "--continue-on-error", "--resume",
                "--max-runtime-minutes", str(minutes),
                "--output", str(output)]
         if condition == "shuffled":
             cmd += ["--shuffle-candidates", "--shuffle-seed", "0"]
-        log(f"starting {domain}: " + " ".join(cmd))
-        processes[domain] = subprocess.Popen(
-            cmd, cwd=PROJECT, stdout=open(OUT / f"{name}_run.log", "w"),
+        log(f"starting {label}: " + " ".join(cmd))
+        processes[label] = subprocess.Popen(
+            cmd, cwd=PROJECT, stdout=open(OUT / f"{label}_run.log", "w"),
             stderr=subprocess.STDOUT)
-    for domain, process in processes.items():
+    for label, process in processes.items():
         code = process.wait()
-        log(f"{domain} finished with exit code {code}")
+        log(f"{label} finished with exit code {code}")
         if code != 0:
-            raise RuntimeError(f"{domain} run failed; see {run_name(domain, pool, condition)}_run.log")
+            raise RuntimeError(f"{label} run failed; see {label}_run.log")
+    if sharded(pool):
+        for domain in DOMAINS:
+            name = run_name(domain, pool, condition)
+            with (OUT / f"{name}_pilot_trials.jsonl").open("w") as merged:
+                for index in range(len(SHARD_PORTS)):
+                    shard = OUT / f"{name}_shard{index}_pilot_trials.jsonl"
+                    merged.write(shard.read_text())
+                    shard.unlink()
 
 
 def max_prompt_tokens(path):
@@ -351,14 +412,15 @@ def main():
     ollama_version = install_ollama()
     gpus = gpu_names()
     log(f"GPUs: {gpus}")
-    for index, spec in enumerate(DOMAINS.values()):
-        start_server(spec["port"], index % max(len(gpus), 1))
+    ports = SHARD_PORTS if len(DOMAINS) == 1 else [spec["port"] for spec in DOMAINS.values()]
+    for index, port in enumerate(ports):
+        start_server(port, index % max(len(gpus), 1))
     run(["ollama", "pull", MODEL], env=dict(os.environ, OLLAMA_HOST="127.0.0.1:11434"))
     digest = model_digest()
     if MODEL == "qwen2.5:3b-instruct" and digest != EXPECTED_DIGEST:
         log(f"WARNING: model digest {digest} differs from frozen {EXPECTED_DIGEST}")
-    for spec in DOMAINS.values():
-        warm_up(spec["port"])
+    for port in ports:
+        warm_up(port)
 
     manifest = {
         "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(started)),
@@ -373,6 +435,7 @@ def main():
         "pilot_sessions_per_domain": PILOT_SESSIONS,
         "conditions": CONDITIONS,
         "pools": POOLS,
+        "domains": list(DOMAINS),
         "context": CONTEXT,
         "sample_seed": 0,
         "code_sha256": hashlib.sha256(PAYLOAD.encode()).hexdigest(),

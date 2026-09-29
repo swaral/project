@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-DOMAINS = ("movielens", "amazon_games")
+DOMAINS = ("movielens", "amazon_games", "amazon_movies")
 
 
 @dataclass(frozen=True)
@@ -29,8 +29,10 @@ def load_domain(
 
     MovieLens reads the raw ml-1m files; Amazon Video Games reads the raw
     reviews plus the item file written by scripts/prepare_amazon_games.py.
-    Genres drop the catch-all Amazon categories ("Video Games", "Games") so
-    the remaining labels carry platform and sub-category information.
+    Amazon Movies & TV reads the subset and item file written by
+    scripts/prepare_amazon_movies.py (canonical genres only). Games genres
+    drop the catch-all Amazon categories ("Video Games", "Games") so the
+    remaining labels carry platform and sub-category information.
     """
 
     if domain == "movielens":
@@ -56,4 +58,15 @@ def load_domain(
                     "Games",
                 }
         return DomainData(domain, "amazon_games", ratings, titles, genres)
+    if domain == "amazon_movies":
+        from .amazon_movies import load_ratings
+
+        ratings = load_ratings(data_root)
+        titles, genres = {}, {}
+        with (processed_root / "amazon_movies_items.jsonl").open(encoding="utf-8") as handle:
+            for line in handle:
+                record = json.loads(line)
+                titles[int(record["item_id"])] = str(record["title"])
+                genres[int(record["item_id"])] = {g for g in str(record["genres"]).split("|") if g}
+        return DomainData(domain, "amazon_movies", ratings, titles, genres)
     raise ValueError(f"Unknown domain {domain!r}; expected one of {DOMAINS}")
