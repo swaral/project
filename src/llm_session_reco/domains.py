@@ -8,7 +8,11 @@ from pathlib import Path
 
 import pandas as pd
 
-DOMAINS = ("movielens", "amazon_games", "amazon_movies")
+DOMAINS = ("movielens", "amazon_games", "amazon_movies", "amazon_film", "amazon_tv")
+
+# Amazon Movies & TV domains: None is the combined category (Addendum v9);
+# 'movie' and 'tv' are the two halves of the Addendum v10 split.
+AMAZON_MOVIES_MEDIA = {"amazon_movies": None, "amazon_film": "movie", "amazon_tv": "tv"}
 
 
 @dataclass(frozen=True)
@@ -30,7 +34,8 @@ def load_domain(
     MovieLens reads the raw ml-1m files; Amazon Video Games reads the raw
     reviews plus the item file written by scripts/prepare_amazon_games.py.
     Amazon Movies & TV reads the subset and item file written by
-    scripts/prepare_amazon_movies.py (canonical genres only). Games genres
+    scripts/prepare_amazon_movies.py (canonical genres only); its movie-only
+    and TV-only halves read the files written with ``--media``. Games genres
     drop the catch-all Amazon categories ("Video Games", "Games") so the
     remaining labels carry platform and sub-category information.
     """
@@ -58,15 +63,15 @@ def load_domain(
                     "Games",
                 }
         return DomainData(domain, "amazon_games", ratings, titles, genres)
-    if domain == "amazon_movies":
+    if domain in AMAZON_MOVIES_MEDIA:
         from .amazon_movies import load_ratings
 
-        ratings = load_ratings(data_root)
+        ratings = load_ratings(data_root, media=AMAZON_MOVIES_MEDIA[domain])
         titles, genres = {}, {}
-        with (processed_root / "amazon_movies_items.jsonl").open(encoding="utf-8") as handle:
+        with (processed_root / f"{domain}_items.jsonl").open(encoding="utf-8") as handle:
             for line in handle:
                 record = json.loads(line)
                 titles[int(record["item_id"])] = str(record["title"])
                 genres[int(record["item_id"])] = {g for g in str(record["genres"]).split("|") if g}
-        return DomainData(domain, "amazon_movies", ratings, titles, genres)
+        return DomainData(domain, domain, ratings, titles, genres)
     raise ValueError(f"Unknown domain {domain!r}; expected one of {DOMAINS}")

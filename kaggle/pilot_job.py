@@ -87,11 +87,36 @@ DOMAINS = {
         "popularity": "data/processed/amazon_movies_item_popularity.json",
         "popularity_domain": "amazon-movies",
     },
+    # Addendum v10: the movie-only and TV-only halves of Movies & TV, one GPU each.
+    "amazon_film": {
+        "port": 11434,
+        "prefix": "amazon_film",
+        "extra": [
+            "--examples", "data/processed/amazon_film_leave_one_out.jsonl",
+            "--candidates", "data/processed/amazon_film_candidate_pools.jsonl",
+            "--items-file", "data/processed/amazon_film_items.jsonl",
+        ],
+        "popularity": "data/processed/amazon_film_item_popularity.json",
+        "popularity_domain": "amazon-film",
+    },
+    "amazon_tv": {
+        "port": 11435,
+        "prefix": "amazon_tv",
+        "extra": [
+            "--examples", "data/processed/amazon_tv_leave_one_out.jsonl",
+            "--candidates", "data/processed/amazon_tv_candidate_pools.jsonl",
+            "--items-file", "data/processed/amazon_tv_items.jsonl",
+        ],
+        "popularity": "data/processed/amazon_tv_item_popularity.json",
+        "popularity_domain": "amazon-tv",
+    },
 }
 PREPARE_SCRIPTS = {
-    "movielens": "scripts/prepare_movielens.py",
-    "amazon_games": "scripts/prepare_amazon_games.py",
-    "amazon_movies": "scripts/prepare_amazon_movies.py",
+    "movielens": ["scripts/prepare_movielens.py"],
+    "amazon_games": ["scripts/prepare_amazon_games.py"],
+    "amazon_movies": ["scripts/prepare_amazon_movies.py"],
+    "amazon_film": ["scripts/prepare_amazon_movies.py", "--media", "movie"],
+    "amazon_tv": ["scripts/prepare_amazon_movies.py", "--media", "tv"],
 }
 # Addendum v9: which domains this kernel runs. A single domain is split into
 # one shard per GPU (sessions are independent, so shards merge exactly).
@@ -185,7 +210,7 @@ def warm_up(port):
 def prepare_data():
     python = sys.executable
     for domain in DOMAINS:
-        run([python, PREPARE_SCRIPTS[domain]], cwd=PROJECT)
+        run([python, *PREPARE_SCRIPTS[domain]], cwd=PROJECT)
     for spec in DOMAINS.values():
         run([python, "scripts/build_item_popularity.py", "--domain",
              spec["popularity_domain"]], cwd=PROJECT)
@@ -202,10 +227,11 @@ def prepare_data():
                         out.write(line)
             write_sampled_pools(processed, spec["prefix"])
     # Keep the subset fingerprint so it can be checked against the local build.
-    for name in ("amazon_movies_subset.summary.json", "amazon_movies_benchmark_summary.json"):
-        source = PROJECT / "data/processed" / name
-        if source.is_file():
-            (OUT / name).write_text(source.read_text())
+    for prefix in ("amazon_movies", "amazon_film", "amazon_tv"):
+        for name in (f"{prefix}_subset.summary.json", f"{prefix}_benchmark_summary.json"):
+            source = PROJECT / "data/processed" / name
+            if source.is_file():
+                (OUT / name).write_text(source.read_text())
 
 
 def write_sampled_pools(processed, prefix):

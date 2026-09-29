@@ -69,7 +69,8 @@ def main() -> None:
     parser.add_argument("--ladder-sessions", type=int, default=300,
                         help="sessions per domain on the random and attribute-matched levels")
     parser.add_argument("--domains", default="movielens,amazon_games",
-                        help="comma-separated domains: movielens, amazon_games, amazon_movies; "
+                        help="comma-separated domains: movielens, amazon_games, amazon_movies, "
+                        "amazon_film, amazon_tv; "
                         "a single domain is split over both GPUs")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
@@ -85,8 +86,11 @@ def main() -> None:
         parser.error("benchmark pools run shuffled only; include shuffled in --conditions")
 
     domains = [d.strip() for d in args.domains.split(",") if d.strip()]
-    if not domains or set(domains) - {"movielens", "amazon_games", "amazon_movies"}:
-        parser.error("--domains must be drawn from movielens, amazon_games, amazon_movies")
+    allowed_domains = {"movielens", "amazon_games", "amazon_movies", "amazon_film", "amazon_tv"}
+    if not domains or set(domains) - allowed_domains:
+        parser.error(f"--domains must be drawn from {sorted(allowed_domains)}")
+    if len(domains) > 2:
+        parser.error("--domains takes at most two domains (one per GPU)")
 
     # The original fixed-order 3B run keeps the base kernel; every other setup
     # gets its own kernel so a new run never replaces earlier outputs.

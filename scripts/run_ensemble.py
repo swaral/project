@@ -19,6 +19,7 @@ import time
 from pathlib import Path
 
 from llm_session_reco.amazon_games import load_items as load_amazon_items
+from llm_session_reco.domains import AMAZON_MOVIES_MEDIA, DOMAINS
 from llm_session_reco.ensemble import AggregatedRanking, EnsembleMember, combine_ensemble
 from llm_session_reco.llm_client import (
     LLMRequestError,
@@ -248,15 +249,15 @@ def _load_item_context(
         }
         return item_titles, item_genres, "game"
 
-    if domain == "amazon_movies":
+    if domain in AMAZON_MOVIES_MEDIA:
         if items_file is None:
-            raise ValueError("--items-file is required when --domain=amazon_movies")
+            raise ValueError(f"--items-file is required when --domain={domain}")
         records = _read_jsonl(items_file)
         item_titles = {int(r["item_id"]): str(r["title"]) for r in records}
         item_genres = {int(r["item_id"]): str(r["genres"]) for r in records}
-        return item_titles, item_genres, "movie"
+        return item_titles, item_genres, "TV show" if domain == "amazon_tv" else "movie"
 
-    raise ValueError(f"Unknown domain {domain!r}; expected movielens, amazon_games or amazon_movies")
+    raise ValueError(f"Unknown domain {domain!r}; expected one of {DOMAINS}")
 
 
 def _context_feature_builder(args: argparse.Namespace, item_titles, item_genres):
@@ -294,7 +295,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default=None)
     parser.add_argument("--base-url", default=None)
     parser.add_argument(
-        "--domain", choices=["movielens", "amazon_games", "amazon_movies"], default="movielens"
+        "--domain", choices=DOMAINS, default="movielens"
     )
     parser.add_argument("--data-root", type=Path, default=Path("data/raw"))
     parser.add_argument(

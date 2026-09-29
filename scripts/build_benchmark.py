@@ -43,7 +43,7 @@ from llm_session_reco.session_dataset import (
 def item_attributes(domain: str, data, processed_dir: Path) -> dict[int, frozenset[str]]:
     """Attribute the hard ladder level matches on: genres (MovieLens, Movies & TV), platform (games)."""
 
-    if domain in ("movielens", "amazon_movies"):
+    if domain != "amazon_games":
         return {item: frozenset(genres) for item, genres in data.item_genres.items()}
     attributes = {}
     with (processed_dir / "amazon_games_items.jsonl").open(encoding="utf-8") as handle:

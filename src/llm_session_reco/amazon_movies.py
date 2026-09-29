@@ -19,15 +19,22 @@ The full file is about 7x the games domain (7.4M ratings, 657K users,
 2. :func:`load_ratings` / :func:`load_items` read that subset with the same
    integer remapping as the games domain.
 
-Only dataset fields are used: title and the ``categories`` list. Categories
-mix genres with formats, studios and moods; :func:`movie_genres` keeps only
-genres, mapped to a small canonical set.
+Only dataset fields are used: title, the ``categories`` list and, for the
+movie/TV split, run time from ``details``. Categories mix genres with formats,
+studios and moods; :func:`movie_genres` keeps only genres, mapped to a small
+canonical set.
+
+Addendum v10 splits the category into two domains, movies and TV, with
+:func:`media_type`. Amazon has no movie/TV field, so the label comes from
+explicit categories, then TV words in the title, then run time; items with no
+usable signal, or with conflicting signals, are dropped from both domains.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -48,6 +55,22 @@ RAW_RATINGS = "movies_tv_ratings.csv"
 RAW_METADATA = "movies_tv_meta.jsonl"
 SUBSET_RATINGS = "movies_tv_ratings_subset.csv"
 SUBSET_ITEMS = "movies_tv_items_subset.jsonl"
+
+MEDIA_TYPES = ("movie", "tv")
+_TV_CATEGORIES = frozenset({"TV", "Television"})
+_MOVIE_CATEGORIES = frozenset({"Movies"})
+_TV_TITLE = re.compile(
+    r"\b(seasons?|complete series|series\s+(\d+|[ivx]+|one|two|three)|episodes?"
+    r"|mini-?series|tv series|tv show)\b",
+    re.IGNORECASE,
+)
+# Multi-film bundles have long total run times but are not TV.
+_COLLECTION_TITLE = re.compile(
+    r"\b(collection|trilogy|double feature|triple feature|\d+[- ](movies?|films?))\b| / |/.*/",
+    re.IGNORECASE,
+)
+MIN_FEATURE_MINUTES = 40  # shorter items are mostly single TV episodes or clips
+MAX_FEATURE_MINUTES = 240  # longer items are mostly season or series box sets
 
 # Category label -> canonical genre. Anything not listed (formats such as
 # "Blu-ray", studios, store sections, moods such as "Cerebral") is dropped.
@@ -103,6 +126,55 @@ def movie_genres(categories: list[str]) -> list[str]:
     return genres
 
 
+def runtime_minutes(details: dict[str, object] | None) -> int | None:
+    """Run time in minutes from a metadata ``details`` dict, e.g. '1 hour and 42 minutes'."""
+
+    details = details or {}
+    text = str(details.get("Run time") or details.get("Runtime") or "")
+    hours = re.search(r"(\d+)\s*hour", text)
+    minutes = re.search(r"(\d+)\s*min", text)
+    total = (int(hours.group(1)) * 60 if hours else 0) + (int(minutes.group(1)) if minutes else 0)
+    return total or None
+
+
+def media_type(record: dict[str, object]) -> str | None:
+    """'movie', 'tv' or None (unknown) for one raw metadata record.
+
+    An explicit TV/Television or Movies category, or TV words in the title
+    ('Season 2', 'Complete Series', 'Series 1', 'Episodes'), decide first;
+    conflicting explicit signals give None. Otherwise run time decides: under
+    40 minutes is None (episodes and clips), up to 4 hours is a movie, and
+    longer is TV unless the title marks a multi-film collection (None).
+    """
+
+    title = str(record.get("title") or "")
+    categories = {str(c).strip() for c in record.get("categories") or []}
+    tv = bool(categories & _TV_CATEGORIES) or bool(_TV_TITLE.search(title))
+    movie = bool(categories & _MOVIE_CATEGORIES)
+    if tv and movie:
+        return None
+    if tv:
+        return "tv"
+    if movie:
+        return "movie"
+    minutes = runtime_minutes(record.get("details"))
+    if minutes is None or minutes < MIN_FEATURE_MINUTES:
+        return None
+    if minutes > MAX_FEATURE_MINUTES:
+        return None if _COLLECTION_TITLE.search(title) else "tv"
+    return "movie"
+
+
+def subset_file_names(media: str | None) -> tuple[str, str]:
+    """(ratings CSV, items JSONL) names for the combined set or one media type."""
+
+    if media is None:
+        return SUBSET_RATINGS, SUBSET_ITEMS
+    if media not in MEDIA_TYPES:
+        raise ValueError(f"media must be one of {MEDIA_TYPES} or None, got {media!r}")
+    return f"{media}_ratings_subset.csv", f"{media}_items_subset.jsonl"
+
+
 def keep_user(user_id: str, fraction: float, seed: int = 0) -> bool:
     """Deterministic, platform-independent user selection by hashed reviewer ID."""
 
@@ -140,9 +212,16 @@ def build_subset(
     user_fraction: float = 0.15,
     seed: int = 0,
     min_interactions: int = 5,
+    media: str | None = None,
 ) -> dict[str, object]:
-    """Write the compact subset files next to the raw files; return a summary."""
+    """Write the compact subset files next to the raw files; return a summary.
 
+    With ``media`` set to 'movie' or 'tv', only items of that type (see
+    :func:`media_type`) are kept, before user selection and the 5-core
+    filter, so each domain is filtered on its own interactions.
+    """
+
+    ratings_name, items_name = subset_file_names(media)
     raw_dir = Path(raw_dir)
     raw = pd.read_csv(
         raw_dir / RAW_RATINGS,
@@ -151,6 +230,7 @@ def build_subset(
     asins = set(raw["parent_asin"].unique())
 
     items: dict[str, dict[str, object]] = {}
+    media_counts = {"movie": 0, "tv": 0, "unknown": 0}
     with (raw_dir / RAW_METADATA).open(encoding="utf-8") as handle:
         for line in handle:
             if not line.strip():
@@ -159,6 +239,10 @@ def build_subset(
             asin = record.get("parent_asin")
             title = " ".join(str(record.get("title") or "").split())
             if asin in asins and title:
+                kind = media_type(record)
+                media_counts[kind or "unknown"] += 1
+                if media is not None and kind != media:
+                    continue
                 items[asin] = {"title": title, "genres": movie_genres(record.get("categories") or [])}
 
     with_title = raw[raw["parent_asin"].isin(items)]
@@ -167,10 +251,10 @@ def build_subset(
     subset = k_core(with_title[with_title["user_id"].isin(selected)], min_interactions)
     subset = subset.sort_values(["user_id", "timestamp", "parent_asin"], kind="mergesort")
 
-    ratings_path = raw_dir / SUBSET_RATINGS
+    ratings_path = raw_dir / ratings_name
     subset.to_csv(ratings_path, index=False, columns=["user_id", "parent_asin", "rating", "timestamp"])
     kept_items = sorted(subset["parent_asin"].unique())
-    with (raw_dir / SUBSET_ITEMS).open("w", encoding="utf-8") as handle:
+    with (raw_dir / items_name).open("w", encoding="utf-8") as handle:
         for asin in kept_items:
             handle.write(json.dumps({"parent_asin": asin, **items[asin]}, sort_keys=True) + "\n")
 
@@ -179,6 +263,8 @@ def build_subset(
         "raw_ratings": int(len(raw)),
         "raw_users": int(raw["user_id"].nunique()),
         "raw_items": int(len(asins)),
+        "media": media or "all",
+        "titled_items_by_media": media_counts,
         "items_with_title": len(items),
         "user_fraction": user_fraction,
         "user_selection": f"sha256('{seed}:<user_id>')[:8] < fraction * 2^32",
@@ -193,28 +279,37 @@ def build_subset(
     }
 
 
-def _dataset_directory(data_dir: str | Path) -> Path:
+def _dataset_directory(data_dir: str | Path, ratings_name: str = SUBSET_RATINGS) -> Path:
     root = Path(data_dir)
     for candidate in (root / DATASET_SUBDIR, root):
-        if (candidate / SUBSET_RATINGS).is_file():
+        if (candidate / ratings_name).is_file():
             return candidate
     raise FileNotFoundError(
-        f"Amazon Movies & TV subset not found under {root}. "
+        f"Amazon Movies & TV subset {ratings_name} not found under {root}. "
         "Run scripts/prepare_amazon_movies.py first."
     )
 
 
-def load_ratings(data_dir: str | Path, *, id_map_output: str | Path | None = None) -> pd.DataFrame:
+def load_ratings(
+    data_dir: str | Path,
+    *,
+    id_map_output: str | Path | None = None,
+    media: str | None = None,
+) -> pd.DataFrame:
     """Subset ratings with integer IDs; same schema as the games domain."""
 
-    return load_ratings_file(_dataset_directory(data_dir) / SUBSET_RATINGS, id_map_output)
+    ratings_name, _ = subset_file_names(media)
+    return load_ratings_file(_dataset_directory(data_dir, ratings_name) / ratings_name, id_map_output)
 
 
-def load_items(data_dir: str | Path, item_id_map: dict[str, int]) -> pd.DataFrame:
+def load_items(
+    data_dir: str | Path, item_id_map: dict[str, int], *, media: str | None = None
+) -> pd.DataFrame:
     """Items as ``item_id``, ``title``, ``genres`` ('|'-joined canonical genres)."""
 
+    ratings_name, items_name = subset_file_names(media)
     rows = []
-    with (_dataset_directory(data_dir) / SUBSET_ITEMS).open(encoding="utf-8") as handle:
+    with (_dataset_directory(data_dir, ratings_name) / items_name).open(encoding="utf-8") as handle:
         for line in handle:
             record = json.loads(line)
             if record["parent_asin"] in item_id_map:
