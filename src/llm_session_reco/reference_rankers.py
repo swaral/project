@@ -4,7 +4,9 @@ Each ranker maps (prefix item IDs, candidate item IDs) to a score per
 candidate; higher is better, and ties are resolved by the tie-aware metrics.
 All statistics come from training interactions only. The popularity and
 inverse-popularity rankers double as shortcut detectors: on a fair pool both
-should score at the random level.
+should score at the random level. ``newest_first`` is the recency shortcut
+detector: targets are each user's latest interaction, so pools that match
+popularity but not time let "newest item wins" beat random (Addendum v11).
 """
 
 from __future__ import annotations
@@ -46,6 +48,11 @@ def build_reference_rankers(
     """The baseline family reported next to every LLM result."""
 
     tokens = {item: title_tokens(title) for item, title in item_titles.items()}
+    first_seen = {
+        int(item): float(ts) for item, ts in training_ratings.groupby("item_id")["timestamp"].min().items()
+    }
+    # Items never seen in training count as newest: an upper bound on the shortcut.
+    unseen = max(first_seen.values(), default=0.0) + 1.0
     transitions: dict[int, Counter] = defaultdict(Counter)
     ordered = training_ratings.sort_values(["user_id", "timestamp", "item_id"], kind="mergesort")
     for _, sequence in ordered.groupby("user_id", sort=False)["item_id"]:
@@ -61,6 +68,9 @@ def build_reference_rankers(
 
     def inverse_popularity(prefix: Sequence[int], candidates: Sequence[int]) -> dict[int, float]:
         return {item: -float(item_popularity.get(item, 0)) for item in candidates}
+
+    def newest_first(prefix: Sequence[int], candidates: Sequence[int]) -> dict[int, float]:
+        return {item: first_seen.get(item, unseen) for item in candidates}
 
     def genre_overlap(prefix: Sequence[int], candidates: Sequence[int]) -> dict[int, float]:
         profile = Counter(g for item in prefix[-profile_window:] for g in item_genres.get(item, ()))
@@ -95,6 +105,7 @@ def build_reference_rankers(
         "random": constant,
         "popularity": popularity,
         "inverse_popularity": inverse_popularity,
+        "newest_first": newest_first,
         "genre_overlap": genre_overlap,
         "title_overlap": title_overlap,
         "item_knn": item_knn,

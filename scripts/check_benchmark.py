@@ -4,7 +4,8 @@ Run after scripts/build_benchmark.py and before spending GPU time. For each
 pool type it reports, on test-split sessions:
 
 - how the target's popularity rank inside its pool is distributed (uniform
-  on a fair pool) and whether popularity or inverse popularity beats random.
+  on a fair pool) and whether popularity, inverse popularity or newest-first
+  (recency) beats random.
   On popularity-matched pools a flag means a construction shortcut. On the
   retrieval subset it reflects real popularity bias in what the retriever
   finds, so popularity is then a baseline to beat, not an artifact;
@@ -151,7 +152,7 @@ def main() -> None:
         entry["headline_metrics"] = headline
         entry["shortcut_flags"] = {
             name: shortcut_flag(entry["rankers"][name][headline], random_rr)
-            for name in ("popularity", "inverse_popularity")
+            for name in ("popularity", "inverse_popularity", "newest_first")
         }
         if pool_type == "retrieval":
             subset = [p for p in pools if p["target_retrieved"]]

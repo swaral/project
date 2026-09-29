@@ -741,3 +741,109 @@ not change any result.
 The same pre-registered comparisons as Addendum v8, per experiment and
 ladder level. The Movies & TV runs are an additional family: Holm correction
 stays within each (experiment, domain, level) pair of primary comparisons.
+
+## Addendum v10: Movies and TV as Separate Domains
+
+Recorded 2026-09-29, before any Movies & TV run. Supersedes Addendum v9's
+single combined domain for the runs; the combined `amazon_movies` files are
+kept unchanged.
+
+### Why
+
+Films and TV series are different recommendation problems (a user who buys
+season 2 of a show usually wants season 3), and mixing them in one pool lets
+the item type itself act as a signal. The category is therefore split into
+`amazon_film` (movies) and `amazon_tv` (TV).
+
+### Labelling (`amazon_movies.media_type`)
+
+Amazon has no movie/TV field, so each raw metadata record is labelled by
+rules on dataset fields only, in order:
+
+1. An explicit `TV`/`Television` category, or TV words in the title (season,
+   complete series, series + number, episodes, miniseries, TV series/show),
+   means TV; an explicit `Movies` category means movie. Both at once: unknown.
+2. Otherwise run time from `details`: under 40 minutes is unknown (mostly
+   single episodes and clips), 40 minutes to 4 hours is a movie, over 4 hours
+   is TV unless the title marks a multi-film collection (unknown).
+3. No run time: unknown.
+
+Unknown items are dropped from both domains. Over the 115,101 titled raw
+items: 70,550 movie, 19,830 TV, 24,721 unknown. The rules were tuned on a
+hand-read random sample; remaining known errors are kids' TV discs between
+40 minutes and 4 hours with no TV words in the title (labelled movie). A
+hand-check of a fresh random sample of each label must be reported with the
+results.
+
+### Data (`scripts/prepare_amazon_movies.py --media movie|tv`)
+
+Each domain keeps only its own items, then applies Addendum v9's subset rule
+unchanged (the same hashed 15% of users, seed 0) and re-applies the 5-core
+filter on its own interactions. The same user can appear in both domains.
+Everything downstream is unchanged from v7-v9 (clean targets, 30/70 split,
+training-only statistics, ladder levels with L3 matched on a shared
+canonical genre, shortcut checks, reference rankers).
+
+| | `amazon_film` | `amazon_tv` |
+|---|---|---|
+| Ratings / users / items | 162,705 / 13,187 / 13,211 | 30,307 / 3,177 / 3,104 |
+| Items with a canonical genre | 6,182 | 1,543 |
+| Gaps over one day | 48.6% | 46.5% |
+| Clean sessions (validation / test) | 11,410 (3,437 / 7,973) | 2,879 (843 / 2,036) |
+| L3 pools genre-matched | 45.1% | 48.5% |
+| Retriever recall@20 | 6.4% | 36.6% |
+| Subset ratings SHA-256 (prefix) | `6c8306d9` | `829a86b6` |
+
+### Shortcut checks (test split, MRR; random = 0.180)
+
+- TV targets are strongly predictable from the history: title-word overlap
+  reaches 0.54-0.57 and item-KNN 0.56-0.60 at every ladder level (film:
+  0.29 and 0.37-0.41), mostly because the next item is often another season
+  of a show already in the history. TV results must be read against these
+  non-LLM baselines, not against random.
+- Both domains carry the recency shortcut found on the combined set: ranking
+  by first year seen in training ("newest first") scores 0.25-0.26 on film
+  and 0.24-0.25 on TV at L2 and L3. `context_content_v2` (first seen year)
+  and `context_crowd_v2` (trend) expose this signal, so any gain from those
+  two contexts must be compared with the newest-first ranker.
+
+### Runs
+
+Experiment 1 and Experiment 2 as in Addendum v8, on both domains in one
+Kaggle kernel (`build_kernel.py --domains amazon_film,amazon_tv`), one domain
+per GPU. Session counts per level are as in v8.
+
+### Comparisons
+
+The Addendum v8 pre-registered comparisons, per experiment, domain and
+ladder level; Holm correction stays within each (experiment, domain, level)
+pair of primary comparisons.
+
+## Addendum v11: Recency Baseline
+
+Recorded 2026-09-29, before any Film or TV run.
+
+### Why
+
+Targets are each user's latest interaction, and the ladder pools match
+popularity (and at L3 genre) but not time, so "the newest item wins" beats
+random on every Amazon ladder level (Addendum v10 shortcut checks).
+
+### Change
+
+- `reference_rankers.newest_first`: scores each candidate by the first
+  timestamp at which it appears in the training frame; items never seen in
+  training count as newest (an upper bound; under 0.25% of Film/TV targets).
+- `check_benchmark.py` flags it as a shortcut alongside popularity and
+  inverse popularity.
+- `evaluate_hybrid.py` adds it to the non-LLM blend, so the primary hybrid
+  comparison (hybrid vs `nonllm_blend`) must beat the recency signal too.
+  Hybrid results in `results/` from earlier runs were computed without it
+  and are not re-run.
+
+### Null calibration
+
+With the no-information stub client on shuffled TV pools (8 strategy
+members, 400 sessions, 40 shuffle seeds), the sign-flip tests rejected at
+p < 0.05 in 4, 3, 1, 0 and 1 of 40 runs for the five debiased-evaluation
+comparisons, within the 0-5 expected by chance.

@@ -8,8 +8,8 @@ sessions; all scores are tie-aware and reported on test sessions.
 Rankers compared on identical candidates:
 
 - llm: the debiased ensemble (z-score, validation slot priors, mean);
-- item_knn, sequential_transitions, genre_overlap, title_overlap (and
-  retrieval_order on retrieval pools);
+- item_knn, sequential_transitions, genre_overlap, title_overlap,
+  newest_first (and retrieval_order on retrieval pools);
 - nonllm_blend: z-scored combination of those rankers, weights fitted on
   validation - the strongest non-LLM system available here;
 - hybrid: nonllm_blend plus the LLM with a validation-fitted weight
@@ -40,7 +40,8 @@ from llm_session_reco.session_dataset import build_leave_one_out_training_rating
 from llm_session_reco.statistics import holm_adjust, paired_bootstrap_ci, paired_sign_flip_test
 
 METRICS = ("RR", "HR@1", "HR@5", "NDCG@10")
-BASE_RANKERS = ("item_knn", "sequential_transitions", "genre_overlap", "title_overlap")
+# newest_first joined in Addendum v11; hybrid JSONs from earlier runs lack it.
+BASE_RANKERS = ("item_knn", "sequential_transitions", "genre_overlap", "title_overlap", "newest_first")
 
 
 def read_jsonl(path: Path) -> list[dict]:
