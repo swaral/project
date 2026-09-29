@@ -115,6 +115,119 @@
         "inverse_popularity": true
       }
     },
+    "random": {
+      "sessions": 1434,
+      "random_RR": 0.1799,
+      "target_least_popular_share": 0.0007,
+      "target_popularity_midrank_mean": 16.68,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.02,
+        0.038,
+        0.089,
+        0.199,
+        0.653
+      ],
+      "target_popularity_uniformity_p": 0.0,
+      "rankers": {
+        "random": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.1799,
+            "RR_ci": [
+              0.1799,
+              0.1799
+            ],
+            "HR@1": 0.05,
+            "HR@5": 0.25,
+            "NDCG@10": 0.2272
+          }
+        },
+        "popularity": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.4856,
+            "RR_ci": [
+              0.4674,
+              0.5058
+            ],
+            "HR@1": 0.3033,
+            "HR@5": 0.7176,
+            "NDCG@10": 0.5795
+          }
+        },
+        "inverse_popularity": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.0683,
+            "RR_ci": [
+              0.0661,
+              0.0707
+            ],
+            "HR@1": 0.0007,
+            "HR@5": 0.0248,
+            "NDCG@10": 0.0335
+          }
+        },
+        "genre_overlap": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.2798,
+            "RR_ci": [
+              0.2654,
+              0.2948
+            ],
+            "HR@1": 0.1165,
+            "HR@5": 0.4361,
+            "NDCG@10": 0.3615
+          }
+        },
+        "title_overlap": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.2021,
+            "RR_ci": [
+              0.1912,
+              0.2136
+            ],
+            "HR@1": 0.0758,
+            "HR@5": 0.2696,
+            "NDCG@10": 0.248
+          }
+        },
+        "item_knn": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.538,
+            "RR_ci": [
+              0.5201,
+              0.5576
+            ],
+            "HR@1": 0.3626,
+            "HR@5": 0.7643,
+            "NDCG@10": 0.6266
+          }
+        },
+        "sequential_transitions": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.5789,
+            "RR_ci": [
+              0.5595,
+              0.5987
+            ],
+            "HR@1": 0.4334,
+            "HR@5": 0.7598,
+            "NDCG@10": 0.6379
+          }
+        }
+      },
+      "headline_metrics": "all_sessions",
+      "shortcut_flags": {
+        "popularity": true,
+        "inverse_popularity": true
+      }
+    },
     "popularity_matched": {
       "sessions": 1434,
       "random_RR": 0.1799,
@@ -219,6 +332,119 @@
             "HR@1": 0.2529,
             "HR@5": 0.553,
             "NDCG@10": 0.4755
+          }
+        }
+      },
+      "headline_metrics": "all_sessions",
+      "shortcut_flags": {
+        "popularity": false,
+        "inverse_popularity": false
+      }
+    },
+    "attribute_matched": {
+      "sessions": 1434,
+      "random_RR": 0.1799,
+      "target_least_popular_share": 0.0404,
+      "target_popularity_midrank_mean": 11.17,
+      "target_popularity_midrank_expected": 10.5,
+      "target_popularity_quintile_shares": [
+        0.174,
+        0.181,
+        0.206,
+        0.202,
+        0.237
+      ],
+      "target_popularity_uniformity_p": 0.0014792205218110567,
+      "rankers": {
+        "random": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.1799,
+            "RR_ci": [
+              0.1799,
+              0.1799
+            ],
+            "HR@1": 0.05,
+            "HR@5": 0.25,
+            "NDCG@10": 0.2272
+          }
+        },
+        "popularity": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.1977,
+            "RR_ci": [
+              0.1865,
+              0.2091
+            ],
+            "HR@1": 0.0571,
+            "HR@5": 0.2915,
+            "NDCG@10": 0.2562
+          }
+        },
+        "inverse_popularity": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.1655,
+            "RR_ci": [
+              0.1549,
+              0.1763
+            ],
+            "HR@1": 0.0454,
+            "HR@5": 0.2156,
+            "NDCG@10": 0.2011
+          }
+        },
+        "genre_overlap": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.1694,
+            "RR_ci": [
+              0.1583,
+              0.1807
+            ],
+            "HR@1": 0.053,
+            "HR@5": 0.2157,
+            "NDCG@10": 0.2003
+          }
+        },
+        "title_overlap": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.193,
+            "RR_ci": [
+              0.1825,
+              0.2034
+            ],
+            "HR@1": 0.0634,
+            "HR@5": 0.268,
+            "NDCG@10": 0.2404
+          }
+        },
+        "item_knn": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.3157,
+            "RR_ci": [
+              0.2993,
+              0.3324
+            ],
+            "HR@1": 0.1632,
+            "HR@5": 0.4596,
+            "NDCG@10": 0.3852
+          }
+        },
+        "sequential_transitions": {
+          "all_sessions": {
+            "n": 1434,
+            "RR": 0.3711,
+            "RR_ci": [
+              0.3528,
+              0.3884
+            ],
+            "HR@1": 0.2145,
+            "HR@5": 0.5313,
+            "NDCG@10": 0.4391
           }
         }
       },
