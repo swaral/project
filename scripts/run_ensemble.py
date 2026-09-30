@@ -272,6 +272,7 @@ def _context_feature_builder(args: argparse.Namespace, item_titles, item_genres)
     from llm_session_reco.benchmark import ItemKNNRetriever
     from llm_session_reco.context_features import ContextFeatureBuilder
     from llm_session_reco.domains import load_domain
+    from llm_session_reco.item_metadata import FIELD_NAMES
     from llm_session_reco.session_dataset import build_leave_one_out_training_ratings
 
     processed_dir = args.items_file.parent if args.items_file else Path("data/processed")
@@ -283,12 +284,20 @@ def _context_feature_builder(args: argparse.Namespace, item_titles, item_genres)
         item: [g for g in str(genres).split("|") if g and g not in ("Video Games", "Games")]
         for item, genres in item_genres.items()
     }
+    # Experiment 2b fields (sub-genre, format, price), stored in Amazon items files.
+    item_meta = None
+    if args.items_file is not None:
+        item_meta = {
+            int(r["item_id"]): {field: r.get(field) for field in FIELD_NAMES}
+            for r in _read_jsonl(args.items_file)
+        }
     return ContextFeatureBuilder(
         training,
         item_titles,
         ordered_genres,
         ItemKNNRetriever(training, catalog, popularity),
         year_source="title" if args.domain == "movielens" else "first_seen",
+        item_meta=item_meta,
     )
 
 
@@ -300,7 +309,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default=None)
     parser.add_argument("--base-url", default=None)
     parser.add_argument(
-        "--domain", choices=DOMAINS, default="movielens"
+        "--domain", choices=DOMAINS, required=True
     )
     parser.add_argument("--data-root", type=Path, default=Path("data/raw"))
     parser.add_argument(
@@ -320,12 +329,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--examples",
         type=Path,
-        default=Path("data/processed/ml1m_leave_one_out.jsonl"),
+        required=True,
+        help="session examples JSONL, e.g. data/processed/amazon_books_clean_examples.jsonl",
     )
     parser.add_argument(
         "--candidates",
         type=Path,
-        default=Path("data/processed/ml1m_candidate_pools.jsonl"),
+        required=True,
+        help="candidate pools JSONL, e.g. data/processed/amazon_books_pool_recency_matched.jsonl",
     )
     parser.add_argument(
         "--output",

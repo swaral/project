@@ -43,13 +43,20 @@ BENCHMARK_POOLS = (
 )
 # Addendum v8 experiments: "wording" (the original four wordings x CONTEXT),
 # "strategy" (baseline + seven strategy prompts, title context) and "context"
-# (baseline wording x the four four-field context variants).
+# (baseline wording x the four four-field context variants; retired in
+# Addendum v15, kept only to reproduce Experiment 2). Addendum v15 adds
+# "context2b" (baseline wording x the five semantic contexts, no co-purchase).
 EXPERIMENT = os.environ.get("PILOT_EXPERIMENT", "wording")
 STRATEGY_PROMPTS = (
     "baseline_scores_v1", "next_step_v2", "long_term_taste_v2", "closest_match_v2",
     "rule_out_rank_v2", "preference_enjoy_v2", "preference_pick_now_v2", "skip_risk_v2",
 )
 FIELD_CONTEXTS = ("context_content_v2", "context_crowd_v2", "context_personal_v2", "context_collab_v2")
+SEMANTIC_CONTEXTS = (
+    "context_content_v2", "context_crowd_v2", "context_personal_v2",
+    "context_subgenre_v2", "context_format_v2",
+)
+CONTEXT_EXPERIMENTS = ("context", "context2b")
 # Ladder levels L1 (random), L3 (attribute_matched) and L4 (recency_matched)
 # use a seeded subset of the L2 (popularity_matched) sample, so every level
 # scores the same users (L4 only those of them that are matchable).
@@ -61,10 +68,14 @@ PROJECT = Path("/tmp/project")
 OUT = Path("/kaggle/working/pilot")
 
 DOMAINS = {
+    # Retired in Addendum v15; kept to reproduce the earlier MovieLens runs.
     "movielens": {
         "port": 11434,
         "prefix": "ml1m",
-        "extra": [],
+        "extra": [
+            "--examples", "data/processed/ml1m_leave_one_out.jsonl",
+            "--candidates", "data/processed/ml1m_candidate_pools.jsonl",
+        ],
         "popularity": "data/processed/ml1m_item_popularity.json",
         "popularity_domain": "movielens",
     },
@@ -311,6 +322,8 @@ def member_args():
         members = [f"{p}:context_title_v1" for p in STRATEGY_PROMPTS]
     elif EXPERIMENT == "context":
         members = [f"baseline_scores_v1:{c}" for c in FIELD_CONTEXTS]
+    elif EXPERIMENT == "context2b":
+        members = [f"baseline_scores_v1:{c}" for c in SEMANTIC_CONTEXTS]
     else:
         members = [f"{w}:context_{CONTEXT}_v1" for w in WORDINGS]
     return [arg for member in members for arg in ("--member", member)]
@@ -434,7 +447,7 @@ def analyse_benchmark(pool, condition):
                         for k, v in report["primary_comparisons"].items()},
             "rwra": {k: {"diff": round(v["mean_difference"], 4), "p_holm": round(v["p_holm"], 4)}
                      for k, v in report.get("rwra_comparisons", {}).items()},
-            "member_test_mrr": {m.split(":")[0] if EXPERIMENT != "context" else m.split(":")[1]: round(v, 4)
+            "member_test_mrr": {m.split(":")[1] if EXPERIMENT in CONTEXT_EXPERIMENTS else m.split(":")[0]: round(v, 4)
                                 for m, v in report.get("test_mrr_by_member", {}).items()},
             "member_agreement_tau_b": report.get("member_agreement_tau_b"),
             "max_prompt_tokens": max_prompt_tokens(trials),

@@ -23,10 +23,13 @@ for this category, so the metadata download is the larger of the two).
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from urllib.request import urlopen
 
 import pandas as pd
+
+from .item_metadata import item_fields, items_frame, subgenre_below
 
 RATINGS_URL = (
     "https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023/"
@@ -154,6 +157,27 @@ def load_ratings_file(path: str | Path, id_map_output: str | Path | None = None)
     return ratings
 
 
+# Product types that follow the platform on the category path.
+PRODUCT_TYPES = {"Games": "game", "Accessories": "accessory", "Consoles": "console",
+                 "Virtual Reality": "VR hardware"}
+_DIGITAL = re.compile(r"digital code|online game code|download", re.IGNORECASE)
+
+
+def game_item_fields(record: dict[str, object]) -> dict[str, object]:
+    """Experiment 2b fields (see item_metadata) for a Video Games item.
+
+    Amazon files games under a platform and a product type (Games,
+    Accessories...) with no genre labels, so the sub-genre is what follows
+    the product type (e.g. Accessories > Headsets) and is empty for games.
+    The format is the product type, or 'digital code' for code-only titles.
+    """
+
+    categories = record.get("categories") or []
+    product = next((PRODUCT_TYPES[c] for c in categories if c in PRODUCT_TYPES), "")
+    item_format = "digital code" if _DIGITAL.search(str(record.get("title") or "")) else product
+    return item_fields(subgenre_below(categories, set(PRODUCT_TYPES)), item_format, record.get("price"))
+
+
 def load_items(data_dir: str | Path, item_id_map: dict[str, int]) -> pd.DataFrame:
     """Load item metadata (title, category) for the mapped integer item IDs.
 
@@ -187,9 +211,8 @@ def load_items(data_dir: str | Path, item_id_map: dict[str, int]) -> pd.DataFram
                     "item_id": item_id_map[parent_asin],
                     "title": title,
                     "genres": category,
+                    **game_item_fields(record),
                 }
             )
 
-    return pd.DataFrame(rows, columns=["item_id", "title", "genres"]).astype(
-        {"item_id": "int32", "title": "string", "genres": "string"}
-    )
+    return items_frame(rows)

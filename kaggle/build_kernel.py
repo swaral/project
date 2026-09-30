@@ -21,6 +21,7 @@ import argparse
 import base64
 import io
 import json
+import sys
 import tarfile
 from pathlib import Path
 
@@ -63,15 +64,18 @@ def main() -> None:
     parser.add_argument(
         "--experiment",
         default="wording",
-        choices=("wording", "strategy", "context"),
-        help="ensemble members: original wordings, 8 strategy prompts, or 4 field contexts",
+        choices=("wording", "strategy", "context", "context2b"),
+        help="ensemble members: original wordings, 8 strategy prompts (Experiment 1), "
+        "5 semantic contexts (Experiment 2b), or the retired 4 contexts with co-purchase "
+        "(context; only to reproduce Experiment 2)",
     )
     parser.add_argument("--ladder-sessions", type=int, default=300,
-                        help="sessions per domain on the random and attribute-matched levels")
-    parser.add_argument("--domains", default="movielens,amazon_games",
-                        help="comma-separated domains: movielens, amazon_games, amazon_movies, "
-                        "amazon_film, amazon_tv, amazon_books, amazon_music; "
-                        "a single domain is split over both GPUs")
+                        help="sessions per domain on each ladder level other than L2")
+    parser.add_argument("--domains", required=True,
+                        help="comma-separated domains (at most two, one per GPU): amazon_games, "
+                        "amazon_film, amazon_tv, amazon_books, amazon_music; retired, only to "
+                        "reproduce earlier runs: movielens, amazon_movies. A single domain is "
+                        "split over both GPUs")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
 
@@ -97,6 +101,14 @@ def main() -> None:
         parser.error(f"--domains must be drawn from {sorted(allowed_domains)}")
     if len(domains) > 2:
         parser.error("--domains takes at most two domains (one per GPU)")
+    # Addendum v15: MovieLens, the combined Movies & TV domain and the
+    # co-purchase context experiment are retired from runs.
+    retired = sorted(set(domains) & {"movielens", "amazon_movies"})
+    if args.experiment == "context":
+        retired.append("experiment 'context' (co-purchase context)")
+    if retired:
+        print(f"note: retired in Addendum v15, building only to reproduce earlier runs: "
+              f"{', '.join(retired)}", file=sys.stderr)
 
     # The original fixed-order 3B run keeps the base kernel; every other setup
     # gets its own kernel so a new run never replaces earlier outputs.

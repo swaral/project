@@ -12,6 +12,14 @@ variants:
   strong that link is relative to the other candidates, and the recent
   history item it most often follows.
 
+Addendum v15 (Experiment 2b) adds two semantic variants that read the item
+fields stored by the Amazon domain modules (``item_metadata``):
+
+- ``context_subgenre_v2``: sub-genre, the wider category it belongs to, and
+  how many of the user's recent items share it;
+- ``context_format_v2``: format, listed price, and whether the price is
+  low, mid or high for this catalog (tertiles over all priced items).
+
 All statistics come from the leave-one-out training frame, so no evaluated
 target contributes. Candidates never show a rating by this user. Fields are
 rendered for the last ``history_window`` history items only, which keeps long
@@ -34,6 +42,8 @@ CONTEXT_V2_VARIANTS = (
     "context_crowd_v2",
     "context_personal_v2",
     "context_collab_v2",
+    "context_subgenre_v2",
+    "context_format_v2",
 )
 
 _YEAR = re.compile(r"\((\d{4})\)\s*$")
@@ -74,10 +84,15 @@ class ContextFeatureBuilder:
         year_source: str,
         history_window: int = 50,
         transition_window: int = 5,
+        item_meta: Mapping[int, Mapping[str, object]] | None = None,
     ) -> None:
         if year_source not in ("title", "first_seen"):
             raise ValueError("year_source must be 'title' or 'first_seen'")
         self.titles = item_titles
+        # Experiment 2b fields (sub-genre, format, price) per item, if available.
+        self.item_meta = item_meta
+        prices = [float(m["price"]) for m in (item_meta or {}).values() if m.get("price")]
+        self.price_cuts = tuple(np.quantile(prices, [1 / 3, 2 / 3])) if prices else None
         self.genres = {item: list(genres) for item, genres in item_genres.items()}
         self.retriever = retriever
         self.year_source = year_source
@@ -188,7 +203,37 @@ class ContextFeatureBuilder:
         if variant == "context_collab_v2":
             return {}, self._collab_fields(recent, candidate_item_ids)
 
+        if variant in ("context_subgenre_v2", "context_format_v2"):
+            if self.item_meta is None:
+                raise ValueError(f"{variant} needs item metadata (item_meta)")
+            if variant == "context_subgenre_v2":
+                shares = Counter(self._meta(i, "subgenre") for i in recent)
+
+                def subgenre(item: int, own: int) -> str:
+                    name = self._meta(item, "subgenre")
+                    count = shares[name] - own if name else 0
+                    return (f"subgenre={name or 'none'}; "
+                            f"family={self._meta(item, 'subgenre_family') or 'none'}; "
+                            f"in_your_history={count} of your last {len(recent)}")
+                # A history item does not count itself.
+                return ({i: subgenre(i, 1) for i in recent},
+                        {i: subgenre(i, 0) for i in candidate_item_ids})
+
+            def purchase(item: int) -> str:
+                price = self.item_meta.get(item, {}).get("price")
+                if price:
+                    low, high = self.price_cuts
+                    level = "low" if price <= low else "mid" if price <= high else "high"
+                    shown = f"${float(price):.2f}"
+                else:
+                    level = shown = "unknown"
+                return f"format={self._meta(item, 'format') or 'unknown'}; price={shown}; price_level={level}"
+            return {i: purchase(i) for i in recent}, {i: purchase(i) for i in candidate_item_ids}
+
         raise ValueError(f"Unknown context variant {variant!r}")
+
+    def _meta(self, item: int, field: str) -> str:
+        return str((self.item_meta or {}).get(item, {}).get(field) or "")
 
     def _collab_fields(self, recent: Sequence[int], candidates: Sequence[int]) -> dict[int, str]:
         r = self.retriever

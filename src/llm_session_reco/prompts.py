@@ -98,11 +98,32 @@ CONTEXT_VARIANT_DESCRIPTION_TEMPLATES: dict[str, str] = {
         "how strong that link is compared with the other candidates, and the recent "
         "past {noun} it most often follows"
     ),
+    # Addendum v15 (Experiment 2b): two more semantic variants.
+    "context_subgenre_v2": (
+        "{noun} title, its sub-genre, the wider category that sub-genre belongs to, "
+        "and how many of the user's recent {noun}s share that sub-genre"
+    ),
+    "context_format_v2": (
+        "{noun} title, its format, its listed price, and whether that price is low, "
+        "mid or high for this catalog"
+    ),
 }
 
 #: Context variants whose fields are supplied by the caller via ``item_fields``.
-FIELD_CONTEXT_VARIANTS: frozenset[str] = frozenset(
-    {"context_content_v2", "context_crowd_v2", "context_personal_v2", "context_collab_v2"}
+FIELD_CONTEXT_VARIANTS: frozenset[str] = frozenset({
+    "context_content_v2", "context_crowd_v2", "context_personal_v2", "context_collab_v2",
+    "context_subgenre_v2", "context_format_v2",
+})
+
+#: Experiment 2b (Addendum v15): the semantic contexts. The co-purchase
+#: context (context_collab_v2) is retired from runs; its code stays so the
+#: earlier Experiment 2 results can be reproduced.
+SEMANTIC_CONTEXT_SET: tuple[str, ...] = (
+    "context_content_v2",
+    "context_crowd_v2",
+    "context_personal_v2",
+    "context_subgenre_v2",
+    "context_format_v2",
 )
 
 # Backward-compatible alias, rendered with the default domain noun ("movie").

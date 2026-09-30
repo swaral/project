@@ -61,7 +61,8 @@ def test_stream_metadata_keeps_only_wanted_items(tmp_path):
     assert stream_metadata(source.as_uri(), {"A1"}, output) == 1
     record = json.loads(output.read_text())
     assert record == {"parent_asin": "A1", "title": "Kind of Blue", "creator": "Miles Davis",
-                      "categories": ["CDs & Vinyl", "Jazz"]}
+                      "categories": ["CDs & Vinyl", "Jazz"], "store_format": "Audio CD",
+                      "main_category": "", "details_keys": [], "price": None}
     assert not output.with_suffix(".jsonl.part").exists()
 
 

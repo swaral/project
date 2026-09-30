@@ -40,6 +40,7 @@ from pathlib import Path
 import pandas as pd
 
 from .amazon_games import _stream_download, load_ratings_file
+from .item_metadata import FIELD_NAMES, item_fields, items_frame, store_format, subgenre_below
 
 RATINGS_URL = (
     "https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023/"
@@ -113,6 +114,39 @@ GENRE_MAP = {
     "LGBTQ": "LGBTQ",
     "Faith & Spirituality": "Faith & Spirituality",
 }
+
+
+_TITLE_FORMAT = re.compile(r"(4K Ultra HD|4K UHD|Blu-ray|DVD|VHS)", re.IGNORECASE)
+
+
+def movie_format(record: dict[str, object]) -> str:
+    """How a Movies & TV item is sold: store format, title tag, Prime Video, details."""
+
+    label = store_format(record.get("store"))
+    if label:
+        return label
+    match = _TITLE_FORMAT.search(str(record.get("title") or ""))
+    if match:
+        found = match.group(1).lower()
+        return {"4k ultra hd": "4K UHD", "4k uhd": "4K UHD", "blu-ray": "Blu-ray",
+                "dvd": "DVD", "vhs": "VHS Tape"}[found]
+    if record.get("main_category") == "Prime Video":
+        return "Prime Video"
+    media = str((record.get("details") or {}).get("Media Format") or "")
+    for label in ("Blu-ray", "DVD"):
+        if label in media:
+            return label
+    return ""
+
+
+def movie_item_fields(record: dict[str, object]) -> dict[str, object]:
+    """Experiment 2b fields (see item_metadata): sub-genre below the genre, format, price."""
+
+    return item_fields(
+        subgenre_below(record.get("categories") or [], set(GENRE_MAP)),
+        movie_format(record),
+        record.get("price"),
+    )
 
 
 def movie_genres(categories: list[str]) -> list[str]:
@@ -243,7 +277,11 @@ def build_subset(
                 media_counts[kind or "unknown"] += 1
                 if media is not None and kind != media:
                     continue
-                items[asin] = {"title": title, "genres": movie_genres(record.get("categories") or [])}
+                items[asin] = {
+                    "title": title,
+                    "genres": movie_genres(record.get("categories") or []),
+                    **movie_item_fields(record),
+                }
 
     return {
         "raw_ratings": int(len(raw)),
@@ -281,9 +319,14 @@ def write_subset(
     subset = k_core(with_title[with_title["user_id"].isin(selected)], min_interactions)
     subset = subset.sort_values(["user_id", "timestamp", "parent_asin"], kind="mergesort")
 
-    subset.to_csv(ratings_path, index=False, columns=["user_id", "parent_asin", "rating", "timestamp"])
+    # Unix line endings on every platform, so the SHA-256 below is identical
+    # on Windows and on Kaggle (pandas otherwise writes "\r\n" on Windows).
+    subset.to_csv(
+        ratings_path, index=False, columns=["user_id", "parent_asin", "rating", "timestamp"],
+        lineterminator="\n",
+    )
     kept_items = sorted(subset["parent_asin"].unique())
-    with items_path.open("w", encoding="utf-8") as handle:
+    with items_path.open("w", encoding="utf-8", newline="\n") as handle:
         for asin in kept_items:
             handle.write(json.dumps({"parent_asin": asin, **items[asin]}, sort_keys=True) + "\n")
 
@@ -328,7 +371,8 @@ def load_ratings(
 def load_items(
     data_dir: str | Path, item_id_map: dict[str, int], *, media: str | None = None
 ) -> pd.DataFrame:
-    """Items as ``item_id``, ``title``, ``genres`` ('|'-joined canonical genres)."""
+    """Items as ``item_id``, ``title``, ``genres`` ('|'-joined canonical genres)
+    plus the Experiment 2b fields (``item_metadata.FIELD_NAMES``)."""
 
     ratings_name, items_name = subset_file_names(media)
     rows = []
@@ -340,7 +384,6 @@ def load_items(
                     "item_id": item_id_map[record["parent_asin"]],
                     "title": record["title"],
                     "genres": "|".join(record["genres"]),
+                    **{field: record[field] for field in FIELD_NAMES if field in record},
                 })
-    return pd.DataFrame(rows, columns=["item_id", "title", "genres"]).astype(
-        {"item_id": "int32", "title": "string", "genres": "string"}
-    )
+    return items_frame(rows)

@@ -37,6 +37,7 @@ import pandas as pd
 
 from .amazon_games import _stream_download, load_ratings_file
 from .amazon_movies import write_subset
+from .item_metadata import FIELD_NAMES, item_fields, items_frame, parse_price, store_format, subgenre_below
 
 HF_ROOT = "https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023/resolve/main"
 
@@ -67,7 +68,8 @@ class MediaCategory:
 
     @property
     def compact_metadata(self) -> str:
-        return f"{self.stem}_meta_compact.jsonl"
+        # v2 adds the fields behind format and price (Addendum v15).
+        return f"{self.stem}_meta_compact_v2.jsonl"
 
     @property
     def subset_ratings(self) -> str:
@@ -214,8 +216,40 @@ def _lines(url: str, *, timeout: int = 300, retries: int = 8) -> Iterator[bytes]
             time.sleep(min(60, 5 * failures))
 
 
+# Book bindings named as ``details`` keys (the value is the page count).
+BOOK_BINDINGS = frozenset({
+    "Hardcover", "Paperback", "Mass Market Paperback", "Board book", "Library Binding",
+    "Spiral-bound", "Spiral bound", "Perfect Paperback", "Audio CD", "Calendar", "Cards",
+    "Leather Bound", "Loose Leaf", "Comic", "Flexibound", "Unbound", "Rag Book", "Bath Book",
+})
+_MAIN_CATEGORY_FORMATS = {"Buy a Kindle": "Kindle Edition", "Audible Audiobooks": "Audiobook"}
+
+
+def media_format(record: Mapping[str, object]) -> str:
+    """How a book or album is sold, from a v2 cache record.
+
+    The store's 'Format:' label (e.g. Audio CD, Vinyl, Kindle Edition), else
+    the first book binding among the ``details`` keys, else the Kindle or
+    Audible storefront, else a Kindle file size.
+    """
+
+    if record.get("store_format"):
+        return str(record["store_format"])
+    keys = list(record.get("details_keys") or [])
+    binding = next((key for key in keys if key in BOOK_BINDINGS), "")
+    if binding:
+        return binding
+    if record.get("main_category") in _MAIN_CATEGORY_FORMATS:
+        return _MAIN_CATEGORY_FORMATS[str(record["main_category"])]
+    return "Kindle Edition" if "File size" in keys else ""
+
+
 def stream_metadata(url: str, asins: set[str], output: Path) -> int:
-    """Cache title, creator and categories for ``asins`` from a JSONL metadata URL.
+    """Cache the fields used here for ``asins`` from a JSONL metadata URL.
+
+    Title, creator, category path, and the raw inputs of format and price
+    (store format, main category, ``details`` keys, price), so format rules
+    can change without streaming the file again.
 
     Only lines whose ``parent_asin`` is wanted are parsed, which keeps a 14 GB
     stream fast. Written atomically, so an interrupted run leaves no cache.
@@ -235,6 +269,10 @@ def stream_metadata(url: str, asins: set[str], output: Path) -> int:
                 "title": " ".join(str(record.get("title") or "").split()),
                 "creator": creator(record),
                 "categories": list(record.get("categories") or []),
+                "store_format": store_format(record.get("store")),
+                "main_category": str(record.get("main_category") or ""),
+                "details_keys": list((record.get("details") or {}).keys()),
+                "price": parse_price(record.get("price")),
             }, sort_keys=True) + "\n")
             kept += 1
     tmp_path.replace(output)
@@ -282,6 +320,11 @@ def build_subset(
                 items[record["parent_asin"]] = {
                     "title": display_title(record["title"], clean_creator(record["creator"])),
                     "genres": genre(record["categories"], category.genre_map),
+                    **item_fields(
+                        subgenre_below(record["categories"], set(category.genre_map)),
+                        media_format(record),
+                        record["price"],
+                    ),
                 }
 
     summary = {
@@ -318,7 +361,8 @@ def load_ratings(domain: str, data_dir: str | Path, *, id_map_output: str | Path
 
 
 def load_items(domain: str, data_dir: str | Path, item_id_map: dict[str, int]) -> pd.DataFrame:
-    """Items as ``item_id``, ``title`` ('<title> by <creator>'), ``genres``."""
+    """Items as ``item_id``, ``title`` ('<title> by <creator>'), ``genres`` and
+    the Experiment 2b fields (``item_metadata.FIELD_NAMES``)."""
 
     rows = []
     path = _dataset_directory(domain, data_dir) / CATEGORIES[domain].subset_items
@@ -330,7 +374,6 @@ def load_items(domain: str, data_dir: str | Path, item_id_map: dict[str, int]) -
                     "item_id": item_id_map[record["parent_asin"]],
                     "title": record["title"],
                     "genres": "|".join(record["genres"]),
+                    **{field: record[field] for field in FIELD_NAMES if field in record},
                 })
-    return pd.DataFrame(rows, columns=["item_id", "title", "genres"]).astype(
-        {"item_id": "int32", "title": "string", "genres": "string"}
-    )
+    return items_frame(rows)

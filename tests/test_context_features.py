@@ -17,7 +17,7 @@ GENRES = {1: ["Animation", "Comedy"], 2: ["Animation", "Comedy"], 3: ["Animation
           4: ["Animation", "Comedy"], 5: ["Crime"], 6: ["Crime", "Drama"]}
 
 
-def _builder(history_window=50):
+def _builder(history_window=50, item_meta=None):
     rows = []
     # Users 10-19 watch 1 then 2 (Toy Story fans); users 20-24 watch 5 then 6.
     for u in range(10, 20):
@@ -29,7 +29,7 @@ def _builder(history_window=50):
     popularity = training["item_id"].value_counts().to_dict()
     retriever = ItemKNNRetriever(training, list(TITLES), popularity)
     return ContextFeatureBuilder(training, TITLES, GENRES, retriever, year_source="title",
-                                 history_window=history_window)
+                                 history_window=history_window, item_meta=item_meta)
 
 
 def test_series_base_strips_numbers_years_and_subtitles():
@@ -83,3 +83,40 @@ def test_strategy_prompt_set_renders_for_both_domains():
         for noun in ("movie", "game"):
             prompt = render_baseline_prompt([1], [2, 5], TITLES, variant_id=variant, domain_noun=noun)
             assert "{noun}" not in prompt.user_message
+
+
+META = {
+    1: {"subgenre": "Pixar", "subgenre_family": "Kids", "format": "DVD", "price": 5.0},
+    2: {"subgenre": "Pixar", "subgenre_family": "Kids", "format": "Blu-ray", "price": 20.0},
+    3: {"subgenre": "DreamWorks", "subgenre_family": "Kids", "format": "DVD", "price": 10.0},
+    5: {"subgenre": "", "subgenre_family": "", "format": "", "price": None},
+}
+
+
+def _builder_with_meta():
+    return _builder(item_meta=META)
+
+
+def test_subgenre_fields_count_matches_in_recent_history():
+    history, candidates = _builder_with_meta().fields("context_subgenre_v2", 99, [1, 3], [2, 5])
+    assert candidates[2] == "subgenre=Pixar; family=Kids; in_your_history=1 of your last 2"
+    assert candidates[5] == "subgenre=none; family=none; in_your_history=0 of your last 2"
+    # A history item does not count itself.
+    assert history[1] == "subgenre=Pixar; family=Kids; in_your_history=0 of your last 2"
+
+
+def test_format_fields_show_price_level_within_the_catalog():
+    _, candidates = _builder_with_meta().fields("context_format_v2", 99, [1], [1, 2, 5])
+    assert candidates[1] == "format=DVD; price=$5.00; price_level=low"
+    assert candidates[2] == "format=Blu-ray; price=$20.00; price_level=high"
+    assert candidates[5] == "format=unknown; price=unknown; price_level=unknown"
+
+
+def test_new_contexts_need_item_metadata_and_render():
+    with pytest.raises(ValueError):
+        _builder().fields("context_format_v2", 99, [1], [2])
+    fields = _builder_with_meta().fields("context_format_v2", 99, [1, 3], [2, 5])
+    prompt = render_baseline_prompt([1, 3], [2, 5], TITLES, context_variant_id="context_format_v2",
+                                    item_fields=fields, domain_noun="book")
+    assert "2. title=Shrek (2001); format=DVD; price=$10.00; price_level=mid" in prompt.user_message
+    assert "Item context format: book title, its format, its listed price" in prompt.user_message

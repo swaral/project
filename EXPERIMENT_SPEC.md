@@ -1028,3 +1028,114 @@ MovieLens is near random with or without it (0.169-0.254).
 Agreement weighting also works against the strongest member here: RWRA
 weights each member by its agreement with the others, and the co-purchase
 context is the one that disagrees, so RWRA cannot favour it.
+
+## Addendum v15: Five Amazon Domains, Experiment 2b, Full L1-L4 Plan
+
+Recorded 2026-09-30, before any Experiment 2b run and before any L4 run.
+
+### Domains
+
+The study runs on five Amazon-Reviews-2023 domains with real purchase
+order: `amazon_games`, `amazon_film`, `amazon_tv`, `amazon_books`,
+`amazon_music`, each on all four ladder levels (L1 random, L2
+popularity-matched, L3 attribute-matched, L4 recency-matched).
+
+Retired from runs (code kept so earlier results in `results/` can be
+reproduced; `build_kernel.py` prints a note when one is built):
+
+- `movielens`: ratings were entered in bulk (Addendum v9), so it has no
+  next-item signal; its pilots showed no significant ensemble gain at any
+  level. It remains a reported contrast from the earlier runs.
+- `amazon_movies`: the combined Movies & TV domain, replaced by Film and TV.
+- Experiment `context` (the four v8 contexts including `context_collab_v2`).
+
+`run_ensemble.py` no longer defaults to MovieLens: `--domain`, `--examples`
+and `--candidates` are required.
+
+### Experiment 2b: semantic contexts (`build_kernel.py --experiment context2b`)
+
+Why: Experiment 2 asks how the LLM responds to semantic item context.
+`context_collab_v2` passes co-purchase statistics (the item-KNN signal), not
+a description of the item. On Games, Film and TV it was the only context
+above random and carried almost all of the context ensemble's accuracy
+(Addendum v14), hiding the effect of the semantic contexts. This is a
+design reason about what the experiment measures; the Experiment 2 results
+with it stay reported as they are.
+
+Members (baseline wording, `prompts.SEMANTIC_CONTEXT_SET`):
+`context_content_v2`, `context_crowd_v2`, `context_personal_v2` (unchanged
+from v8) and two new ones, each the title plus three fields:
+
+- `context_subgenre_v2`: `subgenre` (deepest category label below the
+  item's genre, or product type for games), `family` (labels between the
+  genre and the sub-genre), `in_your_history` (how many of the user's last
+  50 items share that sub-genre; a history item does not count itself).
+- `context_format_v2`: `format` (how the item is sold), `price` (listed
+  price), `price_level` (low/mid/high: tertiles of all priced catalog items).
+
+Fields come from the dataset only (`item_metadata.py` and the domain
+modules) and are stored with every item in `<domain>_items.jsonl`:
+sub-genre from the category path below the genre (store sections such as
+"CDs $7 - $10", deals and "General" are skipped); format from the store's
+"Format:" label, else the book binding in `details`, the Kindle or Audible
+storefront, a DVD/Blu-ray tag in the title, or Prime Video; for games the
+product type (game, accessory, console, VR hardware) or "digital code".
+Prices are those in the 2023 metadata snapshot, not at rating time. The
+Books and Music metadata caches are now `*_meta_compact_v2.jsonl`, which
+add the raw inputs of format and price.
+
+Coverage over each domain's items:
+
+| Domain | Sub-genre | Format | Price |
+|---|---|---|---|
+| Games | 34% (accessory types; games carry no genre labels) | 90% | 67% |
+| Film | 6% | 100% (DVD 76%, Blu-ray 23%) | 90% |
+| TV | 2% | 100% (DVD 96%) | 94% |
+| Books | 99% | 97% (Kindle 37%, Hardcover 27%, Paperback 25%) | 75% |
+| Music | 81% | 99% (Audio CD 96%) | 94% |
+
+Expected limits, stated before any run: the sub-genre context is close to
+title-only on Film and TV, and format carries little variation on Film, TV
+and Music; Books is the domain where both new contexts are informative.
+
+Comparisons: as in Addendum v8, per domain and ladder level on the test
+split. Primary (Holm across the two): RWRA vs the validation-preselected
+single context, and RWRA vs the naive mean. The debiased-ensemble
+comparisons (Addendum v7) are reported as their own Holm family; each
+member's test MRR and member agreement are descriptive. Comparing the
+ensemble with each single context is not pre-registered and, if reported,
+is labelled exploratory.
+
+### Adding the fields changed no pool
+
+Rebuilding every domain with the new item fields left all 35 pool and
+example files byte-identical (five domains x L1-L4, retrieval, top-popular,
+clean examples), so L1-L4 are the pools already checked in Addenda
+v10-v13.
+
+### Line endings and subset fingerprints
+
+`write_subset` now writes Unix line endings on every platform. On Windows,
+pandas had written "\r\n", so the laptop fingerprints recorded in Addenda
+v10 and v12 (`6c8306d9`, `829a86b6`, `799cb04f`, `f1e1393c`) differed from
+Kaggle's although the data were identical (confirmed for Film and TV:
+removing the "\r" reproduces Kaggle's `b8f7dd5b` and `5829ac25`). The
+fingerprints to check from now on, identical on both machines:
+
+| Domain | Film | TV | Books | Music |
+|---|---|---|---|---|
+| Subset ratings SHA-256 (prefix) | `b8f7dd5b` | `5829ac25` | `2e41eaa4` | `ef5cee23` |
+
+### Run plan
+
+Two experiments x five domains x L1-L4, shuffled candidates, model
+`qwen2.5:3b-instruct`, the session sizes of Addendum v8 (500 L2 sessions;
+300 for L1 and L3; L4 on the matchable part of those 300). Six kernels:
+
+    python kaggle/build_kernel.py --username <you> --experiment <strategy|context2b> --domains <pair> --pools random,popularity_matched,attribute_matched,recency_matched --conditions shuffled
+
+with `<pair>` one of `amazon_film,amazon_tv`, `amazon_books,amazon_music`
+and `amazon_games` (a single domain is split over both GPUs). Estimated from
+the earlier runs (about 12.5 s per session per GPU with 8 members): about
+5-6 h per paired strategy kernel, 6-7 h per paired context2b kernel (five
+members), about half that for Games alone; roughly 30 GPU hours in total.
