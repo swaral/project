@@ -1,0 +1,33 @@
+{
+  "domain": "amazon_tv",
+  "examples": 2879,
+  "splits": {
+    "validation": 843,
+    "test": 2036
+  },
+  "dropped_users": {
+    "short_history": 0,
+    "non_positive_target": 298,
+    "tied_final_timestamp": 0,
+    "target_in_history": 0
+  },
+  "target_policy": "final interaction per user, rated >= 4.0; users whose final timestamp equals the previous interaction's are excluded (order unknown)",
+  "training_policy": "every user's final interaction removed (leave-one-out frame)",
+  "catalog_items": 3104,
+  "pools": {
+    "popularity_matched": "19 negatives from the target's popularity neighbourhood; number less popular than the target drawn uniformly 0..19; seeded order",
+    "retrieval": "item-KNN cosine over last 20 history items, training data only; target inserted in place of the 20th item when not retrieved",
+    "top_popular": "original design (19 most popular non-history items); diagnostic only",
+    "random": "ladder L1 (easy): 19 negatives uniform over the catalog",
+    "attribute_matched": "ladder L3 (hard): popularity-matched negatives sharing a genre (MovieLens, Movies & TV) or the platform (games) with the target"
+  },
+  "attribute_matched_share": 0.4849,
+  "ladder": {
+    "L1_easy": "random",
+    "L2_medium": "popularity_matched",
+    "L3_hard": "attribute_matched"
+  },
+  "retrieval_recall_at_pool_size": 0.366099340048628,
+  "seed": 0,
+  "validation_fraction": 0.3
+}
