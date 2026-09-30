@@ -1267,3 +1267,71 @@ L1 (format) and Books L1 (format). These are the weaker contexts of each
 cell (in Games L1 and Books L1 the weakest); RWRA is never significantly
 better than the best context of a cell, and not better than any context
 in Film, TV, or at L3-L4.
+
+## Addendum v19: Semantic Context Against Title Only (Exploratory)
+
+Recorded 2026-09-30, after the Experiment 1 and 2b results were seen and
+before this comparison was computed.
+
+### Why
+
+Experiment 2b shows each semantic context close to random, but not whether
+adding the context changes anything compared with showing the title only.
+Experiment 1 includes that reference: member
+`baseline_scores_v1:context_title_v1`, the same scoring prompt as the five
+Experiment 2b members, with the title as the only item context.
+
+### Data
+
+Games, Film and TV at L1-L3, the cells where both experiments ran. In each
+of them Experiment 1 scored every Experiment 2b session with identical
+candidates and target (checked: 3,600 of 3,600 sessions), with the same
+model digest (`357c53fb659c`), Ollama client and context length. Each
+(session, member) pair has its own shuffle seed, so the title member's
+candidate order does not depend on which run it was in. L4, Books and Music
+have no Experiment 1 run and are not covered.
+
+### Method (`scripts/compare_context_title.py`)
+
+Test-split sessions where the title member and all five contexts parsed.
+Two families, each Holm-corrected within a domain and level, with the
+paired sign-flip test on reciprocal rank and a bootstrap 95% CI:
+
+1. Each context alone against title only (five comparisons).
+2. The two Experiment 2b ensembles (RWRA as recorded, and the debiased
+   ensemble fitted on the validation sessions) against title only.
+
+Both are exploratory. They are reported with that label and do not change
+the pre-registered conclusions.
+
+### Results (`results/pilot_3b_context2b_ladder_l4_2026-09-30/context_vs_title/`)
+
+Test split, MRR (difference to title only); **bold**: Holm p < 0.05
+within its family; random = 0.180.
+
+| Domain | L | n | Title only | content | crowd | personal | subgenre | format | RWRA | Debiased |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Games | L1 | 191 | 0.219 | 0.201 (-0.018) | 0.200 (-0.019) | 0.217 (-0.002) | 0.181 (-0.039) | 0.177 (-0.042) | 0.231 (+0.012) | 0.231 (+0.011) |
+| Games | L2 | 326 | 0.205 | 0.197 (-0.008) | **0.172 (-0.034)** | 0.192 (-0.014) | 0.190 (-0.015) | **0.167 (-0.038)** | 0.188 (-0.017) | 0.208 (+0.002) |
+| Games | L3 | 190 | 0.208 | 0.183 (-0.025) | 0.195 (-0.013) | 0.173 (-0.035) | 0.176 (-0.032) | 0.180 (-0.028) | 0.208 (-0.000) | 0.180 (-0.028) |
+| Film | L1 | 217 | 0.197 | 0.191 (-0.005) | 0.177 (-0.020) | 0.190 (-0.007) | 0.190 (-0.007) | 0.181 (-0.016) | 0.187 (-0.010) | 0.217 (+0.021) |
+| Film | L2 | 358 | 0.187 | 0.183 (-0.004) | 0.186 (-0.001) | 0.197 (+0.010) | 0.188 (+0.001) | 0.180 (-0.008) | 0.210 (+0.023) | 0.213 (+0.026) |
+| Film | L3 | 217 | 0.184 | 0.183 (-0.001) | 0.180 (-0.003) | 0.185 (+0.001) | 0.181 (-0.003) | 0.183 (-0.000) | 0.194 (+0.011) | 0.190 (+0.007) |
+| TV | L1 | 214 | 0.208 | 0.196 (-0.012) | 0.201 (-0.008) | 0.182 (-0.027) | 0.229 (+0.021) | 0.196 (-0.013) | 0.228 (+0.020) | 0.238 (+0.030) |
+| TV | L2 | 342 | 0.218 | 0.189 (-0.029) | 0.203 (-0.015) | 0.206 (-0.013) | 0.196 (-0.023) | 0.195 (-0.023) | 0.224 (+0.006) | 0.232 (+0.014) |
+| TV | L3 | 214 | 0.180 | 0.208 (+0.029) | 0.205 (+0.026) | 0.186 (+0.007) | 0.199 (+0.019) | 0.184 (+0.004) | **0.217 (+0.037)** | **0.224 (+0.044)** |
+
+- No context alone is significantly better than title only (0 of 45).
+  36 of 45 differences are negative, all 15 on Games, where two are
+  significantly worse (L2 crowd -0.034, format -0.038).
+- The context ensembles beat title only significantly in one of 9 cells
+  (TV L3: RWRA +0.037, debiased +0.044); elsewhere -0.028 to +0.030.
+- Title only is itself close to random (0.180-0.219). Adding semantic
+  fields does not give the 3B model usable signal; on Games it lowers
+  accuracy.
+- The context-ensemble cells in v18 with significant gains over the
+  preselected context (Film L2, TV L1, TV L2) are not significant against
+  title only: those gains come from the preselected context being below
+  title only, not from the ensemble exceeding what the title alone gives.
+- The TV test sessions differ from the v18 set by one (342 vs 343): the
+  title member did not parse on that session.

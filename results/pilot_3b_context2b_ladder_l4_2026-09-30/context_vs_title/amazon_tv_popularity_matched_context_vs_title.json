@@ -1,0 +1,89 @@
+{
+  "title_member": "baseline_scores_v1:context_title_v1",
+  "contexts": [
+    "baseline_scores_v1:context_content_v2",
+    "baseline_scores_v1:context_crowd_v2",
+    "baseline_scores_v1:context_format_v2",
+    "baseline_scores_v1:context_personal_v2",
+    "baseline_scores_v1:context_subgenre_v2"
+  ],
+  "test_sessions_compared": 342,
+  "mrr": {
+    "title_only": 0.2182123942893023,
+    "rwra_recorded": 0.22446959863077612,
+    "debiased_ensemble": 0.23235945534639252,
+    "baseline_scores_v1:context_content_v2": 0.1893548330291829,
+    "baseline_scores_v1:context_crowd_v2": 0.20333582466670602,
+    "baseline_scores_v1:context_format_v2": 0.19502472994798328,
+    "baseline_scores_v1:context_personal_v2": 0.20570102851414898,
+    "baseline_scores_v1:context_subgenre_v2": 0.19562873218931143
+  },
+  "contexts_vs_title_only": {
+    "baseline_scores_v1:context_content_v2_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.028857561260119395,
+      "ci_low": -0.0598641360691344,
+      "ci_high": 0.0020713883560991037,
+      "p_value": 0.06319368063193681,
+      "n_pairs": 342,
+      "p_holm": 0.31596840315968405
+    },
+    "baseline_scores_v1:context_crowd_v2_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.014876569622596265,
+      "ci_low": -0.04507789975192498,
+      "ci_high": 0.014828378288674516,
+      "p_value": 0.3451654834516548,
+      "n_pairs": 342,
+      "p_holm": 0.6903309669033096
+    },
+    "baseline_scores_v1:context_format_v2_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.02318766434131896,
+      "ci_low": -0.05158444552631957,
+      "ci_high": 0.004288294188087556,
+      "p_value": 0.1151884811518848,
+      "n_pairs": 342,
+      "p_holm": 0.43715628437156284
+    },
+    "baseline_scores_v1:context_personal_v2_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.01251136577515331,
+      "ci_low": -0.04384045045215769,
+      "ci_high": 0.019307782787065162,
+      "p_value": 0.4370562943705629,
+      "n_pairs": 342,
+      "p_holm": 0.6903309669033096
+    },
+    "baseline_scores_v1:context_subgenre_v2_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.02258366209999085,
+      "ci_low": -0.0506309300479311,
+      "ci_high": 0.004315420470348724,
+      "p_value": 0.10928907109289071,
+      "n_pairs": 342,
+      "p_holm": 0.43715628437156284
+    }
+  },
+  "ensembles_vs_title_only": {
+    "rwra_recorded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.006257204341473863,
+      "ci_low": -0.026954917975005162,
+      "ci_high": 0.04114812709797417,
+      "p_value": 0.7191280871912809,
+      "n_pairs": 342,
+      "p_holm": 0.8735126487351265
+    },
+    "debiased_ensemble_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.014147061057090217,
+      "ci_low": -0.02101891942885841,
+      "ci_high": 0.04907891367557126,
+      "p_value": 0.43675632436756323,
+      "n_pairs": 342,
+      "p_holm": 0.8735126487351265
+    }
+  },
+  "note": "exploratory (Addendum v19)"
+}
