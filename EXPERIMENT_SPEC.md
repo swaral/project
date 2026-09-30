@@ -1170,3 +1170,30 @@ level evenly and had the same wait at every level.
   is left of it, instead of a fixed share per level.
 - Kaggle limits kernel titles to 50 characters; longer names now become
   `llm-reco-<setup>` (e.g. `llm-reco-3b-context2b-ladder-l4-film-tv`).
+
+## Addendum v17: RWRA Against Each Context (Exploratory)
+
+Recorded 2026-09-30, after the Experiment 2b Film/TV results were seen
+and before the Books, Music and Games results were available.
+
+### Why
+
+The pre-registered comparisons test RWRA against one single context, the
+one preselected on validation. With five members that are each close to
+random, the preselected member is often not the best one on test, so the
+question "is the ensemble better than each context on its own?" is not
+answered by them.
+
+### Method (`evaluate_debiased.py`, `rwra_vs_member_comparisons`)
+
+On the same test sessions (all members parsed) and with no new model
+calls: RWRA against each member alone, one paired comparison per member
+(sign-flip permutation test on reciprocal rank, bootstrap 95% CI), Holm
+across the members of one domain and ladder level. With
+`--exclude-member`, RWRA is the recomputed one and only the remaining
+members are compared.
+
+This is exploratory, as Addendum v15 says of any ensemble-versus-each-
+context comparison: it is not part of either pre-registered family, it is
+reported with that label, and it does not change the primary conclusions.
+For Film and TV it is computed after their results were seen.

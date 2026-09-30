@@ -149,6 +149,16 @@ def test_evaluate_debiased_can_exclude_a_member():
     # RWRA is recomputed from the remaining members, never read from the record.
     assert "rwra_recomputed" in without["methods"] and "rwra_recorded" not in without["methods"]
     assert without["methods"]["debiased_ensemble"]["RR"] < full["methods"]["debiased_ensemble"]["RR"]
+    # Addendum v17: RWRA against each remaining member, Holm across them.
+    versus = without["rwra_vs_member_comparisons"]
+    assert sorted(versus) == [f"rwra_recomputed_vs_{m}" for m in without["members"]]
+    for member in without["members"]:
+        comparison = versus[f"rwra_recomputed_vs_{member}"]
+        expected = without["methods"]["rwra_recomputed"]["RR"] - without["test_mrr_by_member"][member]
+        assert np.isclose(comparison["mean_difference"], expected)
+        assert comparison["p_holm"] >= comparison["p_value"]
+    # No RWRA is recorded in these trials, so the full run has nothing to compare.
+    assert full["rwra_vs_member_comparisons"] == {}
     try:
         evaluate(trials, pools, n_boot=100, exclude_members=["context_colab_v2"])
     except ValueError as error:

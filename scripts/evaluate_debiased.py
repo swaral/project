@@ -177,22 +177,31 @@ def evaluate(
         for b in ("single_prompt_preselected", "naive_mean")
         if rwra_key in rr
     }
-    for family in (primary, secondary, rwra):
+    # Each member alone on test.
+    member_rr = {
+        f"member:{m}": [
+            tie_aware_metrics(answers[r["session_id"]][m].item_scores, r["target_item_id"])["RR"]
+            for r in complete
+        ]
+        for m in members
+    }
+    test_mrr = {m: float(np.mean(member_rr[f"member:{m}"])) for m in members}
+    # Addendum v17 (exploratory): RWRA against each member alone, Holm across members.
+    rwra_vs_members = {
+        f"{rwra_key}_vs_{m}": compare({**member_rr, **rr}, rwra_key, f"member:{m}",
+                                      n_boot=n_boot, seed=seed)
+        for m in members
+        if rwra_key in rr
+    }
+    for family in (primary, secondary, rwra, rwra_vs_members):
         if not family:
             continue
         adjusted = holm_adjust({k: v["p_value"] for k, v in family.items()})
         for key, value in family.items():
             value["p_holm"] = adjusted[key]
 
-    # Each member alone on test, and how much members agree (tau-b on raw
-    # scores, so ties are not broken by list position).
-    test_mrr = {
-        m: float(np.mean([
-            tie_aware_metrics(answers[r["session_id"]][m].item_scores, r["target_item_id"])["RR"]
-            for r in complete
-        ]))
-        for m in members
-    }
+    # How much members agree (tau-b on raw scores, so ties are not broken by
+    # list position).
     taus = []
     for record in complete:
         pool = record["candidate_item_ids"]
@@ -235,6 +244,7 @@ def evaluate(
         "primary_comparisons": primary,
         "secondary_comparisons": secondary,
         "rwra_comparisons": rwra,
+        "rwra_vs_member_comparisons": rwra_vs_members,
         "test_mrr_by_member": test_mrr,
         "member_agreement_tau_b": float(np.mean(taus)) if taus else None,
         "by_target_rarity": by_rarity,
