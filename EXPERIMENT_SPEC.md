@@ -1139,3 +1139,34 @@ and `amazon_games` (a single domain is split over both GPUs). Estimated from
 the earlier runs (about 12.5 s per session per GPU with 8 members): about
 5-6 h per paired strategy kernel, 6-7 h per paired context2b kernel (five
 members), about half that for Games alone; roughly 30 GPU hours in total.
+
+## Addendum v16: Shared GPU Work Queue on Kaggle
+
+Recorded 2026-09-30, before any Experiment 2b run completed. An execution
+change only: no model call, prompt, pool, session or analysis changes.
+
+### Why
+
+Up to v15 a two-domain kernel gave each domain one GPU and waited at every
+ladder level for the slower domain before starting the next, so one GPU sat
+idle whenever the two domains differed in run time (e.g. at L4, where Film
+has 82% and TV 67% of sessions matchable). A single-domain kernel split each
+level evenly and had the same wait at every level.
+
+### Method (`kaggle/pilot_job.py`)
+
+- Each (domain, level) run of the pre-sampled pools is cut into work units
+  of 25 sessions. All units of the kernel, in plan order (L1, L2, L3, L4,
+  domains alternating within a level), go into one queue.
+- One Ollama server per GPU; one worker per server takes the next unit as
+  soon as its GPU is free, across domains and levels. A GPU is idle only
+  during the last unit of the whole kernel.
+- A level is merged and analysed as soon as its units are done, while the
+  GPUs continue with the next level.
+- Results are exactly those of one unsplit run: sessions are independent,
+  each (session, member) pair has its own shuffle seed, and the merged
+  trials file is written in session order, as `run_ensemble.py` writes it.
+- The runtime budget (660 minutes) is now shared: each unit may use what
+  is left of it, instead of a fixed share per level.
+- Kaggle limits kernel titles to 50 characters; longer names now become
+  `llm-reco-<setup>` (e.g. `llm-reco-3b-context2b-ladder-l4-film-tv`).

@@ -28,6 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 KERNEL_SLUG = "llm-session-reco-pilot"
 DEFAULT_MODEL = "qwen2.5:3b-instruct"
+KAGGLE_TITLE_LIMIT = 50
 
 
 def _source_archive() -> str:
@@ -72,10 +73,10 @@ def main() -> None:
     parser.add_argument("--ladder-sessions", type=int, default=300,
                         help="sessions per domain on each ladder level other than L2")
     parser.add_argument("--domains", required=True,
-                        help="comma-separated domains (at most two, one per GPU): amazon_games, "
-                        "amazon_film, amazon_tv, amazon_books, amazon_music; retired, only to "
-                        "reproduce earlier runs: movielens, amazon_movies. A single domain is "
-                        "split over both GPUs")
+                        help="comma-separated domains (at most two, to fit Kaggle's 12-hour limit): "
+                        "amazon_games, amazon_film, amazon_tv, amazon_books, amazon_music; retired, "
+                        "only to reproduce earlier runs: movielens, amazon_movies. Both GPUs share "
+                        "all the work")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "kaggle" / "build")
     args = parser.parse_args()
 
@@ -100,7 +101,7 @@ def main() -> None:
     if not domains or set(domains) - allowed_domains:
         parser.error(f"--domains must be drawn from {sorted(allowed_domains)}")
     if len(domains) > 2:
-        parser.error("--domains takes at most two domains (one per GPU)")
+        parser.error("--domains takes at most two domains (Kaggle's 12-hour limit)")
     # Addendum v15: MovieLens, the combined Movies & TV domain and the
     # co-purchase context experiment are retired from runs.
     retired = sorted(set(domains) & {"movielens", "amazon_movies"})
@@ -130,6 +131,12 @@ def main() -> None:
             or args.context != "title" or args.experiment != "wording"
             or domains != ["movielens", "amazon_games"]):
         slug = f"{KERNEL_SLUG}-{suffix}"
+    title = "LLM Session Reco Pilot" + ("" if slug == KERNEL_SLUG else f" {suffix}")
+    if len(title) > KAGGLE_TITLE_LIMIT:
+        # Kaggle rejects longer titles, and a new kernel's slug must match its title.
+        title, slug = f"LLM Reco {suffix}", f"llm-reco-{suffix}"
+        if len(title) > KAGGLE_TITLE_LIMIT:
+            parser.error(f"kernel title '{title}' exceeds {KAGGLE_TITLE_LIMIT} characters")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     job = (ROOT / "kaggle" / "pilot_job.py").read_text(encoding="utf-8")
@@ -157,7 +164,7 @@ def main() -> None:
     (args.output_dir / "run_pilot.py").write_text(script, encoding="utf-8")
     metadata = {
         "id": f"{args.username}/{slug}",
-        "title": "LLM Session Reco Pilot" + ("" if slug == KERNEL_SLUG else f" {suffix}"),
+        "title": title,
         "code_file": "run_pilot.py",
         "language": "python",
         "kernel_type": "script",

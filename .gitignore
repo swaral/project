@@ -14,3 +14,4 @@ data/processed/*
 
 # Generated Kaggle kernel (embeds the source; rebuild with kaggle/build_kernel.py)
 kaggle/build/
+kaggle_token.txt

@@ -17,9 +17,11 @@ import hashlib
 import io
 import json
 import os
+import queue
 import subprocess
 import sys
 import tarfile
+import threading
 import time
 import urllib.request
 from pathlib import Path
@@ -70,7 +72,6 @@ OUT = Path("/kaggle/working/pilot")
 DOMAINS = {
     # Retired in Addendum v15; kept to reproduce the earlier MovieLens runs.
     "movielens": {
-        "port": 11434,
         "prefix": "ml1m",
         "extra": [
             "--examples", "data/processed/ml1m_leave_one_out.jsonl",
@@ -80,7 +81,6 @@ DOMAINS = {
         "popularity_domain": "movielens",
     },
     "amazon_games": {
-        "port": 11435,
         "prefix": "amazon_games",
         "extra": [
             "--examples", "data/processed/amazon_games_leave_one_out.jsonl",
@@ -91,7 +91,6 @@ DOMAINS = {
         "popularity_domain": "amazon-games",
     },
     "amazon_movies": {
-        "port": 11434,
         "prefix": "amazon_movies",
         "extra": [
             "--examples", "data/processed/amazon_movies_leave_one_out.jsonl",
@@ -103,7 +102,6 @@ DOMAINS = {
     },
     # Addendum v10: the movie-only and TV-only halves of Movies & TV, one GPU each.
     "amazon_film": {
-        "port": 11434,
         "prefix": "amazon_film",
         "extra": [
             "--examples", "data/processed/amazon_film_leave_one_out.jsonl",
@@ -114,7 +112,6 @@ DOMAINS = {
         "popularity_domain": "amazon-film",
     },
     "amazon_tv": {
-        "port": 11435,
         "prefix": "amazon_tv",
         "extra": [
             "--examples", "data/processed/amazon_tv_leave_one_out.jsonl",
@@ -126,7 +123,6 @@ DOMAINS = {
     },
     # Addendum v12: Books and CDs & Vinyl, one GPU each.
     "amazon_books": {
-        "port": 11434,
         "prefix": "amazon_books",
         "extra": [
             "--examples", "data/processed/amazon_books_leave_one_out.jsonl",
@@ -137,7 +133,6 @@ DOMAINS = {
         "popularity_domain": "amazon-books",
     },
     "amazon_music": {
-        "port": 11435,
         "prefix": "amazon_music",
         "extra": [
             "--examples", "data/processed/amazon_music_leave_one_out.jsonl",
@@ -157,11 +152,14 @@ PREPARE_SCRIPTS = {
     "amazon_books": ["scripts/prepare_amazon_media.py", "--domain", "amazon_books"],
     "amazon_music": ["scripts/prepare_amazon_media.py", "--domain", "amazon_music"],
 }
-# Addendum v9: which domains this kernel runs. A single domain is split into
-# one shard per GPU (sessions are independent, so shards merge exactly).
+# Addendum v9: which domains this kernel runs.
 SELECTED_DOMAINS = os.environ.get("PILOT_DOMAINS", "movielens,amazon_games").split(",")
 DOMAINS = {name: DOMAINS[name] for name in SELECTED_DOMAINS}
-SHARD_PORTS = (11434, 11435)
+# One Ollama server per GPU. Both take work units from one queue, so neither
+# idles while the other still has work (sessions are independent and every
+# (session, member) pair has its own shuffle seed, so units merge exactly).
+GPU_PORTS = (11434, 11435)
+CHUNK_SESSIONS = 25
 
 
 def log(message):
@@ -336,65 +334,99 @@ def sample_args(pool):
     return ["--sample-size", str(PILOT_SESSIONS), "--sample-seed", "0"]
 
 
-def sharded(pool):
-    return len(DOMAINS) == 1 and EXPERIMENT != "wording" and pool in SAMPLED_POOLS
+def chunked(pool):
+    # v8 runs read pre-sampled pool files, so they can be cut into work units.
+    return EXPERIMENT != "wording" and pool in SAMPLED_POOLS
 
 
-def write_shards(domain, pool):
-    """Split a pre-sampled pool file into one file per GPU, alternating sessions."""
+def write_chunks(domain, pool):
+    """Cut a pre-sampled pool file into work units of CHUNK_SESSIONS sessions."""
     processed = PROJECT / "data/processed"
     prefix = DOMAINS[domain]["prefix"]
     with (processed / f"{prefix}_pool_{pool}_pilot.jsonl").open() as handle:
-        lines = [line for line in handle if line.strip()]
-    for index in range(len(SHARD_PORTS)):
-        (processed / f"{prefix}_pool_{pool}_pilot_shard{index}.jsonl").write_text(
-            "".join(lines[index::len(SHARD_PORTS)]))
+        lines = [line if line.endswith("\n") else line + "\n" for line in handle if line.strip()]
+    names = []
+    for index in range(0, len(lines), CHUNK_SESSIONS):
+        name = f"{prefix}_pool_{pool}_pilot_chunk{index // CHUNK_SESSIONS}.jsonl"
+        (processed / name).write_text("".join(lines[index:index + CHUNK_SESSIONS]))
+        names.append(name)
+    return names
 
 
-def run_domains(pool, condition, minutes):
-    jobs = []  # (label, domain, port, extra argument overrides, output)
-    for domain, spec in DOMAINS.items():
-        name = run_name(domain, pool, condition)
-        if sharded(pool):
-            write_shards(domain, pool)
-            for index, port in enumerate(SHARD_PORTS):
-                args = pool_args(domain, pool)
-                args[args.index("--candidates") + 1] = (
-                    f"data/processed/{spec['prefix']}_pool_{pool}_pilot_shard{index}.jsonl")
-                jobs.append((f"{name}_shard{index}", domain, port, args,
-                             OUT / f"{name}_shard{index}_pilot_trials.jsonl"))
-        else:
-            jobs.append((name, domain, spec["port"], pool_args(domain, pool),
-                         OUT / f"{name}_pilot_trials.jsonl"))
-    processes = {}
-    for label, domain, port, args, output in jobs:
-        cmd = [sys.executable, "scripts/run_ensemble.py",
-               "--provider", "chat-completions", "--model", MODEL,
-               "--base-url", f"http://127.0.0.1:{port}/v1",
-               "--domain", domain, *args, *member_args(),
-               *sample_args(pool),
-               "--continue-on-error", "--resume",
-               "--max-runtime-minutes", str(minutes),
-               "--output", str(output)]
-        if condition == "shuffled":
-            cmd += ["--shuffle-candidates", "--shuffle-seed", "0"]
-        log(f"starting {label}: " + " ".join(cmd))
-        processes[label] = subprocess.Popen(
-            cmd, cwd=PROJECT, stdout=open(OUT / f"{label}_run.log", "w"),
-            stderr=subprocess.STDOUT)
-    for label, process in processes.items():
-        code = process.wait()
-        log(f"{label} finished with exit code {code}")
-        if code != 0:
-            raise RuntimeError(f"{label} run failed; see {label}_run.log")
-    if sharded(pool):
+def plan_units(plan):
+    """Every work unit of the plan, in plan order."""
+    units = []
+    for pool, condition in plan:
         for domain in DOMAINS:
             name = run_name(domain, pool, condition)
-            with (OUT / f"{name}_pilot_trials.jsonl").open("w") as merged:
-                for index in range(len(SHARD_PORTS)):
-                    shard = OUT / f"{name}_shard{index}_pilot_trials.jsonl"
-                    merged.write(shard.read_text())
-                    shard.unlink()
+            parts = [(name, pool_args(domain, pool))]
+            if chunked(pool):
+                parts = []
+                for index, chunk in enumerate(write_chunks(domain, pool)):
+                    args = pool_args(domain, pool)
+                    args[args.index("--candidates") + 1] = f"data/processed/{chunk}"
+                    parts.append((f"{name}_chunk{index}", args))
+            for label, args in parts:
+                units.append({"run": (pool, condition), "name": name, "label": label,
+                              "domain": domain, "pool": pool, "condition": condition,
+                              "args": args, "output": OUT / f"{label}_pilot_trials.jsonl",
+                              "log": OUT / f"{label}_run.log", "done": threading.Event()})
+    return units
+
+
+def run_unit(unit, port, minutes):
+    cmd = [sys.executable, "scripts/run_ensemble.py",
+           "--provider", "chat-completions", "--model", MODEL,
+           "--base-url", f"http://127.0.0.1:{port}/v1",
+           "--domain", unit["domain"], *unit["args"], *member_args(),
+           *sample_args(unit["pool"]),
+           "--continue-on-error", "--resume",
+           "--max-runtime-minutes", str(minutes),
+           "--output", str(unit["output"])]
+    if unit["condition"] == "shuffled":
+        cmd += ["--shuffle-candidates", "--shuffle-seed", "0"]
+    log(f"starting {unit['label']} on port {port}: " + " ".join(cmd))
+    with unit["log"].open("w") as handle:
+        code = subprocess.run(cmd, cwd=PROJECT, stdout=handle, stderr=subprocess.STDOUT).returncode
+    log(f"{unit['label']} finished with exit code {code}")
+    return code
+
+
+def gpu_worker(port, work, started, failures):
+    """Take the next work unit whenever this GPU's server is free."""
+    while True:
+        try:
+            unit = work.get_nowait()
+        except queue.Empty:
+            return
+        left = MAX_RUNTIME_MINUTES - (time.time() - started) / 60
+        try:
+            if left < 1:
+                log(f"skipping {unit['label']}: runtime budget spent")
+            elif run_unit(unit, port, int(left)) != 0:
+                failures.append(unit["label"])
+        except Exception as error:  # a worker must always release its unit
+            log(f"{unit['label']} raised {error!r}")
+            failures.append(unit["label"])
+        finally:
+            unit["done"].set()
+
+
+def merge_run(name, units):
+    """Merge a run's work units into one trials file, in session order as one run writes it."""
+    if len(units) == 1 and units[0]["label"] == name:
+        return
+    records, logs = [], []
+    for unit in units:
+        if unit["output"].is_file():
+            records += [line for line in unit["output"].read_text().splitlines() if line.strip()]
+            unit["output"].unlink()
+        if unit["log"].is_file():
+            logs.append(unit["log"].read_text())
+            unit["log"].unlink()
+    records.sort(key=lambda line: str(json.loads(line)["session_id"]))
+    (OUT / f"{name}_pilot_trials.jsonl").write_text("".join(line + "\n" for line in records))
+    (OUT / f"{name}_run.log").write_text("".join(logs))
 
 
 def max_prompt_tokens(path):
@@ -495,14 +527,13 @@ def main():
     ollama_version = install_ollama()
     gpus = gpu_names()
     log(f"GPUs: {gpus}")
-    ports = SHARD_PORTS if len(DOMAINS) == 1 else [spec["port"] for spec in DOMAINS.values()]
-    for index, port in enumerate(ports):
+    for index, port in enumerate(GPU_PORTS):
         start_server(port, index % max(len(gpus), 1))
     run(["ollama", "pull", MODEL], env=dict(os.environ, OLLAMA_HOST="127.0.0.1:11434"))
     digest = model_digest()
     if MODEL == "qwen2.5:3b-instruct" and digest != EXPECTED_DIGEST:
         log(f"WARNING: model digest {digest} differs from frozen {EXPECTED_DIGEST}")
-    for port in ports:
+    for port in GPU_PORTS:
         warm_up(port)
 
     manifest = {
@@ -530,10 +561,24 @@ def main():
     # Benchmark pools are only ever run shuffled: calibration needs it.
     plan = [(pool, condition) for pool in POOLS for condition in CONDITIONS
             if pool == "stress" or condition == "shuffled"]
-    for index, (pool, condition) in enumerate(plan):
-        # Split what is left of the budget evenly over the remaining runs.
-        left = MAX_RUNTIME_MINUTES - (time.time() - started) / 60
-        run_domains(pool, condition, max(int(left / (len(plan) - index)), 1))
+    units = plan_units(plan)
+    work = queue.Queue()
+    for unit in units:
+        work.put(unit)
+    failures = []
+    for port in GPU_PORTS:
+        threading.Thread(target=gpu_worker, args=(port, work, started, failures), daemon=True).start()
+    # Analyse each level as soon as its units are done, while the GPUs go on.
+    for pool, condition in plan:
+        run_units = [unit for unit in units if unit["run"] == (pool, condition)]
+        for unit in run_units:
+            unit["done"].wait()
+        failed = [unit["label"] for unit in run_units if unit["label"] in failures]
+        if failed:
+            raise RuntimeError(f"{', '.join(failed)} failed; see their run logs")
+        for domain in DOMAINS:
+            name = run_name(domain, pool, condition)
+            merge_run(name, [unit for unit in run_units if unit["name"] == name])
         key = condition if pool == "stress" else f"{pool}_{condition}"
         summary[key] = analyse(condition) if pool == "stress" else analyse_benchmark(pool, condition)
         (OUT / "summary.json").write_text(json.dumps(summary, indent=2))
