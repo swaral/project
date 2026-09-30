@@ -1,0 +1,18 @@
+{
+  "domain": "amazon_books",
+  "raw_ratings": 9488297,
+  "raw_users": 776370,
+  "raw_items": 495063,
+  "items_with_title": 495063,
+  "items_with_creator": 493823,
+  "user_fraction": 0.1,
+  "user_selection": "sha256('0:<user_id>')[:8] < fraction * 2^32",
+  "min_interactions": 5,
+  "ratings": 263357,
+  "users": 24426,
+  "items": 22281,
+  "items_with_genre": 22199,
+  "same_second_gap_share": 0.0001,
+  "over_one_day_gap_share": 0.8109,
+  "ratings_sha256": "2e41eaa485334d0d21fb2da6af3d967473cac843acbda6bff32357f3647c50db"
+}

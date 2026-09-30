@@ -1197,3 +1197,73 @@ This is exploratory, as Addendum v15 says of any ensemble-versus-each-
 context comparison: it is not part of either pre-registered family, it is
 reported with that label, and it does not change the primary conclusions.
 For Film and TV it is computed after their results were seen.
+
+## Addendum v18: Experiment 2b Results (Five Domains, L1-L4)
+
+Recorded 2026-09-30, after the runs. Results only; no design change.
+
+### Runs (`results/pilot_3b_context2b_ladder_l4_2026-09-30/`)
+
+Three Kaggle kernels (T4 x2, `qwen2.5:3b-instruct`, model digest as
+frozen, shuffled candidates, the v15 sizes): Film/TV (203 min, old static
+GPU split), Books/Music (245 min) and Games (111 min), both with the v16
+work queue. Subset fingerprints match v15 (`b8f7dd5b`, `5829ac25`,
+`2e41eaa4`, `ef5cee23`). Every planned session was scored, none failed;
+4 sessions have one member unparsed and are left out of the test
+comparisons as usual. Prompts stayed within the context window.
+`*_debiased.json` is written by the kernel; `*_debiased_v17.json` is the
+same evaluation rerun locally with the Addendum v17 comparisons added. It
+reproduces every kernel number exactly. Ollama server logs (1.1 GB) are
+not kept.
+
+### Pre-registered comparisons (test split, MRR; random = 0.180; * Holm p < 0.05)
+
+| Domain | L | n | Single (pick) | RWRA | Debiased | RWRA - single | Debiased - single | item-KNN |
+|---|---|---|---|---|---|---|---|---|
+| Games | L1 | 191 | 0.217 (personal) | 0.231 | 0.231 | +0.014 | +0.014 | 0.582 |
+| Games | L2 | 326 | 0.192 (personal) | 0.188 | 0.208 | -0.004 | +0.016 | 0.462 |
+| Games | L3 | 190 | 0.183 (content) | 0.208 | 0.180 | +0.025 | -0.003 | 0.384 |
+| Games | L4 | 133 | 0.200 (personal) | 0.212 | 0.224 | +0.013 | +0.024 | 0.354 |
+| Film | L1 | 217 | 0.191 (content) | 0.187 | 0.217 | -0.005 | +0.026 | 0.444 |
+| Film | L2 | 358 | 0.180 (format) | 0.210 | 0.213 | +0.031* | +0.033* | 0.407 |
+| Film | L3 | 217 | 0.183 (content) | 0.194 | 0.190 | +0.011 | +0.007 | 0.390 |
+| Film | L4 | 178 | 0.183 (format) | 0.174 | 0.195 | -0.010 | +0.011 | 0.389 |
+| TV | L1 | 214 | 0.182 (personal) | 0.228 | 0.238 | +0.047* | +0.056* | 0.589 |
+| TV | L2 | 343 | 0.190 (content) | 0.224 | 0.232 | +0.035* | +0.043* | 0.573 |
+| TV | L3 | 214 | 0.184 (format) | 0.217 | 0.224 | +0.033 | +0.040 | 0.549 |
+| TV | L4 | 135 | 0.163 (subgenre) | 0.171 | 0.185 | +0.007 | +0.022 | 0.563 |
+| Books | L1 | 226 | 0.226 (personal) | 0.231 | 0.236 | +0.005 | +0.009 | 0.568 |
+| Books | L2 | 370 | 0.188 (format) | 0.208 | 0.220 | +0.020 | +0.032* | 0.508 |
+| Books | L3 | 226 | 0.187 (content) | 0.195 | 0.191 | +0.007 | +0.004 | 0.458 |
+| Books | L4 | 166 | 0.189 (crowd) | 0.182 | 0.204 | -0.007 | +0.015 | 0.426 |
+| Music | L1 | 199 | 0.252 (subgenre) | 0.278 | 0.286 | +0.026 | +0.034 | 0.553 |
+| Music | L2 | 339 | 0.236 (personal) | 0.243 | 0.261 | +0.007 | +0.025 | 0.510 |
+| Music | L3 | 198 | 0.179 (crowd) | 0.194 | 0.196 | +0.015 | +0.016 | 0.477 |
+| Music | L4 | 158 | 0.183 (subgenre) | 0.194 | 0.184 | +0.010 | +0.001 | 0.462 |
+
+- Each context alone is close to random (0.15-0.25). RWRA beats the
+  preselected context in 3 of 20 cells (Film L2, TV L1, TV L2), the
+  debiased ensemble in 4 (the same and Books L2); nothing is significant
+  at L3 or L4.
+- Against the naive mean: the debiased ensemble is higher in Games L2,
+  Film L1, Books L2 and Music L2 and lower in Games L3 (-0.028); RWRA is
+  higher in Film L2 (+0.009) and lower in Film L4 (-0.008).
+- The debiased ensemble has the higher MRR of the two ensembles in 15 of
+  20 cells.
+- Hybrid test: the LLM adds nothing to the non-LLM blend in any cell.
+- Member agreement (tau-b) is -0.004 to +0.013 everywhere. This is also
+  true of the Experiment 1 strategy prompts (0.003-0.013), whose ensemble
+  does give large gains, so low agreement alone does not show that the
+  context is ignored.
+- Addendum v15's expectation that sub-genre and format would be
+  informative on Books is not borne out (format 0.169 at Books L1).
+
+### RWRA against each context (exploratory, Addendum v17)
+
+RWRA is above the preselected context mostly at L1-L2, but after Holm
+across the five contexts it is significantly better than a single context
+in 8 of 100 comparisons: Music L1 and L2 (content, crowd, format), Games
+L1 (format) and Books L1 (format). These are the weaker contexts of each
+cell (in Games L1 and Books L1 the weakest); RWRA is never significantly
+better than the best context of a cell, and not better than any context
+in Film, TV, or at L3-L4.

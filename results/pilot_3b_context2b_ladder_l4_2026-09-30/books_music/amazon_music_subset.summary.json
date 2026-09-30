@@ -1,0 +1,18 @@
+{
+  "domain": "amazon_music",
+  "raw_ratings": 1552764,
+  "raw_users": 123876,
+  "raw_items": 89370,
+  "items_with_title": 89366,
+  "items_with_creator": 85838,
+  "user_fraction": 0.3,
+  "user_selection": "sha256('0:<user_id>')[:8] < fraction * 2^32",
+  "min_interactions": 5,
+  "ratings": 269882,
+  "users": 22653,
+  "items": 22132,
+  "items_with_genre": 21797,
+  "same_second_gap_share": 0.0001,
+  "over_one_day_gap_share": 0.5462,
+  "ratings_sha256": "ef5cee237935918570941a6236a97c52992060b7b0088f3f611883e508b0ad6b"
+}

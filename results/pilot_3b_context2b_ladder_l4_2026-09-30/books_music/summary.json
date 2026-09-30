@@ -1,0 +1,524 @@
+{
+  "random_shuffled": {
+    "amazon_books": {
+      "hybrid_mrr": {
+        "item_knn": 0.5683,
+        "sequential_transitions": 0.3646,
+        "genre_overlap": 0.3017,
+        "title_overlap": 0.4856,
+        "newest_first": 0.2655,
+        "llm": 0.2359,
+        "nonllm_blend": 0.6286,
+        "hybrid": 0.6286,
+        "item_knn+llm": 0.5771,
+        "sequential+llm": 0.4019
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.0,
+        "item_knn+llm": 0.2,
+        "sequential+llm": 0.1
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": 0.0,
+          "p": 1.0
+        }
+      },
+      "test_sessions": 226,
+      "validation_sessions": 74,
+      "preselected_single_prompt": "baseline_scores_v1:context_personal_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.2265,
+        "naive_mean": 0.2295,
+        "zscore_mean": 0.246,
+        "debiased_ensemble": 0.2359,
+        "rwra_recorded": 0.2311
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0094,
+          "p_holm": 1.0
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0064,
+          "p_holm": 1.0
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": 0.0047,
+          "p_holm": 1.0
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": 0.0016,
+          "p_holm": 1.0
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.2091,
+        "context_crowd_v2": 0.1928,
+        "context_format_v2": 0.1692,
+        "context_personal_v2": 0.2265,
+        "context_subgenre_v2": 0.2052
+      },
+      "member_agreement_tau_b": 0.001334205053217409,
+      "max_prompt_tokens": 6248
+    },
+    "amazon_music": {
+      "hybrid_mrr": {
+        "item_knn": 0.5531,
+        "sequential_transitions": 0.3094,
+        "genre_overlap": 0.3377,
+        "title_overlap": 0.4531,
+        "newest_first": 0.2474,
+        "llm": 0.2861,
+        "nonllm_blend": 0.6242,
+        "hybrid": 0.6242,
+        "item_knn+llm": 0.562,
+        "sequential+llm": 0.3713
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.0,
+        "item_knn+llm": 0.3,
+        "sequential+llm": 0.1
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": 0.0,
+          "p": 1.0
+        }
+      },
+      "test_sessions": 199,
+      "validation_sessions": 101,
+      "preselected_single_prompt": "baseline_scores_v1:context_subgenre_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.2522,
+        "naive_mean": 0.2852,
+        "zscore_mean": 0.275,
+        "debiased_ensemble": 0.2861,
+        "rwra_recorded": 0.278
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0338,
+          "p_holm": 0.1634
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0009,
+          "p_holm": 0.946
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": 0.0258,
+          "p_holm": 0.3102
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": -0.0072,
+          "p_holm": 0.3102
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.222,
+        "context_crowd_v2": 0.1903,
+        "context_format_v2": 0.2048,
+        "context_personal_v2": 0.2401,
+        "context_subgenre_v2": 0.2522
+      },
+      "member_agreement_tau_b": 0.012762348919860304,
+      "max_prompt_tokens": 3910
+    }
+  },
+  "popularity_matched_shuffled": {
+    "amazon_books": {
+      "hybrid_mrr": {
+        "item_knn": 0.5078,
+        "sequential_transitions": 0.3151,
+        "genre_overlap": 0.3061,
+        "title_overlap": 0.4576,
+        "newest_first": 0.2462,
+        "llm": 0.2202,
+        "nonllm_blend": 0.5576,
+        "hybrid": 0.5576,
+        "item_knn+llm": 0.5078,
+        "sequential+llm": 0.3357
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.0,
+        "item_knn+llm": 0.0,
+        "sequential+llm": 1.0
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": 0.0,
+          "p": 1.0
+        }
+      },
+      "test_sessions": 370,
+      "validation_sessions": 129,
+      "preselected_single_prompt": "baseline_scores_v1:context_format_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.188,
+        "naive_mean": 0.1997,
+        "zscore_mean": 0.2125,
+        "debiased_ensemble": 0.2202,
+        "rwra_recorded": 0.2082
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0322,
+          "p_holm": 0.0288
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0205,
+          "p_holm": 0.0288
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": 0.0202,
+          "p_holm": 0.1147
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": 0.0084,
+          "p_holm": 0.0744
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.1887,
+        "context_crowd_v2": 0.1842,
+        "context_format_v2": 0.188,
+        "context_personal_v2": 0.1931,
+        "context_subgenre_v2": 0.195
+      },
+      "member_agreement_tau_b": 0.005224018289638862,
+      "max_prompt_tokens": 6170
+    },
+    "amazon_music": {
+      "hybrid_mrr": {
+        "item_knn": 0.5104,
+        "sequential_transitions": 0.2984,
+        "genre_overlap": 0.3279,
+        "title_overlap": 0.4356,
+        "newest_first": 0.2944,
+        "llm": 0.2615,
+        "nonllm_blend": 0.5953,
+        "hybrid": 0.5953,
+        "item_knn+llm": 0.5216,
+        "sequential+llm": 0.3419
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.0,
+        "item_knn+llm": 0.1,
+        "sequential+llm": 0.7
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": 0.0,
+          "p": 1.0
+        }
+      },
+      "test_sessions": 339,
+      "validation_sessions": 161,
+      "preselected_single_prompt": "baseline_scores_v1:context_personal_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.2365,
+        "naive_mean": 0.2351,
+        "zscore_mean": 0.2523,
+        "debiased_ensemble": 0.2615,
+        "rwra_recorded": 0.2431
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.025,
+          "p_holm": 0.0934
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0263,
+          "p_holm": 0.0162
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": 0.0067,
+          "p_holm": 0.6785
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": 0.008,
+          "p_holm": 0.1048
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.1734,
+        "context_crowd_v2": 0.1943,
+        "context_format_v2": 0.1985,
+        "context_personal_v2": 0.2365,
+        "context_subgenre_v2": 0.2183
+      },
+      "member_agreement_tau_b": 0.006273157312564776,
+      "max_prompt_tokens": 3951
+    }
+  },
+  "attribute_matched_shuffled": {
+    "amazon_books": {
+      "hybrid_mrr": {
+        "item_knn": 0.4584,
+        "sequential_transitions": 0.3205,
+        "genre_overlap": 0.1787,
+        "title_overlap": 0.4317,
+        "newest_first": 0.2525,
+        "llm": 0.1913,
+        "nonllm_blend": 0.5216,
+        "hybrid": 0.5111,
+        "item_knn+llm": 0.4097,
+        "sequential+llm": 0.3169
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.1,
+        "item_knn+llm": 0.8,
+        "sequential+llm": 0.3
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": -0.0105,
+          "p": 0.123
+        }
+      },
+      "test_sessions": 226,
+      "validation_sessions": 74,
+      "preselected_single_prompt": "baseline_scores_v1:context_content_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.1875,
+        "naive_mean": 0.1993,
+        "zscore_mean": 0.1932,
+        "debiased_ensemble": 0.1913,
+        "rwra_recorded": 0.1947
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0038,
+          "p_holm": 0.8009
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": -0.0079,
+          "p_holm": 0.6947
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": 0.0072,
+          "p_holm": 0.5947
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": -0.0046,
+          "p_holm": 0.3128
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.1875,
+        "context_crowd_v2": 0.1702,
+        "context_format_v2": 0.1991,
+        "context_personal_v2": 0.1943,
+        "context_subgenre_v2": 0.18
+      },
+      "member_agreement_tau_b": 0.0015121161990985681,
+      "max_prompt_tokens": 6141
+    },
+    "amazon_music": {
+      "hybrid_mrr": {
+        "item_knn": 0.4775,
+        "sequential_transitions": 0.2893,
+        "genre_overlap": 0.179,
+        "title_overlap": 0.3953,
+        "newest_first": 0.2651,
+        "llm": 0.1958,
+        "nonllm_blend": 0.5189,
+        "hybrid": 0.5171,
+        "item_knn+llm": 0.4747,
+        "sequential+llm": 0.2711
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.3,
+        "item_knn+llm": 0.2,
+        "sequential+llm": 1.6
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": -0.0019,
+          "p": 0.8116
+        }
+      },
+      "test_sessions": 198,
+      "validation_sessions": 101,
+      "preselected_single_prompt": "baseline_scores_v1:context_crowd_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.1794,
+        "naive_mean": 0.1993,
+        "zscore_mean": 0.199,
+        "debiased_ensemble": 0.1958,
+        "rwra_recorded": 0.1941
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0164,
+          "p_holm": 0.5739
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": -0.0035,
+          "p_holm": 0.7966
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": 0.0146,
+          "p_holm": 0.5409
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": -0.0052,
+          "p_holm": 0.5409
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.1947,
+        "context_crowd_v2": 0.1794,
+        "context_format_v2": 0.1763,
+        "context_personal_v2": 0.1897,
+        "context_subgenre_v2": 0.188
+      },
+      "member_agreement_tau_b": 0.0025102552714539803,
+      "max_prompt_tokens": 3964
+    }
+  },
+  "recency_matched_shuffled": {
+    "amazon_books": {
+      "hybrid_mrr": {
+        "item_knn": 0.4257,
+        "sequential_transitions": 0.3074,
+        "genre_overlap": 0.1785,
+        "title_overlap": 0.426,
+        "newest_first": 0.1627,
+        "llm": 0.2039,
+        "nonllm_blend": 0.4847,
+        "hybrid": 0.4847,
+        "item_knn+llm": 0.419,
+        "sequential+llm": 0.3126
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.0,
+        "item_knn+llm": 0.3,
+        "sequential+llm": 0.1
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": 0.0,
+          "p": 1.0
+        }
+      },
+      "test_sessions": 166,
+      "validation_sessions": 51,
+      "preselected_single_prompt": "baseline_scores_v1:context_crowd_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.1888,
+        "naive_mean": 0.175,
+        "zscore_mean": 0.1918,
+        "debiased_ensemble": 0.2039,
+        "rwra_recorded": 0.1822
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0151,
+          "p_holm": 0.4227
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": 0.0289,
+          "p_holm": 0.0688
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": -0.0066,
+          "p_holm": 0.6965
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": 0.0073,
+          "p_holm": 0.1936
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.1762,
+        "context_crowd_v2": 0.1888,
+        "context_format_v2": 0.1712,
+        "context_personal_v2": 0.1883,
+        "context_subgenre_v2": 0.1937
+      },
+      "member_agreement_tau_b": -0.002579637116468305,
+      "max_prompt_tokens": 5842
+    },
+    "amazon_music": {
+      "hybrid_mrr": {
+        "item_knn": 0.4622,
+        "sequential_transitions": 0.3025,
+        "genre_overlap": 0.1784,
+        "title_overlap": 0.41,
+        "newest_first": 0.1895,
+        "llm": 0.1845,
+        "nonllm_blend": 0.4875,
+        "hybrid": 0.4824,
+        "item_knn+llm": 0.395,
+        "sequential+llm": 0.3103
+      },
+      "hybrid_llm_weight": {
+        "hybrid": 0.4,
+        "item_knn+llm": 0.9,
+        "sequential+llm": 0.9
+      },
+      "hybrid_primary": {
+        "hybrid_vs_nonllm_blend": {
+          "diff": -0.0051,
+          "p": 0.5842
+        }
+      },
+      "test_sessions": 158,
+      "validation_sessions": 82,
+      "preselected_single_prompt": "baseline_scores_v1:context_subgenre_v2",
+      "mrr": {
+        "single_prompt_preselected": 0.1833,
+        "naive_mean": 0.1917,
+        "zscore_mean": 0.1829,
+        "debiased_ensemble": 0.1845,
+        "rwra_recorded": 0.1938
+      },
+      "primary": {
+        "debiased_ensemble_vs_single_prompt_preselected": {
+          "diff": 0.0012,
+          "p_holm": 1.0
+        },
+        "debiased_ensemble_vs_naive_mean": {
+          "diff": -0.0072,
+          "p_holm": 1.0
+        }
+      },
+      "rwra": {
+        "rwra_recorded_vs_single_prompt_preselected": {
+          "diff": 0.0105,
+          "p_holm": 0.5357
+        },
+        "rwra_recorded_vs_naive_mean": {
+          "diff": 0.0021,
+          "p_holm": 0.4966
+        }
+      },
+      "member_test_mrr": {
+        "context_content_v2": 0.1538,
+        "context_crowd_v2": 0.1796,
+        "context_format_v2": 0.179,
+        "context_personal_v2": 0.1934,
+        "context_subgenre_v2": 0.1833
+      },
+      "member_agreement_tau_b": 0.004329186588876197,
+      "max_prompt_tokens": 3972
+    }
+  },
+  "context_ok": true,
+  "elapsed_minutes": 245.4
+}

@@ -1,0 +1,32 @@
+{
+  "started_utc": "2026-09-30T01:13:36Z",
+  "model": "qwen2.5:3b-instruct",
+  "model_digest": "357c53fb659c",
+  "expected_digest": "357c53fb659c",
+  "ollama_version": "Warning: could not connect to a running Ollama instance\nWarning: client version is 0.32.15",
+  "ollama_version_pinned": "0.32.15",
+  "context_length": 32768,
+  "num_parallel": 1,
+  "gpus": [
+    "Tesla T4",
+    "Tesla T4"
+  ],
+  "pilot_sessions_per_domain": 500,
+  "conditions": [
+    "shuffled"
+  ],
+  "pools": [
+    "random",
+    "popularity_matched",
+    "attribute_matched",
+    "recency_matched"
+  ],
+  "domains": [
+    "amazon_film",
+    "amazon_tv"
+  ],
+  "context": "title",
+  "sample_seed": 0,
+  "code_sha256": "21c7c5af654e23f393ecc31019308c622224d67ecb6a48766590f9b25837796b",
+  "finished_utc": "2026-09-30T04:36:50Z"
+}
