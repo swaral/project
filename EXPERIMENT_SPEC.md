@@ -1419,3 +1419,53 @@ The kernel also writes the usual `evaluate_debiased.py` and
 - Agreement up and RWRA above item-KNN: the grounded LLM adds value.
 - Agreement unchanged: the 3B model does not use the evidence consistently
   across prompts.
+
+## Addendum v21: Experiment 3 Results, 3B (Games, Film, TV, L1-L3)
+
+Recorded 2026-10-05, after the 3B runs. Results only; no design change. The
+7B runs pre-registered in Addendum v20 are still running and will be added
+here.
+
+### Runs
+
+Two Kaggle kernels (T4 x2, `qwen2.5:3b-instruct`, digest `357c53fb659c`,
+shuffled candidates, v16 work queue), both started 2026-10-05 05:59 UTC:
+Games 134 min (`results/pilot_3b_grounded_ladder_games_2026-10-05/`), Film/TV
+360 min (`results/pilot_3b_grounded_film_tv_2026-10-05/`). Every planned
+session was scored; prompts stayed within the context window. In every
+compared session each grounded prompt saw exactly the candidate order it saw
+in Experiment 1 (0 mismatches in all nine cells). Ollama server logs are not
+kept. Comparisons: `grounded_vs_title/` in each directory.
+
+### Pre-registered comparisons (test split; * Holm p < 0.05; random MRR = 0.180)
+
+Agreement is the mean pairwise tau-b between the eight prompts (higher means
+less drift); the other columns are MRR. "Prompts up" counts prompts
+significantly better grounded than with title only (Holm across the eight).
+LLM weight is the validation-fitted weight of the debiased grounded ensemble
+in the hybrid (0 = the LLM adds nothing to the non-LLM blend).
+
+| Domain | L | n | Agreement | RWRA | Debiased | item-KNN | RWRA - item-KNN | Prompts up | LLM weight |
+|---|---|---|---|---|---|---|---|---|---|
+| Games | L1 | 191 | 0.010 -> 0.115* | 0.315 -> 0.441* | 0.304 -> 0.461* | 0.582 | -0.140* | 7/8 | 0.0 |
+| Games | L2 | 323 | 0.007 -> 0.088* | 0.244 -> 0.347* | 0.265 -> 0.368* | 0.463 | -0.116* | 8/8 | 0.0 |
+| Games | L3 | 190 | 0.007 -> 0.082* | 0.257 -> 0.296 | 0.250 -> 0.292 | 0.380 | -0.084* | 1/8 | 0.0 |
+| Film | L1 | 423 | 0.004 -> 0.098* | 0.220 -> 0.321* | 0.219 -> 0.317* | 0.406 | -0.084* | 7/8 | 0.0 |
+| Film | L2 | 423 | 0.006 -> 0.088* | 0.231 -> 0.301* | 0.232 -> 0.303* | 0.394 | -0.094* | 4/8 | 0.2 |
+| Film | L3 | 420 | 0.003 -> 0.089* | 0.228 -> 0.299* | 0.216 -> 0.302* | 0.365 | -0.067* | 6/8 | 0.2 |
+| TV | L1 | 411 | 0.011 -> 0.107* | 0.288 -> 0.429* | 0.312 -> 0.451* | 0.604 | -0.175* | 7/8 | 0.2 |
+| TV | L2 | 411 | 0.011 -> 0.100* | 0.308 -> 0.422* | 0.348 -> 0.428* | 0.592 | -0.170* | 7/8 | 0.2 |
+| TV | L3 | 410 | 0.010 -> 0.100* | 0.288 -> 0.400* | 0.313 -> 0.409* | 0.571 | -0.171* | 8/8 | 0.0 |
+
+- Drift: grounding raises agreement in all nine cells (from 0.003-0.011
+  to 0.082-0.115, roughly tenfold), each significant.
+- Accuracy: grounded RWRA beats title-only RWRA in 8 of 9 cells (+0.07 to
+  +0.14 MRR); Games L3 is +0.039, not significant. The debiased ensemble
+  shows the same pattern. Most single prompts improve too (55 of 72).
+- Against the evidence: grounded RWRA is significantly below item-KNN alone
+  in all nine cells (-0.067 to -0.175). In the hybrid the LLM gets weight 0
+  or 0.2, and hybrid vs the non-LLM blend is never significant (largest
+  difference +0.006, Film L2, p = 0.22).
+- Reading (as set out in Addendum v20): grounding in collaborative evidence
+  reduces prompt-induced drift and improves the LLM, but the gain comes from
+  the evidence: the 3B model does not reach the ranker that supplies it.
