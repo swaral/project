@@ -1335,3 +1335,76 @@ within its family; random = 0.180.
   title only, not from the ensemble exceeding what the title alone gives.
 - The TV test sessions differ from the v18 set by one (342 vs 343): the
   title member did not parse on that session.
+
+## Addendum v20: Experiment 3, Grounded Strategy Prompts
+
+Recorded 2026-10-05, before any Experiment 3 run.
+
+### Why
+
+Experiment 1 shows that the eight strategy prompts barely agree (tau-b
+0.003-0.013): which candidate ranks first depends on the wording, i.e. the
+model drifts with the prompt. Experiment 2b shows that semantic item fields
+do not reduce this or add accuracy on the 3B model (Addendum v19). The one
+context that carried signal was the co-purchase context
+(`context_collab_v2`, Addendum v14). Experiment 3 asks whether grounding
+every prompt in that collaborative evidence reduces prompt-induced drift,
+and whether the grounded LLM then adds anything over the evidence itself.
+
+`context_collab_v2` stays retired from Experiment 2b, which measures
+semantic context. Here it is used on purpose as grounding evidence, not as
+a description of the item, and is reported as a separate experiment.
+
+### Design (`build_kernel.py --experiment grounded`)
+
+- Members: the eight Experiment 1 prompts (`STRATEGY_PROMPT_SET`), each
+  with `context_collab_v2` in place of `context_title_v1`. Wording, model
+  digest, decoding, output schema and parser are unchanged.
+- Same sessions and candidates as Experiment 1, L1-L3 (`random`,
+  `popularity_matched`, `attribute_matched`), with that run's sizes:
+  Film and TV 600 sessions per level (`--sessions 600 --ladder-sessions
+  600`, `results/pilot_3b_strategy_film_tv_2026-09-29/`); Games 500 at L2
+  and 300 at L1 and L3 (`--sessions 500 --ladder-sessions 300`,
+  `results/pilot_3b_strategy_ladder_2026-09-29/`).
+- Same candidate order: `run_ensemble.py --shuffle-key-context
+  context_title_v1` seeds each (session, prompt) shuffle with the title
+  context, so every grounded prompt sees exactly the order it saw in
+  Experiment 1. The only change per prompt is the item context. The
+  comparison script counts any session where the order differs.
+- Commands (two kernels; a kernel takes at most two domains):
+
+      python kaggle/build_kernel.py --username <you> --experiment grounded --domains amazon_film,amazon_tv --pools random,popularity_matched,attribute_matched --conditions shuffled --sessions 600 --ladder-sessions 600
+      python kaggle/build_kernel.py --username <you> --experiment grounded --domains amazon_games --pools random,popularity_matched,attribute_matched --conditions shuffled --sessions 500 --ladder-sessions 300
+
+  Estimated from the co-purchase member's latency in Experiment 2 (1.68 s
+  per call on Film/TV against 1.36 s for title only): about 7-7.5 h for
+  Film/TV and 2.5-3 h for Games.
+
+### Pre-registered comparisons (`scripts/compare_grounding.py`, per domain and level, test split)
+
+Sessions where all sixteen members (8 title, 8 grounded) parsed. Paired
+sign-flip test with a paired bootstrap 95% CI.
+
+Primary (Holm across the three):
+
+1. Drift: each session's mean pairwise tau-b between the eight members on
+   raw scores, grounded vs title only.
+2. RWRA grounded vs RWRA title only (reciprocal rank).
+3. RWRA grounded vs item-KNN alone (reciprocal rank). The grounding context
+   is built from the same co-purchase cosine, so this asks whether the LLM
+   adds anything over its evidence.
+
+Secondary (Holm across the two): debiased ensemble grounded vs title only,
+and debiased ensemble grounded vs item-KNN. Per prompt (Holm across the
+eight): each prompt grounded vs the same prompt with title only.
+
+The kernel also writes the usual `evaluate_debiased.py` and
+`evaluate_hybrid.py` reports for the grounded run alone.
+
+### How the results will be read
+
+- Agreement up and RWRA above title only, but not above item-KNN: grounding
+  reduces drift, and the gain comes from the evidence, not from the LLM.
+- Agreement up and RWRA above item-KNN: the grounded LLM adds value.
+- Agreement unchanged: the 3B model does not use the evidence consistently
+  across prompts.

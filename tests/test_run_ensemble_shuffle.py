@@ -50,3 +50,22 @@ def test_scores_map_back_to_pool_positions():
     assert scores_in_pool_order(presented, presented_scores, POOL) == tuple(
         float(item_id) for item_id in POOL
     )
+
+
+def test_shuffle_key_context_reuses_that_contexts_order():
+    grounded = presented_candidate_order(
+        POOL,
+        session_id="user-1",
+        variant_id="next_step_v2",
+        context_variant_id="context_collab_v2",
+        shuffle_seed=0,
+        shuffle_context_id="context_title_v1",
+    )
+    assert grounded == _order("next_step_v2")
+    assert grounded != presented_candidate_order(
+        POOL,
+        session_id="user-1",
+        variant_id="next_step_v2",
+        context_variant_id="context_collab_v2",
+        shuffle_seed=0,
+    )

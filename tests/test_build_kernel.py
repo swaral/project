@@ -30,3 +30,15 @@ def test_short_kernel_title_is_unchanged(tmp_path):
     meta = _metadata(tmp_path, "--domains", "amazon_games", "--conditions", "shuffled")
     assert meta["title"] == "LLM Session Reco Pilot 3b-shuffled-games"
     assert meta["id"] == "someone/llm-session-reco-pilot-3b-shuffled-games"
+
+
+def test_grounded_experiment_reuses_title_orders(tmp_path):
+    meta = _metadata(
+        tmp_path, "--experiment", "grounded", "--domains", "amazon_film,amazon_tv",
+        "--pools", "random,popularity_matched,attribute_matched", "--conditions", "shuffled",
+        "--sessions", "600", "--ladder-sessions", "600",
+    )
+    assert meta["title"] == "LLM Session Reco Pilot 3b-grounded-ladder-film-tv"
+    script = (tmp_path / "run_pilot.py").read_text(encoding="utf-8")
+    assert "EXPERIMENT = 'grounded'" in script
+    assert '"--shuffle-key-context", "context_title_v1"' in script

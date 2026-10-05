@@ -28,7 +28,11 @@ from llm_session_reco.llm_client import (
 )
 from llm_session_reco.movielens import load_movies
 from llm_session_reco.parser import parse_ranking
-from llm_session_reco.prompts import FIELD_CONTEXT_VARIANTS, render_baseline_prompt
+from llm_session_reco.prompts import (
+    CONTEXT_VARIANT_DESCRIPTION_TEMPLATES,
+    FIELD_CONTEXT_VARIANTS,
+    render_baseline_prompt,
+)
 
 DEFAULT_MEMBERS: tuple[tuple[str, str], ...] = (
     ("baseline_scores_v1", "context_title_v1"),
@@ -134,6 +138,7 @@ def presented_candidate_order(
     variant_id: str,
     context_variant_id: str,
     shuffle_seed: int | None,
+    shuffle_context_id: str | None = None,
 ) -> list[int]:
     """Candidate order shown to one ensemble member.
 
@@ -141,12 +146,16 @@ def presented_candidate_order(
     reproducible permutation, so a model that favours a list slot favours a
     different item under each prompt and the bias averages out in the
     ensemble. With ``None`` the stored pool order is kept unchanged.
+
+    ``shuffle_context_id`` replaces the member's context in the seed, so a
+    prompt shown another context sees the same order it saw with that
+    context (Addendum v20: grounded members reuse the title-only orders).
     """
 
     presented = list(candidate_item_ids)
     if shuffle_seed is not None:
         random.Random(
-            f"{shuffle_seed}:{session_id}:{variant_id}:{context_variant_id}"
+            f"{shuffle_seed}:{session_id}:{variant_id}:{shuffle_context_id or context_variant_id}"
         ).shuffle(presented)
     return presented
 
@@ -396,6 +405,12 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="seed for --shuffle-candidates",
     )
+    parser.add_argument(
+        "--shuffle-key-context",
+        default=None,
+        help="seed every member's shuffle with this context instead of its own, "
+        "so it sees the order it would see with that context (Addendum v20)",
+    )
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--max-tokens", type=int, default=256)
@@ -424,6 +439,11 @@ def main() -> None:
     members_config = _parse_members(args.members)
     if args.max_runtime_minutes is not None and args.max_runtime_minutes <= 0:
         raise ValueError("--max-runtime-minutes must be positive")
+    if args.shuffle_key_context is not None:
+        if not args.shuffle_candidates:
+            raise ValueError("--shuffle-key-context needs --shuffle-candidates")
+        if args.shuffle_key_context not in CONTEXT_VARIANT_DESCRIPTION_TEMPLATES:
+            raise ValueError(f"Unknown --shuffle-key-context {args.shuffle_key_context!r}")
 
     examples = {
         str(record["session_id"]): record for record in _read_jsonl(args.examples)
@@ -537,6 +557,7 @@ def main() -> None:
                     variant_id=variant_id,
                     context_variant_id=context_variant_id,
                     shuffle_seed=shuffle_seed,
+                    shuffle_context_id=args.shuffle_key_context,
                 )
                 prompt = render_baseline_prompt(
                     prefix_item_ids,
@@ -660,6 +681,8 @@ def main() -> None:
                 "candidate_shuffle": {
                     "enabled": args.shuffle_candidates,
                     "seed": shuffle_seed,
+                    **({"key_context": args.shuffle_key_context}
+                       if args.shuffle_key_context else {}),
                 },
                 "client_config": client.config,
                 "valid_member_count": result.valid_member_count,

@@ -65,10 +65,11 @@ def main() -> None:
     parser.add_argument(
         "--experiment",
         default="wording",
-        choices=("wording", "strategy", "context", "context2b"),
+        choices=("wording", "strategy", "context", "context2b", "grounded"),
         help="ensemble members: original wordings, 8 strategy prompts (Experiment 1), "
-        "5 semantic contexts (Experiment 2b), or the retired 4 contexts with co-purchase "
-        "(context; only to reproduce Experiment 2)",
+        "5 semantic contexts (Experiment 2b), the 8 strategy prompts grounded with "
+        "co-purchase evidence (Experiment 3, Addendum v20), or the retired 4 contexts "
+        "with co-purchase (context; only to reproduce Experiment 2)",
     )
     parser.add_argument("--ladder-sessions", type=int, default=300,
                         help="sessions per domain on each ladder level other than L2")

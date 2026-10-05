@@ -48,6 +48,8 @@ BENCHMARK_POOLS = (
 # (baseline wording x the four four-field context variants; retired in
 # Addendum v15, kept only to reproduce Experiment 2). Addendum v15 adds
 # "context2b" (baseline wording x the five semantic contexts, no co-purchase).
+# Addendum v20 adds "grounded" (the eight strategy prompts x the co-purchase
+# context, each shown the candidate order it saw in the title-only run).
 EXPERIMENT = os.environ.get("PILOT_EXPERIMENT", "wording")
 STRATEGY_PROMPTS = (
     "baseline_scores_v1", "next_step_v2", "long_term_taste_v2", "closest_match_v2",
@@ -59,6 +61,7 @@ SEMANTIC_CONTEXTS = (
     "context_subgenre_v2", "context_format_v2",
 )
 CONTEXT_EXPERIMENTS = ("context", "context2b")
+GROUNDING_CONTEXT = "context_collab_v2"
 # Ladder levels L1 (random), L3 (attribute_matched) and L4 (recency_matched)
 # use a seeded subset of the L2 (popularity_matched) sample, so every level
 # scores the same users (L4 only those of them that are matchable).
@@ -318,6 +321,8 @@ def run_name(domain, pool, condition):
 def member_args():
     if EXPERIMENT == "strategy":
         members = [f"{p}:context_title_v1" for p in STRATEGY_PROMPTS]
+    elif EXPERIMENT == "grounded":
+        members = [f"{p}:{GROUNDING_CONTEXT}" for p in STRATEGY_PROMPTS]
     elif EXPERIMENT == "context":
         members = [f"baseline_scores_v1:{c}" for c in FIELD_CONTEXTS]
     elif EXPERIMENT == "context2b":
@@ -385,6 +390,9 @@ def run_unit(unit, port, minutes):
            "--output", str(unit["output"])]
     if unit["condition"] == "shuffled":
         cmd += ["--shuffle-candidates", "--shuffle-seed", "0"]
+        if EXPERIMENT == "grounded":
+            # Same order per (session, prompt) as Experiment 1, so only the context changes.
+            cmd += ["--shuffle-key-context", "context_title_v1"]
     log(f"starting {unit['label']} on port {port}: " + " ".join(cmd))
     with unit["log"].open("w") as handle:
         code = subprocess.run(cmd, cwd=PROJECT, stdout=handle, stderr=subprocess.STDOUT).returncode
@@ -551,6 +559,8 @@ def main():
         "pools": POOLS,
         "domains": list(DOMAINS),
         "context": CONTEXT,
+        "experiment": EXPERIMENT,
+        "ladder_sessions_per_domain": LADDER_SESSIONS,
         "sample_seed": 0,
         "code_sha256": hashlib.sha256(PAYLOAD.encode()).hexdigest(),
     }
