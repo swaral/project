@@ -1,0 +1,128 @@
+{
+  "pool_type": "attribute_matched",
+  "members": [
+    "baseline_scores_v1:context_collab_v2",
+    "closest_match_v2:context_collab_v2",
+    "long_term_taste_v2:context_collab_v2",
+    "next_step_v2:context_collab_v2",
+    "preference_enjoy_v2:context_collab_v2",
+    "preference_pick_now_v2:context_collab_v2",
+    "rule_out_rank_v2:context_collab_v2",
+    "skip_risk_v2:context_collab_v2"
+  ],
+  "validation_sessions": 83,
+  "test_sessions": 217,
+  "fitted_on_validation": {
+    "nonllm_blend_weights": {
+      "item_knn": 0.25,
+      "sequential_transitions": 0.5,
+      "genre_overlap": 0.0,
+      "title_overlap": 0.5,
+      "newest_first": 0.25
+    },
+    "nonllm_blend_validation_mrr": 0.42929777594722207,
+    "llm_weight": {
+      "hybrid": 0.3,
+      "item_knn+llm": 1.8,
+      "sequential+llm": 1.9
+    }
+  },
+  "methods": {
+    "item_knn": {
+      "RR": 0.3899440703376194,
+      "HR@1": 0.24516129032258066,
+      "HR@5": 0.5236742829559667,
+      "NDCG@10": 0.45487324482038916
+    },
+    "sequential_transitions": {
+      "RR": 0.29189730781180745,
+      "HR@1": 0.17442396313364053,
+      "HR@5": 0.3585778963537876,
+      "NDCG@10": 0.334097083588706
+    },
+    "genre_overlap": {
+      "RR": 0.14739989351529295,
+      "HR@1": 0.03177163338453661,
+      "HR@5": 0.17825289425334365,
+      "NDCG@10": 0.18377336152571694
+    },
+    "title_overlap": {
+      "RR": 0.27404870272545706,
+      "HR@1": 0.13602150537634408,
+      "HR@5": 0.3883100778511744,
+      "NDCG@10": 0.32893842609242635
+    },
+    "newest_first": {
+      "RR": 0.2650782101578209,
+      "HR@1": 0.11059907834101383,
+      "HR@5": 0.391705069124424,
+      "NDCG@10": 0.3356584122469027
+    },
+    "llm": {
+      "RR": 0.33696226382163236,
+      "HR@1": 0.14285714285714285,
+      "HR@5": 0.5483870967741935,
+      "NDCG@10": 0.42679981775053616
+    },
+    "nonllm_blend": {
+      "RR": 0.4116207747895482,
+      "HR@1": 0.2764976958525346,
+      "HR@5": 0.5483870967741935,
+      "NDCG@10": 0.4834008368195555
+    },
+    "hybrid": {
+      "RR": 0.42792009670763714,
+      "HR@1": 0.2903225806451613,
+      "HR@5": 0.5529953917050692,
+      "NDCG@10": 0.49943714832877756
+    },
+    "item_knn+llm": {
+      "RR": 0.41008375318736134,
+      "HR@1": 0.2672811059907834,
+      "HR@5": 0.5529953917050692,
+      "NDCG@10": 0.48277596315211924
+    },
+    "sequential+llm": {
+      "RR": 0.3897307319126811,
+      "HR@1": 0.2304147465437788,
+      "HR@5": 0.5345622119815668,
+      "NDCG@10": 0.46621868556868895
+    }
+  },
+  "primary_comparisons": {
+    "hybrid_vs_nonllm_blend": {
+      "mean_difference": 0.01629932191808895,
+      "ci_low": 0.0035442408458826427,
+      "ci_high": 0.029774354500705775,
+      "p_value": 0.0131986801319868,
+      "n_pairs": 217,
+      "p_holm": 0.0131986801319868
+    }
+  },
+  "secondary_comparisons": {
+    "item_knn+llm_vs_item_knn": {
+      "mean_difference": 0.020139682849741932,
+      "ci_low": -0.009320160586746036,
+      "ci_high": 0.05163158312226414,
+      "p_value": 0.18388161183881613,
+      "n_pairs": 217,
+      "p_holm": 0.18388161183881613
+    },
+    "sequential+llm_vs_sequential": {
+      "mean_difference": 0.09783342410087369,
+      "ci_low": 0.06502819775193973,
+      "ci_high": 0.13145247313382538,
+      "p_value": 9.999000099990002e-05,
+      "n_pairs": 217,
+      "p_holm": 0.00029997000299970003
+    },
+    "llm_vs_nonllm_blend": {
+      "mean_difference": -0.07465851096791588,
+      "ci_low": -0.12419799533191411,
+      "ci_high": -0.0263256321738688,
+      "p_value": 0.0034996500349965005,
+      "n_pairs": 217,
+      "p_holm": 0.006999300069993001
+    }
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "prompts": [
+    "baseline_scores_v1",
+    "closest_match_v2",
+    "long_term_taste_v2",
+    "next_step_v2",
+    "preference_enjoy_v2",
+    "preference_pick_now_v2",
+    "rule_out_rank_v2",
+    "skip_risk_v2"
+  ],
+  "test_sessions_compared": 214,
+  "sessions_with_a_different_candidate_order": 0,
+  "mean": {
+    "agreement_title_only": 0.10072202738695858,
+    "agreement_grounded": 0.20831756569224474,
+    "rwra_title_only": 0.4718817563360545,
+    "rwra_grounded": 0.4503656706893376,
+    "debiased_title_only": 0.4825671153302009,
+    "debiased_grounded": 0.4539985597791,
+    "item_knn": 0.5894685086844457,
+    "baseline_scores_v1:title_only": 0.3002937509803009,
+    "closest_match_v2:title_only": 0.3858352447328155,
+    "long_term_taste_v2:title_only": 0.30689259486510895,
+    "next_step_v2:title_only": 0.3215985615268815,
+    "preference_enjoy_v2:title_only": 0.3396941746365851,
+    "preference_pick_now_v2:title_only": 0.3082842424237582,
+    "rule_out_rank_v2:title_only": 0.2631375625157543,
+    "skip_risk_v2:title_only": 0.3089170674996758,
+    "baseline_scores_v1:grounded": 0.3317083355832025,
+    "closest_match_v2:grounded": 0.35513965754080373,
+    "long_term_taste_v2:grounded": 0.3460630423850005,
+    "next_step_v2:grounded": 0.3432851649963295,
+    "preference_enjoy_v2:grounded": 0.3707859943579867,
+    "preference_pick_now_v2:grounded": 0.3357457419363599,
+    "rule_out_rank_v2:grounded": 0.32086610023165407,
+    "skip_risk_v2:grounded": 0.32848281962558906
+  },
+  "primary_comparisons": {
+    "agreement_grounded_vs_title_only": {
+      "metric": "tau_b",
+      "mean_difference": 0.10759553830528615,
+      "ci_low": 0.09243187956965901,
+      "ci_high": 0.12224563500932381,
+      "p_value": 9.999000099990002e-05,
+      "n_pairs": 214,
+      "p_holm": 0.00029997000299970003
+    },
+    "rwra_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.021516085646717004,
+      "ci_low": -0.07856908532914814,
+      "ci_high": 0.036511968817670146,
+      "p_value": 0.45735426457354267,
+      "n_pairs": 214,
+      "p_holm": 0.45735426457354267
+    },
+    "rwra_grounded_vs_item_knn": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.13910283799510822,
+      "ci_low": -0.1890911041038955,
+      "ci_high": -0.08751389404004595,
+      "p_value": 9.999000099990002e-05,
+      "n_pairs": 214,
+      "p_holm": 0.00029997000299970003
+    }
+  },
+  "secondary_comparisons": {
+    "debiased_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.0285685555511009,
+      "ci_low": -0.08615402135495233,
+      "ci_high": 0.032418118324988594,
+      "p_value": 0.3411658834116588,
+      "n_pairs": 214,
+      "p_holm": 0.3411658834116588
+    },
+    "debiased_grounded_vs_item_knn": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.13546994890534578,
+      "ci_low": -0.18529539893047914,
+      "ci_high": -0.08790626019895466,
+      "p_value": 9.999000099990002e-05,
+      "n_pairs": 214,
+      "p_holm": 0.00019998000199980003
+    }
+  },
+  "per_prompt_comparisons": {
+    "baseline_scores_v1_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.03141458460290152,
+      "ci_low": -0.01926476416956386,
+      "ci_high": 0.08189226038514506,
+      "p_value": 0.20377962203779623,
+      "n_pairs": 214,
+      "p_holm": 1.0
+    },
+    "closest_match_v2_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": -0.030695587192011743,
+      "ci_low": -0.07799742954051095,
+      "ci_high": 0.01832214917657636,
+      "p_value": 0.21497850214978503,
+      "n_pairs": 214,
+      "p_holm": 1.0
+    },
+    "long_term_taste_v2_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.039170447519891606,
+      "ci_low": -0.009626548606844901,
+      "ci_high": 0.08926125600645124,
+      "p_value": 0.11028897110288971,
+      "n_pairs": 214,
+      "p_holm": 0.772022797720228
+    },
+    "next_step_v2_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.021686603469448004,
+      "ci_low": -0.03041377364408859,
+      "ci_high": 0.07212042535819244,
+      "p_value": 0.41315868413158685,
+      "n_pairs": 214,
+      "p_holm": 1.0
+    },
+    "preference_enjoy_v2_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.0310918197214016,
+      "ci_low": -0.016628448838449498,
+      "ci_high": 0.07799981930733489,
+      "p_value": 0.18958104189581043,
+      "n_pairs": 214,
+      "p_holm": 1.0
+    },
+    "preference_pick_now_v2_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.027461499512601704,
+      "ci_low": -0.021956901403601337,
+      "ci_high": 0.07729720326607226,
+      "p_value": 0.27407259274072593,
+      "n_pairs": 214,
+      "p_holm": 1.0
+    },
+    "rule_out_rank_v2_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.05772853771589976,
+      "ci_low": 0.0100032350870462,
+      "ci_high": 0.10477356347795827,
+      "p_value": 0.012398760123987601,
+      "n_pairs": 214,
+      "p_holm": 0.09919008099190081
+    },
+    "skip_risk_v2_grounded_vs_title_only": {
+      "metric": "reciprocal_rank",
+      "mean_difference": 0.019565752125913292,
+      "ci_low": -0.02722921903060288,
+      "ci_high": 0.0636641156905523,
+      "p_value": 0.4052594740525947,
+      "n_pairs": 214,
+      "p_holm": 1.0
+    }
+  },
+  "note": "pre-registered (Addendum v20); mean of agreement_* is tau-b, the rest MRR"
+}

@@ -1422,9 +1422,8 @@ The kernel also writes the usual `evaluate_debiased.py` and
 
 ## Addendum v21: Experiment 3 Results, 3B (Games, Film, TV, L1-L3)
 
-Recorded 2026-10-05, after the 3B runs. Results only; no design change. The
-7B runs pre-registered in Addendum v20 are still running and will be added
-here.
+Recorded 2026-10-05, after the 3B runs; the 7B section was added
+2026-10-06, after the 7B runs. Results only; no design change.
 
 ### Runs
 
@@ -1469,3 +1468,51 @@ in the hybrid (0 = the LLM adds nothing to the non-LLM blend).
 - Reading (as set out in Addendum v20): grounding in collaborative evidence
   reduces prompt-induced drift and improves the LLM, but the gain comes from
   the evidence: the 3B model does not reach the ranker that supplies it.
+
+### 7B (Games, Film, TV, L1-L3)
+
+Two kernels (`qwen2.5:7b-instruct`, digest `845dbda0ea48`, the same as the
+7B Experiment 1 runs), 500 sessions at L2 and 300 at L1 and L3: Games 12:01-
+17:25 UTC (`results/pilot_7b_grounded_ladder_games_2026-10-05/`), Film/TV
+09:50-18:20 UTC (`results/pilot_7b_grounded_film_tv_2026-10-05/`). Every
+planned session was scored; 0 candidate-order mismatches in all nine cells.
+Paired with `results/pilot_7b_strategy_ladder_2026-10-01/` and
+`results/pilot_7b_strategy_film_tv_2026-10-01/`. "Hybrid" is the hybrid
+minus the non-LLM blend (the pre-registered `evaluate_hybrid.py` test, its
+own family).
+
+| Domain | L | n | Agreement | RWRA | Debiased | item-KNN | RWRA - item-KNN | Prompts up | LLM weight | Hybrid |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Games | L1 | 191 | 0.085 -> 0.201* | 0.402 -> 0.508* | 0.408 -> 0.500* | 0.582 | -0.074* | 2/8 | 0.0 | +0.000 |
+| Games | L2 | 326 | 0.095 -> 0.217* | 0.335 -> 0.366 | 0.338 -> 0.393* | 0.462 | -0.096* | 7/8 | 0.0 | +0.000 |
+| Games | L3 | 191 | 0.109 -> 0.231* | 0.261 -> 0.273 | 0.253 -> 0.306* | 0.384 | -0.111* | 2/8 | 0.0 | +0.000 |
+| Film | L1 | 217 | 0.104 -> 0.234* | 0.351 -> 0.384 | 0.361 -> 0.395 | 0.444 | -0.061* | 0/8 | 0.1 | +0.010* |
+| Film | L2 | 358 | 0.097 -> 0.230* | 0.313 -> 0.355* | 0.306 -> 0.354* | 0.407 | -0.052* | 4/8 | 0.1 | +0.005 |
+| Film | L3 | 217 | 0.101 -> 0.232* | 0.347 -> 0.346 | 0.360 -> 0.337 | 0.390 | -0.044 | 0/8 | 0.3 | +0.016* |
+| TV | L1 | 214 | 0.101 -> 0.208* | 0.472 -> 0.450 | 0.483 -> 0.454 | 0.589 | -0.139* | 0/8 | 0.9 | +0.021 |
+| TV | L2 | 343 | 0.106 -> 0.214* | 0.466 -> 0.446 | 0.466 -> 0.462 | 0.573 | -0.127* | 2/8 | 0.2 | -0.005* |
+| TV | L3 | 214 | 0.117 -> 0.211* | 0.413 -> 0.432 | 0.426 -> 0.436 | 0.549 | -0.116* | 0/8 | 0.1 | -0.001 |
+
+- Drift: 7B prompts already agree about ten times more than 3B with title
+  only (0.085-0.117 vs 0.003-0.011); grounding roughly doubles agreement
+  again, significant in all nine cells.
+- Accuracy: grounded RWRA beats title-only RWRA in 2 of 9 cells (Games L1,
+  Film L2); the debiased ensemble in 4 (Games L1-L3, Film L2). On TV the
+  ensembles do not change significantly (-0.02 to +0.02). No single prompt
+  is significantly worse grounded in any cell; on Film and TV the eight
+  prompts gain +0.02 to +0.05 on average but mostly not significantly.
+  Grounding makes the 7B prompts more alike, which leaves the ensemble less
+  to gain from combining them.
+- Against the evidence: grounded RWRA stays below item-KNN in all nine
+  cells, significantly in eight (-0.044 to -0.139; Film L3 not
+  significant). The gap is smaller than for 3B in six of nine cells (all
+  of Games and Film).
+- Hybrid: the 7B grounded LLM adds a small significant gain to the non-LLM
+  blend in Film L1 (+0.010) and Film L3 (+0.016) and a small significant
+  loss in TV L2 (-0.005, the validation-fitted weight not carrying to
+  test); elsewhere no difference. For 3B no cell was significant.
+- Reading: for 3B, grounding is the larger effect (drift and accuracy);
+  for 7B it still reduces drift, but the accuracy gain shrinks because 7B
+  already uses the titles better. Neither model reaches item-KNN; only the
+  7B model adds anything measurable on top of the non-LLM rankers, and only
+  in two Film cells.

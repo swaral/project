@@ -1,0 +1,32 @@
+{
+  "started_utc": "2026-10-05T12:01:40Z",
+  "model": "qwen2.5:7b-instruct",
+  "model_digest": "845dbda0ea48",
+  "expected_digest": "357c53fb659c",
+  "ollama_version": "Warning: could not connect to a running Ollama instance\nWarning: client version is 0.32.15",
+  "ollama_version_pinned": "0.32.15",
+  "context_length": 32768,
+  "num_parallel": 1,
+  "gpus": [
+    "Tesla T4",
+    "Tesla T4"
+  ],
+  "pilot_sessions_per_domain": 500,
+  "conditions": [
+    "shuffled"
+  ],
+  "pools": [
+    "random",
+    "popularity_matched",
+    "attribute_matched"
+  ],
+  "domains": [
+    "amazon_games"
+  ],
+  "context": "title",
+  "experiment": "grounded",
+  "ladder_sessions_per_domain": 300,
+  "sample_seed": 0,
+  "code_sha256": "d78b1776fc93c20fe5ecf89fbfa0a20092420eab75bc06a9c58f1bee820a86d3",
+  "finished_utc": "2026-10-05T17:24:40Z"
+}

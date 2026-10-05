@@ -1,0 +1,1020 @@
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk0_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.31,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk1_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.37,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk2_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.39,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk3_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.45,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk4_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.29,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk5_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.41,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk6_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.32,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk7_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.33,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk8_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.46,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk9_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.53,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk10_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.34,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk11_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.45,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk12_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.4,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk13_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.5,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk14_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.38,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk15_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.44,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk16_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.26,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk17_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.49,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk18_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.2,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_film_popularity_matched_shuffled_grounded_chunk19_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 11.54,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_film",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_collab_v2"
+    ],
+    [
+      "next_step_v2",
+      "context_collab_v2"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_collab_v2"
+    ],
+    [
+      "closest_match_v2",
+      "context_collab_v2"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_collab_v2"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_collab_v2"
+    ],
+    [
+      "skip_risk_v2",
+      "context_collab_v2"
+    ]
+  ],
+  "shuffle_candidates": true
+}
