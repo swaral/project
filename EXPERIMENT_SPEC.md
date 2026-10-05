@@ -1380,6 +1380,17 @@ a description of the item, and is reported as a separate experiment.
   per call on Film/TV against 1.36 s for title only): about 7-7.5 h for
   Film/TV and 2.5-3 h for Games.
 
+- Second model (added 2026-10-05, after the 3B Games results and before any
+  7B grounded run): the same design with `--model qwen2.5:7b-instruct`,
+  paired with the 7B Experiment 1 runs
+  (`results/pilot_7b_strategy_film_tv_2026-10-01/`,
+  `results/pilot_7b_strategy_ladder_2026-10-01/`, model digest
+  `845dbda0ea48`). Those ran 500 sessions at L2 and 300 at L1 and L3 in all
+  three domains, so both 7B kernels use `--sessions 500 --ladder-sessions
+  300`. Same comparisons and Holm families as for 3B. Estimated from the
+  7B Experiment 1 run times (7.9 h Film/TV, 5.1 h Games) plus the longer
+  grounded prompts: about 9.5-10 h and 6-6.5 h.
+
 ### Pre-registered comparisons (`scripts/compare_grounding.py`, per domain and level, test split)
 
 Sessions where all sixteen members (8 title, 8 grounded) parsed. Paired
