@@ -1,0 +1,1020 @@
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk0_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.54,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk1_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.67,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk2_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.59,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk3_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.51,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk4_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.62,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk5_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.52,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk6_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.72,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk7_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.51,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk8_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.8,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk9_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.56,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk10_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.89,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk11_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.67,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk12_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.94,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk13_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.59,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk14_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.97,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk15_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.65,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk16_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.56,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk17_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.65,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk18_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 12.76,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
+{
+  "output": "/kaggle/working/pilot/amazon_games_popularity_matched_shuffled_strategy_chunk19_pilot_trials.jsonl",
+  "trials": 25,
+  "completed_this_run": 25,
+  "remaining": 0,
+  "stopped_early": false,
+  "repaired_tail_bytes": 0,
+  "elapsed_minutes": 13.66,
+  "skipped_existing": 0,
+  "ensembles_combined": 25,
+  "ensembles_failed": 0,
+  "member_parse_failures": 0,
+  "member_request_failures": 0,
+  "provider": "chat-completions",
+  "domain": "amazon_games",
+  "members": [
+    [
+      "baseline_scores_v1",
+      "context_title_v1"
+    ],
+    [
+      "next_step_v2",
+      "context_title_v1"
+    ],
+    [
+      "long_term_taste_v2",
+      "context_title_v1"
+    ],
+    [
+      "closest_match_v2",
+      "context_title_v1"
+    ],
+    [
+      "rule_out_rank_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_enjoy_v2",
+      "context_title_v1"
+    ],
+    [
+      "preference_pick_now_v2",
+      "context_title_v1"
+    ],
+    [
+      "skip_risk_v2",
+      "context_title_v1"
+    ]
+  ],
+  "shuffle_candidates": true
+}
